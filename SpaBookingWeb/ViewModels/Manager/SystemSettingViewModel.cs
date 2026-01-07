@@ -46,8 +46,6 @@ namespace SpaBookingWeb.ViewModels.Manager
         // --- 2. QUẢN LÝ DANH SÁCH (Hiển thị) ---
         public List<Unit> Units { get; set; } = new List<Unit>();
         public List<DepositRule> DepositRules { get; set; } = new List<DepositRule>();
-        public List<IdentityRole> Roles { get; set; } = new List<IdentityRole>();
-
 
         // --- 3. THUỘC TÍNH ĐỂ TẠO MỚI (Input Fields) ---
 
@@ -55,9 +53,6 @@ namespace SpaBookingWeb.ViewModels.Manager
         [Display(Name = "Tên đơn vị tính mới")]
         public string NewUnitName { get; set; }
 
-        // B. Tạo Role mới
-        [Display(Name = "Tên quyền mới")]
-        public string NewRoleName { get; set; }
 
         // C. Tạo DepositRule mới (Các thuộc tính ban đầu cần thiết)
         [Display(Name = "Tên quy tắc")]

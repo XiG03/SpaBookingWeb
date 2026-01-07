@@ -1,0 +1,454 @@
+﻿@model List<SpaBookingWeb.ViewModels.Client.AppointmentHistoryViewModel>
+@using System.Globalization
+@{
+    Layout = null;
+    ViewData["Title"] = "Hồ sơ người dùng";
+    var culture = new CultureInfo("vi-VN");
+    var userName = ViewData["UserName"] as string ?? "Khách hàng";
+    var userEmail = ViewData["UserEmail"] as string ?? "email@example.com";
+
+    // Phân loại danh sách
+    var pending = Model.Where(a => a.Status == "Pending").ToList();
+    var upcoming = Model.Where(a => (a.Status == "Confirmed" || a.Status == "DepositPaid") && a.StartTime >= DateTime.Now).ToList();
+    var cancelled = Model.Where(a => a.Status == "Cancelled").ToList();
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Trang hồ sơ người dùng - Fresha Clone</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff4785",
+                        "background-light": "#fff9fb",
+                        "background-dark": "#1f1116",
+                        "text-main": "#371f2b",
+                        "text-secondary": "#886a77",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* CSS hỗ trợ Tab chuyển đổi */
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .tab-btn.active {
+            border-bottom-width: 2px;
+            border-color: #ff4785;
+            color: #371f2b; /* text-main */
+            font-weight: 600;
+        }
+        .dark .tab-btn.active {
+            color: white;
+        }
+
+        /* Modal Styles (Giữ lại để xem chi tiết nếu cần) */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { margin: 5% auto; width: 90%; max-width: 600px; animation: slideDown 0.3s ease-out; }
+        @@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white min-h-screen flex flex-col">
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 flex items-center justify-between border-b border-pink-100 dark:border-gray-800 bg-white dark:bg-background-dark px-6 py-3 lg:px-10 shadow-sm">
+        <div class="flex items-center gap-8 w-full max-w-[1440px] mx-auto">
+            <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='/'">
+                <div class="size-8 text-primary">
+                    <svg class="h-full w-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h2 class="text-text-main dark:text-white text-xl font-bold leading-tight tracking-tight hidden sm:block">Fresha Clone</h2>
+            </div>
+            <div class="hidden md:flex flex-1 max-w-md mx-4">
+                <div class="flex w-full items-center rounded-xl bg-pink-50 dark:bg-gray-800 h-11 px-4 border border-transparent focus-within:border-primary/50 transition-colors">
+                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400">search</span>
+                    <input class="w-full bg-transparent border-none text-text-main dark:text-white placeholder:text-text-secondary focus:ring-0 text-base" placeholder="Tìm kiếm dịch vụ, salon..." />
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-4 md:gap-8 ml-auto">
+                <div class="hidden lg:flex items-center gap-6">
+                    <a class="text-text-main dark:text-gray-200 text-sm font-semibold hover:text-primary transition-colors" href="#">Khám phá</a>
+                    <a class="text-text-main dark:text-gray-200 text-sm font-semibold hover:text-primary transition-colors" href="#">Cho Doanh Nghiệp</a>
+                </div>
+                <div class="flex items-center gap-3 pl-4 border-l border-pink-100 dark:border-gray-800">
+                    <div class="hidden sm:block text-right">
+                        <p class="text-sm font-bold text-text-main dark:text-white">@userName</p>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                             <button type="submit" class="text-xs text-text-secondary dark:text-gray-400 font-medium hover:text-primary transition-colors">Đăng xuất</button>
+                        </form>
+                    </div>
+                    <!-- Avatar -->
+                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20 cursor-pointer flex items-center justify-center bg-pink-100 text-primary font-bold text-lg">
+                        @(userName?.Length > 0 ? userName.Substring(0, 1).ToUpper() : "U")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 w-full max-w-[1440px] mx-auto flex flex-col lg:flex-row">
+        <!-- ASIDE (SIDEBAR) -->
+        <aside class="w-full lg:w-80 lg:min-h-[calc(100vh-80px)] bg-white dark:bg-background-dark p-6 border-b lg:border-b-0 lg:border-r border-pink-100 dark:border-gray-800 flex flex-col gap-6 sticky top-[72px] self-start z-40">
+            <div class="md:hidden flex w-full items-center rounded-xl bg-pink-50 dark:bg-gray-800 h-10 px-3">
+                <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 text-[20px]">search</span>
+                <input class="w-full bg-transparent border-none text-text-main dark:text-white placeholder:text-text-secondary focus:ring-0 text-sm" placeholder="Tìm kiếm..." />
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-xl bg-pink-50/50 dark:bg-gray-800/50">
+                <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-sm flex items-center justify-center bg-pink-200 text-primary font-bold text-2xl">
+                     @(userName?.Length > 0 ? userName.Substring(0, 1).ToUpper() : "U")
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <h1 class="text-text-main dark:text-white text-base font-bold truncate">@userName</h1>
+                    <p class="text-text-secondary dark:text-gray-400 text-xs truncate">@userEmail</p>
+                </div>
+            </div>
+            <nav class="flex flex-col gap-2">
+                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:text-primary transition-all duration-200" href="#">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span class="text-sm font-semibold">Lịch hẹn của tôi</span>
+                    <span class="ml-auto bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">@upcoming.Count</span>
+                </a>
+                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200"
+                    asp-controller="Profile" asp-action="History">
+                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">history</span>
+                    <span class="text-sm font-medium">Lịch sử</span>
+                </a>
+                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">favorite</span>
+                    <span class="text-sm font-medium">Yêu thích</span>
+                </a>
+                <div class="h-px bg-pink-100 dark:bg-gray-800 my-2"></div>
+                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">settings</span>
+                    <span class="text-sm font-medium">Cài đặt tài khoản</span>
+                </a>
+                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">credit_card</span>
+                    <span class="text-sm font-medium">Phương thức thanh toán</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="flex-1 p-6 lg:p-10 bg-background-light dark:bg-background-dark min-h-screen">
+            <div class="max-w-4xl mx-auto flex flex-col gap-8">
+                <div class="flex flex-col gap-2">
+                    <h1 class="text-3xl md:text-4xl font-bold text-text-main dark:text-white tracking-tight">Lịch hẹn sắp tới</h1>
+                    <p class="text-text-secondary dark:text-gray-400 text-base">Quản lý các cuộc hẹn salon và spa sắp tới của bạn.</p>
+                </div>
+
+                <!-- TABS BUTTONS -->
+                <div class="flex gap-4 border-b border-pink-100 dark:border-gray-800 pb-1 overflow-x-auto">
+                    <button onclick="switchTab('upcoming')" id="btn-upcoming" class="tab-btn active px-2 py-3 border-b-2 border-primary text-text-main dark:text-white font-semibold text-sm whitespace-nowrap">Sắp tới (@upcoming.Count)</button>
+                    <button onclick="switchTab('pending')" id="btn-pending" class="tab-btn px-2 py-3 border-b-2 border-transparent text-text-secondary dark:text-gray-500 hover:text-text-main dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Chờ xác nhận (@pending.Count)</button>
+                    <button onclick="switchTab('cancelled')" id="btn-cancelled" class="tab-btn px-2 py-3 border-b-2 border-transparent text-text-secondary dark:text-gray-500 hover:text-text-main dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hủy (@cancelled.Count)</button>
+                </div>
+
+                <!-- TABS CONTENT CONTAINER -->
+                <div class="flex flex-col gap-6">
+                    
+                    <!-- TAB: SẮP TỚI -->
+                    <div id="tab-upcoming" class="tab-content active">
+                        @if (upcoming.Any())
+                        {
+                            @foreach (var item in upcoming)
+                            {
+                                RenderAppointmentCard(item, "green", "Đã xác nhận", true);
+                            }
+                        }
+                        else
+                        {
+                            RenderEmptyState("Bạn không có lịch hẹn nào sắp tới.");
+                        }
+                    </div>
+
+                    <!-- TAB: CHỜ XÁC NHẬN (PENDING) -->
+                    <div id="tab-pending" class="tab-content">
+                        @if (pending.Any())
+                        {
+                            @foreach (var item in pending)
+                            {
+                                RenderAppointmentCard(item, "orange", "Chờ xác nhận", false);
+                            }
+                        }
+                        else
+                        {
+                            RenderEmptyState("Không có lịch hẹn nào đang chờ.");
+                        }
+                    </div>
+
+                    <!-- TAB: ĐÃ HỦY -->
+                    <div id="tab-cancelled" class="tab-content">
+                        @if (cancelled.Any())
+                        {
+                            @foreach (var item in cancelled)
+                            {
+                                RenderAppointmentCard(item, "red", "Đã hủy", false);
+                            }
+                        }
+                        else
+                        {
+                            RenderEmptyState("Lịch sử hủy trống.");
+                        }
+                    </div>
+
+                    <!-- BANNER KHÁM PHÁ -->
+                    <div class="mt-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-6 flex flex-col items-center justify-center text-center gap-3 border border-primary/20">
+                        <div class="bg-primary/20 p-3 rounded-full">
+                            <span class="material-symbols-outlined text-primary text-3xl">add_business</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-text-main dark:text-white">Bạn muốn đặt thêm lịch hẹn?</h3>
+                        <p class="text-text-secondary dark:text-gray-400 text-sm max-w-sm">Khám phá hàng ngàn salon và spa chất lượng cao gần bạn.</p>
+                        <button class="mt-2 h-10 px-6 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm" onclick="window.location.href='/'">
+                            Khám phá ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- DETAIL MODAL (Thêm vào để hỗ trợ xem chi tiết khi click) -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+            <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+                <h3 class="text-xl font-bold text-text-main dark:text-white">Chi tiết Lịch hẹn</h3>
+                <button onclick="closeModal()" class="text-text-secondary hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]" id="modalBody">
+                <div class="flex justify-center py-10">
+                    <span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>
+                </div>
+            </div>
+             <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium hover:bg-white transition-colors">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEMPLATE CHO JS (Ẩn) -->
+    <script type="text/template" id="modalTemplate">
+        <div class="flex flex-col gap-6">
+            <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                    <span class="material-symbols-outlined text-3xl">spa</span>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-text-main dark:text-white">{spaName}</h4>
+                    <p class="text-text-secondary text-sm mt-1">{spaAddress}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="flex size-2 rounded-full bg-{color}-500"></span>
+                        <span class="text-{color}-600 text-xs font-bold uppercase">{status}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h5 class="text-sm font-bold text-text-secondary uppercase tracking-wide mb-3">Dịch vụ</h5>
+                <div class="space-y-4" id="serviceListPlaceholder"></div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-text-secondary">Tổng tiền</span>
+                    <span class="font-bold text-text-main dark:text-white">{total}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-text-secondary">Đã cọc</span>
+                    <span class="text-primary font-medium">-{deposit}</span>
+                </div>
+                <div class="border-t border-dashed border-gray-200 dark:border-gray-600 my-2 pt-2 flex justify-between">
+                    <span class="font-bold text-text-main dark:text-white">Còn lại</span>
+                    <span class="text-lg font-black text-primary">{remaining}</span>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- LOGIC CHUYỂN TAB ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'border-primary', 'text-text-main', 'font-semibold');
+                el.classList.add('border-transparent', 'text-text-secondary', 'font-medium');
+            });
+
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            const btn = document.getElementById('btn-' + tabName);
+            btn.classList.remove('border-transparent', 'text-text-secondary', 'font-medium');
+            btn.classList.add('active', 'border-primary', 'text-text-main', 'font-semibold');
+        }
+
+        // --- LOGIC MODAL CHI TIẾT ---
+        const modal = document.getElementById('detailModal');
+        const modalBody = document.getElementById('modalBody');
+        const template = document.getElementById('modalTemplate').innerHTML;
+
+        function openDetail(id) {
+            modal.style.display = 'block';
+            modalBody.innerHTML = '<div class="flex justify-center py-10"><span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span></div>';
+            
+            fetch(`/Profile/GetAppointmentDetail/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    renderModalData(data);
+                })
+                .catch(err => {
+                    modalBody.innerHTML = '<p class="text-center text-red-500">Lỗi tải dữ liệu.</p>';
+                });
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function renderModalData(data) {
+            let html = template;
+            const remaining = data.totalAmount - data.depositAmount;
+            const fmt = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+
+            let color = 'gray';
+            let statusText = 'Chờ xử lý';
+            if (data.status === 'Confirmed' || data.status === 'DepositPaid') { color = 'green'; statusText = 'Đã xác nhận'; }
+            else if (data.status === 'Cancelled') { color = 'red'; statusText = 'Đã hủy'; }
+            else if (data.status === 'Pending') { color = 'orange'; statusText = 'Chờ xác nhận'; }
+
+            html = html.replace('{spaName}', data.spaName)
+                       .replace('{spaAddress}', data.spaAddress)
+                       .replace('{status}', statusText)
+                       .replace(/{color}/g, color)
+                       .replace('{total}', fmt(data.totalAmount))
+                       .replace('{deposit}', fmt(data.depositAmount))
+                       .replace('{remaining}', fmt(remaining));
+
+            let servicesHtml = '';
+            data.services.forEach(s => {
+                servicesHtml += `
+                    <div class="flex justify-between items-start pb-3 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                        <div>
+                            <p class="font-bold text-text-main dark:text-white text-sm">${s.serviceName}</p>
+                            <p class="text-xs text-text-secondary mt-0.5 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px]">schedule</span> ${s.duration}p • 
+                                <span class="material-symbols-outlined text-[12px]">person</span> ${s.staffName}
+                            </p>
+                        </div>
+                        <span class="font-medium text-sm text-text-main dark:text-white">${fmt(s.price)}</span>
+                    </div>`;
+            });
+
+            modalBody.innerHTML = html;
+            document.getElementById('serviceListPlaceholder').innerHTML = servicesHtml;
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+    </script>
+
+    <!-- HELPER FUNCTIONS -->
+    @functions {
+        public void RenderAppointmentCard(SpaBookingWeb.ViewModels.Client.AppointmentHistoryViewModel item, string color, string statusText, bool allowAction)
+        {
+            var culture = new System.Globalization.CultureInfo("vi-VN");
+            <div class="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer" onclick="openDetail(@item.AppointmentId)">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Ảnh đại diện -->
+                    <div class="w-full md:w-48 h-48 md:h-auto shrink-0 bg-center bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmWpri3RdDR93Yykk06mNYWqb1ICvgIbEcStuS591ITya2f99D3OONUrTbtFmLUiIfs65G2u4CTgN0xIV3Tp4FokKqEfDnM2KiUrI5wTAgCusejOD9LIFvAgfAxNEmRgthlcc2A37Z8K17tLwBXd3ldhEhZ5gCk23NuQnHOABJvM1j0POiEr5muTKjuncuu_hTrMKdIcyGZmKTHqiDissWulZlwCTwPynrtiOi7y31CApexkOEjjFp5adOr7qcpJJ0FqmnlgqE5f0");'></div>
+                    
+                    <div class="flex flex-1 flex-col justify-between gap-4">
+                        <div class="flex flex-col gap-2">
+                            <!-- Status -->
+                            <div class="flex items-center gap-2">
+                                <span class="flex size-2 rounded-full bg-@color-500"></span>
+                                <p class="text-@color-600 dark:text-@color-400 text-xs font-bold tracking-wide uppercase">@statusText</p>
+                            </div>
+                            
+                            <!-- Info -->
+                            <div>
+                                <h3 class="text-xl font-bold text-text-main dark:text-white">@item.SpaName</h3>
+                                <p class="text-text-secondary dark:text-gray-400 text-sm mt-1">@item.SpaAddress</p>
+                            </div>
+
+                            <!-- Detail List -->
+                            <div class="flex flex-wrap items-center gap-y-2 gap-x-6 mt-2 text-sm text-text-main dark:text-gray-200">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-text-secondary text-[20px]">spa</span>
+                                    <span>@(item.Services.FirstOrDefault()?.ServiceName ?? "Dịch vụ") @(item.Services.Count > 1 ? $"+ {item.Services.Count - 1} khác" : "")</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-text-secondary text-[20px]">schedule</span>
+                                    <span class="font-medium">@item.StartTime.ToString("HH:mm") - @(item.EndTime?.ToString("HH:mm") ?? "..."), @item.StartTime.ToString("dd ThMM", culture)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-text-secondary text-[20px]">payments</span>
+                                    <span class="font-semibold text-primary">@item.TotalAmount.ToString("N0") ₫</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex items-center gap-3 mt-2 md:mt-0" onclick="event.stopPropagation()">
+                            @if (allowAction)
+                            {
+                                <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-text-main dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+                                    Dời lịch
+                                </button>
+                                <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">near_me</span>
+                                    Chỉ đường
+                                </button>
+                            }
+                            else if(statusText == "Đã hủy") 
+                            {
+                                 <!-- No Action for Cancelled -->
+                            }
+                            else 
+                            {
+                                @* <button class="flex-1 md:flex-none h-10 px-5 rounded-lg border border-red-200 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">cancel</span>
+                                    Hủy lịch
+                                </button> *@
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        public void RenderEmptyState(string message)
+        {
+             <div class="text-center py-10 text-text-secondary bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
+                <p>@message</p>
+            </div>
+        }
+    }
+</body>
+</html>

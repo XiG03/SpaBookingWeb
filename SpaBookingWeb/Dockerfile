@@ -2,26 +2,20 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy đúng file csproj
-COPY SpaBookingWeb.csproj .
+COPY ["SpaBookingWeb/SpaBookingWeb.csproj", "SpaBookingWeb/"]
+RUN dotnet restore "SpaBookingWeb/SpaBookingWeb.csproj"
 
-# Restore dependencies
-RUN dotnet restore
-
-# Copy toàn bộ source
 COPY . .
-
-# Build project
-RUN dotnet build -c Release -o /app/build
-
-# Publish stage
-FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/SpaBookingWeb"
+RUN dotnet publish -c Release -o /app/publish /p:TreatWarningsAsErrors=false
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-EXPOSE 8081
+
 ENTRYPOINT ["dotnet", "SpaBookingWeb.dll"]

@@ -30,7 +30,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         {
             // Bỏ qua validate các field tạo mới (vì chúng có thể null khi chỉ save setting)
             ModelState.Remove("NewUnitName");
-            ModelState.Remove("NewRoleName");
+
             ModelState.Remove("NewRuleName");
 
             ModelState.Remove("NewApplyToType");
@@ -50,7 +50,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             ModelState.Remove("AvailableMembershipTypes");
             ModelState.Remove("Units");
             ModelState.Remove("DepositRules");
-            ModelState.Remove("Roles");
+
 
 
             if (ModelState.IsValid)
@@ -102,22 +102,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- ROLE ACTIONS ---
-        [HttpPost]
-        public async Task<IActionResult> AddRole(string newRoleName)
-        {
-            await _systemSettingService.AddRoleAsync(newRoleName);
-            TempData["SuccessMessage"] = "Đã thêm quyền mới.";
-            return RedirectToAction(nameof(Index));
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> DeleteRole(string id)
-        {
-            await _systemSettingService.DeleteRoleAsync(id);
-            TempData["SuccessMessage"] = "Đã xóa quyền.";
-            return RedirectToAction(nameof(Index));
-        }
 
         // --- DEPOSIT RULE ACTIONS ---
         [HttpPost]
@@ -137,26 +122,6 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // --- PERMISSIONS ---
-        [HttpGet]
-        public async Task<IActionResult> ManagePermissions(string roleId)
-        {
-            var model = await _systemSettingService.GetPermissionsByRoleIdAsync(roleId);
-            if (model == null)
-            {
-                TempData["ErrorMessage"] = "Không tìm thấy vai trò này.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(model);
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManagePermissions(PermissionViewModel model)
-        {
-            await _systemSettingService.UpdatePermissionsAsync(model);
-            TempData["SuccessMessage"] = $"Đã cập nhật quyền hạn cho nhóm {model.RoleName}.";
-            return RedirectToAction(nameof(Index));
-        }
     }
 }

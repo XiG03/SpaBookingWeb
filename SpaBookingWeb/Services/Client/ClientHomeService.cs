@@ -28,7 +28,7 @@ namespace SpaBookingWeb.Services.Client
                 {
                     CategoryId = c.CategoryId,
                     CategoryName = c.CategoryName,
-                    IconUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuChowAKQh8Np34mUy3hNdqX1rQjOMLk9C5Q_vI5b62pqkcuehV6ZeCJTEazmNy7tubwWSfnZ1qKjlQxEiIiAS5v8Yr7PZwT2R0H9LZZWTxg8NG8SYPfCzwI1kK3OxX7MNgBY-WDvjdTgOR3i4FoVwCVvwQWmcFB6RmVMCgAJmnX7VRFqF6GLSGDwch3NUboe7Ytb5V9lVvdhlNsOoLMFGoTeGSs9rINvFN7U09GV4gvVHSaIRxOELgfKoexTZs5Wt6UC2YuYextLL0" 
+                    IconUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuChowAKQh8Np34mUy3hNdqX1rQjOMLk9C5Q_vI5b62pqkcuehV6ZeCJTEazmNy7tubwWSfnZ1qKjlQxEiIiAS5v8Yr7PZwT2R0H9LZZWTxg8NG8SYPfCzwI1kK3OxX7MNgBY-WDvjdTgOR3i4FoVwCVvwQWmcFB6RmVMCgAJmnX7VRFqF6GLSGDwch3NUboe7Ytb5V9lVvdhlNsOoLMFGoTeGSs9rINvFN7U09GV4gvVHSaIRxOELgfKoexTZs5Wt6UC2YuYextLL0"
                 })
                 .Take(6)
                 .ToListAsync();
@@ -80,8 +80,8 @@ namespace SpaBookingWeb.Services.Client
 
             if (activeVoucher != null)
             {
-                string discountText = activeVoucher.DiscountType == "Percent" 
-                    ? $"{activeVoucher.DiscountValue:0}%" 
+                string discountText = activeVoucher.DiscountType == "Percent"
+                    ? $"{activeVoucher.DiscountValue:0}%"
                     : $"{activeVoucher.DiscountValue:N0}đ";
 
                 model.CurrentPromotion = new PromotionViewModel
@@ -115,15 +115,52 @@ namespace SpaBookingWeb.Services.Client
                 return timeStr;
             }
 
-            model.OpenTime = dict.ContainsKey("OpenTime") ? FormatTime(dict["OpenTime"]) : "09:00";
-            model.CloseTime = dict.ContainsKey("CloseTime") ? FormatTime(dict["CloseTime"]) : "20:00";
+            void ParseWorkingHours(string workingHours, out string openTime, out string closeTime) // chuyen doi workingour sang gio
+            {
+                openTime = "09:00";   // default
+                closeTime = "20:00";  // default
+
+                if (string.IsNullOrWhiteSpace(workingHours))
+                    return;
+
+                // VD: "8:00 - 22:00"
+                var parts = workingHours.Split('-', StringSplitOptions.TrimEntries);
+
+                if (parts.Length == 2)
+                {
+                    openTime = FormatTime(parts[0]);
+                    closeTime = FormatTime(parts[1]);
+                }
+            }
+
+            if (dict.ContainsKey("WorkingHours"))
+            {
+                ParseWorkingHours(dict["WorkingHours"], out var open, out var close);
+                model.OpenTime = open;
+                model.CloseTime = close;
+            }
+            else
+            {
+                model.OpenTime = dict.ContainsKey("OpenTime")
+                    ? FormatTime(dict["OpenTime"])
+                    : "09:00";
+
+                model.CloseTime = dict.ContainsKey("CloseTime")
+                    ? FormatTime(dict["CloseTime"])
+                    : "20:00";
+            }
             model.FacebookUrl = dict.ContainsKey("FacebookUrl") ? dict["FacebookUrl"] : "#";
             model.SpaName = dict.ContainsKey("SpaName") ? dict["SpaName"] : "MySalon";
             model.Address = dict.ContainsKey("Address") ? dict["Address"] : "Địa chỉ Spa";
-            model.Hotline = dict.ContainsKey("PhoneNumber") ? dict ["PhoneNumber"] : "Hotline liên hệ";
-            model.Email = dict.ContainsKey("Email") ? dict ["Email"] : "Email";
+            model.Hotline = dict.ContainsKey("PhoneNumber") ? dict["PhoneNumber"] : "Hotline liên hệ";
+            model.Email = dict.ContainsKey("Email") ? dict["Email"] : "Email";
 
             return model;
         }
+
+
+
+
+
     }
 }

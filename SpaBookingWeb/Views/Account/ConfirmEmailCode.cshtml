@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Xác nhận Email - Salon Booking</title>
+    <title>Xác thực Mã OTP - Salon Booking</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
@@ -64,41 +64,56 @@
         <div class="w-full max-w-[640px] flex flex-col gap-6">
             <div class="bg-white dark:bg-[#2d1b22] rounded-2xl shadow-sm border border-[#fbcfe8] dark:border-[#4a2c35] p-8 sm:p-12 text-center">
                 <div class="flex flex-col items-center gap-6">
-                    <div class="size-24 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-pulse">
-                        <span class="material-symbols-outlined text-5xl text-primary">mark_email_unread</span>
+                    <div class="size-24 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                        <span class="material-symbols-outlined text-5xl text-primary">security</span>
                     </div>
                     <div class="space-y-3 max-w-[480px]">
                         <h1 class="text-2xl sm:text-3xl font-bold text-[#371b26] dark:text-white leading-tight">
-                            Kiểm tra hộp thư của bạn
+                            Nhập mã xác thực
                         </h1>
                         <p class="text-[#70555e] dark:text-[#fbcfe8] text-base font-normal leading-relaxed">
-                            Chúng tôi đã gửi mã xác nhận đến <span class="font-semibold text-[#371b26] dark:text-white">@email</span>. Vui lòng kiểm tra và nhập mã để kích hoạt tài khoản.
+                            Vui lòng nhập mã OTP 6 số đã được gửi tới email <span class="font-semibold text-[#371b26] dark:text-white">@email</span>.
                         </p>
                     </div>
-                    <div class="flex flex-col w-full max-w-[320px] gap-3 pt-4">
-                        <!-- [LOGIC MỚI] Nút Mở hộp thư thực hiện 2 hành động -->
-                        <button onclick="handleOpenMail()" class="flex w-full items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-[#be185d] text-white text-sm font-bold tracking-wide transition-colors shadow-sm ring-4 ring-primary/20">
-                            <span class="truncate">Mở hộp thư & Nhập mã</span>
+                    
+                    <form asp-action="ConfirmEmailCode" method="post" class="flex flex-col w-full max-w-[320px] gap-4 pt-4">
+                        <input type="hidden" name="email" value="@email" />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        
+                        <!-- Hiển thị lỗi chung -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="text-sm text-red-500 bg-red-50 border border-red-100 p-2 rounded-lg">
+                                @Html.ValidationSummary(false)
+                            </div>
+                        }
+
+                        <input type="text" name="code" required 
+                               class="w-full rounded-xl border border-gray-200 dark:border-[#4a2c35] bg-white dark:bg-[#3d1a22] h-12 px-4 text-center text-lg font-bold tracking-widest text-[#371b26] dark:text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                               placeholder="------" maxlength="6" />
+
+                        <button type="submit" class="flex w-full items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-[#be185d] text-white text-sm font-bold tracking-wide transition-colors shadow-sm ring-4 ring-primary/20">
+                            Xác thực
                         </button>
                         
                         <a asp-controller="Account" asp-action="Register" class="flex w-full items-center justify-center h-10 px-4 text-[#9d5c73] dark:text-[#fbcfe8] hover:text-[#371b26] dark:hover:text-white text-sm font-medium transition-colors">
                             Sai địa chỉ email?
                         </a>
-                    </div>
+                    </form>
                 </div>
             </div>
             <div class="bg-white dark:bg-[#2d1b22] rounded-xl border border-[#fbcfe8] dark:border-[#4a2c35] p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                 <div class="flex items-center gap-4">
                     <div class="hidden sm:flex size-10 rounded-full bg-[#fff1f2] dark:bg-[#4a2c35] items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-[#9d5c73] dark:text-[#fbcfe8]">help</span>
+                        <span class="material-symbols-outlined text-[#9d5c73] dark:text-[#fbcfe8]">timer</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <p class="text-[#371b26] dark:text-white text-sm font-bold">Bạn không nhận được email?</p>
-                        <p class="text-[#9d5c73] dark:text-[#fbcfe8] text-sm mt-0.5">Vui lòng kiểm tra thư mục Spam hoặc thử lại.</p>
+                        <p class="text-[#371b26] dark:text-white text-sm font-bold">Chưa nhận được mã?</p>
+                        <p class="text-[#9d5c73] dark:text-[#fbcfe8] text-sm mt-0.5">Mã có thể mất vài phút để gửi tới.</p>
                     </div>
                 </div>
                 <button class="shrink-0 flex items-center justify-center rounded-lg h-9 px-4 bg-transparent border border-[#fbcfe8] dark:border-[#5e3a46] text-[#371b26] dark:text-white hover:bg-[#fff1f2] dark:hover:bg-[#4a2c35] text-sm font-bold transition-colors w-full sm:w-auto">
-                    Gửi lại email xác nhận
+                    Gửi lại mã
                 </button>
             </div>
         </div>
@@ -116,17 +131,5 @@
             </div>
         </div>
     </footer>
-
-    <!-- SCRIPT XỬ LÝ -->
-    <script>
-        function handleOpenMail() {
-            // 1. Mở tab mới tới Gmail (hoặc logic detect email provider nếu muốn xịn hơn)
-            window.open('https://mail.google.com', '_blank');
-
-            // 2. Chuyển hướng tab hiện tại sang trang nhập mã
-            // Sử dụng Url.Action của Razor để sinh link chính xác
-            window.location.href = '@Url.Action("ConfirmEmailCode", "Account", new { email = email, returnUrl = returnUrl })';
-        }
-    </script>
 </body>
 </html>

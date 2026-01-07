@@ -1,0 +1,385 @@
+﻿@using SpaBookingWeb.ViewModels.Client
+@using System.Globalization
+@model Step5ViewModel
+@{
+    Layout = null;
+    var session = Model.CurrentSession;
+    var culture = new CultureInfo("vi-VN");
+
+    string GetStaffName(int? staffId)
+    {
+        if (staffId == null) return "Bất kỳ ai";
+        var staff = Model.Staffs?.FirstOrDefault(s => s.Id == staffId);
+        return staff != null ? staff.Name : "Bất kỳ ai";
+    }
+
+    string GetStaffAvatar(int? staffId)
+    {
+        if (staffId == null) return null;
+        var staff = Model.Staffs?.FirstOrDefault(s => s.Id == staffId);
+        return staff?.Avatar;
+    }
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Xác nhận Đặt lịch &amp; Thanh toán Cọc - Lotus Spa &amp; Salon</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec4899", "primary-dark": "#be185d", 
+                        "background-light": "#fdf2f8", "background-dark": "#181012",
+                        "text-main": "#1f2937", "text-muted": "#6b7280",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"], "sans": ["Inter", "sans-serif"] },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Custom radio style */
+        .payment-radio:checked + div {
+            border-color: #ec4899;
+            background-color: #fdf2f8;
+            box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.1), 0 2px 4px -1px rgba(236, 72, 153, 0.06);
+        }
+        .payment-radio:checked + div .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased min-h-screen flex flex-col">
+    
+    <header class="bg-white dark:bg-[#29151b] border-b border-pink-100 dark:border-[#4a2630] sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-primary/20 p-2 rounded-lg text-primary-dark">
+                            <span class="material-symbols-outlined">spa</span>
+                        </div>
+                        <h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Lotus Spa</h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <nav class="hidden md:flex gap-6 text-sm font-medium text-text-main dark:text-gray-300">
+                        <a class="hover:text-primary transition-colors" href="/">Trang chủ</a>
+                    </nav>
+                    @if(User.Identity.IsAuthenticated)
+                    {
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-primary-dark font-bold text-xs">
+                                @User.Identity.Name?.Substring(0, 1).ToUpper()
+                            </div>
+                            <span class="text-sm font-medium hidden sm:block">@User.Identity.Name</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="mb-8">
+            <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630] flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                <div>
+                    <h2 class="text-3xl font-black text-text-main dark:text-white mb-2">Xác nhận Đặt lịch</h2>
+                    <div class="flex items-center gap-4 text-text-muted text-sm flex-wrap">
+                        <span class="flex items-center gap-1 bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100 px-2 py-0.5 rounded-md font-semibold">Bước 5/5</span>
+                        <span class="flex items-center gap-1 text-primary font-medium">
+                            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                            Kiểm tra thông tin &amp; Thanh toán cọc
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start relative">
+            
+            <!-- LEFT COLUMN -->
+            <div class="flex-1 w-full min-w-0 flex flex-col gap-6">
+                
+                <!-- Review Sections (Dịch vụ, Chuyên gia, Thời gian) -->
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-5 shadow-sm border border-pink-100 dark:border-[#4a2630] opacity-90 hover:opacity-100 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                                <span class="material-symbols-outlined text-lg">check</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-text-main dark:text-white">Dịch vụ đã chọn</h3>
+                                <div class="text-sm text-text-muted mt-1">
+                                    @foreach(var mem in session.Members)
+                                    {
+                                        <div class="mb-1"><span class="font-medium text-text-main">@mem.Name:</span> @string.Join(", ", mem.SelectedServices.Select(s => s.Name))</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <a asp-action="Step2_Services" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Sửa</a>
+                    </div>
+                </section>
+
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-5 shadow-sm border border-pink-100 dark:border-[#4a2630] opacity-90 hover:opacity-100 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                                <span class="material-symbols-outlined text-lg">check</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-text-main dark:text-white">Chuyên gia</h3>
+                                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                                    <div class="flex -space-x-2">
+                                        @foreach(var mem in session.Members)
+                                        {
+                                            foreach(var kvp in mem.ServiceStaffMap)
+                                            {
+                                                var avatar = GetStaffAvatar(kvp.Value);
+                                                if (avatar != null) { <img class="w-6 h-6 rounded-full border-2 border-white" src="@avatar" alt="Staff"/> }
+                                            }
+                                        }
+                                    </div>
+                                    <p class="text-sm text-text-muted">
+                                        @{
+                                            var staffNames = new List<string>();
+                                            foreach(var mem in session.Members) { foreach(var kvp in mem.ServiceStaffMap) { staffNames.Add(GetStaffName(kvp.Value)); } }
+                                        }
+                                        @string.Join(", ", staffNames.Distinct())
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <a asp-action="Step3_Staff" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Sửa</a>
+                    </div>
+                </section>
+
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-5 shadow-sm border border-pink-100 dark:border-[#4a2630] opacity-90 hover:opacity-100 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold">
+                                <span class="material-symbols-outlined text-lg">check</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-text-main dark:text-white">Thời gian</h3>
+                                <p class="text-sm text-text-muted">@session.SelectedTime?.ToString(@"hh\:mm") - @session.SelectedDate?.ToString("dddd, dd/MM/yyyy", culture)</p>
+                            </div>
+                        </div>
+                        <a asp-action="Step4_Time" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Sửa</a>
+                    </div>
+                </section>
+
+                <!-- FORM NHẬP LIỆU & THANH TOÁN -->
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl shadow-pink-100/30 dark:shadow-none border-2 border-pink-100 dark:border-[#4a2630] relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-pink-300">4</div>
+                        <h3 class="text-xl font-bold text-text-main dark:text-white">Thông tin &amp; Thanh toán cọc</h3>
+                    </div>
+
+                    <form asp-action="SubmitBooking" method="post" id="bookingForm">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="mb-4 p-3 bg-red-50 text-red-500 rounded-lg text-sm border border-red-100">@Html.ValidationSummary(false)</div>
+                        }
+
+                        <div class="grid md:grid-cols-2 gap-5 mb-8">
+                            <div class="space-y-1">
+                                <label class="text-sm font-semibold text-text-main">Họ và tên *</label>
+                                <input asp-for="CurrentSession.CustomerInfo.FullName" name="FullName" class="w-full rounded-xl border-gray-200 bg-background-light text-text-main focus:ring-primary focus:border-primary font-medium" placeholder="Nhập họ tên" required/>
+                                <span asp-validation-for="CurrentSession.CustomerInfo.FullName" class="text-xs text-red-500"></span>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-sm font-semibold text-text-main">Số điện thoại *</label>
+                                <input asp-for="CurrentSession.CustomerInfo.Phone" name="Phone" class="w-full rounded-xl border-gray-200 bg-background-light text-text-main focus:ring-primary focus:border-primary font-medium" placeholder="09xxxxxxxx" required/>
+                                <span asp-validation-for="CurrentSession.CustomerInfo.Phone" class="text-xs text-red-500"></span>
+                            </div>
+                            <div class="space-y-1 md:col-span-2">
+                                <label class="text-sm font-semibold text-text-main">Email (Nhận vé điện tử)</label>
+                                <input asp-for="CurrentSession.CustomerInfo.Email" name="Email" type="email" class="w-full rounded-xl border-gray-200 bg-background-light text-text-main focus:ring-primary focus:border-primary font-medium" placeholder="email@example.com"/>
+                            </div>
+                            <div class="space-y-1 md:col-span-2">
+                                <label class="text-sm font-semibold text-text-main">Ghi chú (Tùy chọn)</label>
+                                <textarea asp-for="CurrentSession.CustomerInfo.Note" name="Note" class="w-full rounded-xl border-gray-200 bg-background-light text-text-main focus:ring-primary focus:border-primary resize-none" placeholder="Bạn có yêu cầu đặc biệt nào không?" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-dashed border-gray-200 dark:border-[#4a2630] my-8"></div>
+
+                        <!-- Payment Methods Selection -->
+                        <div>
+                            <h4 class="text-lg font-bold text-text-main dark:text-white mb-2">Phương thức thanh toán cọc</h4>
+                            <p class="text-sm text-text-muted mb-6">
+                                Để giữ chỗ, vui lòng thanh toán trước khoản cọc <span class="font-bold text-primary">@Model.DepositAmount.ToString("N0") đ (@Model.DepositPercent%)</span>. 
+                            </p>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- MoMo -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="payment_method" value="momo" class="payment-radio sr-only" checked/>
+                                    <div class="p-4 rounded-xl border-2 border-gray-100 bg-white dark:bg-[#361c23] dark:border-[#4a2630] hover:border-pink-200 transition-all flex flex-col items-center gap-3 h-full relative overflow-hidden">
+                                        <div class="w-12 h-12 rounded-lg bg-[#a50064] flex items-center justify-center text-white shadow-md mb-1">
+                                            <span class="font-bold text-[10px]">MOMO</span>
+                                        </div>
+                                        <span class="font-bold text-text-main dark:text-white text-sm">Ví MoMo</span>
+                                        <div class="check-icon absolute top-2 right-2 text-primary opacity-0 transform scale-50 transition-all duration-300">
+                                            <span class="material-symbols-outlined">check_circle</span>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- VNPay -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="payment_method" value="vnpay" class="payment-radio sr-only"/>
+                                    <div class="p-4 rounded-xl border-2 border-gray-100 bg-white dark:bg-[#361c23] dark:border-[#4a2630] hover:border-blue-200 transition-all flex flex-col items-center gap-3 h-full relative overflow-hidden">
+                                        <div class="w-12 h-12 rounded-lg bg-gradient-to-r from-[#005ba3] to-[#ed1c24] flex items-center justify-center text-white shadow-md mb-1">
+                                            <span class="font-bold text-[10px]">VNPAY</span>
+                                        </div>
+                                        <span class="font-bold text-text-main dark:text-white text-sm">VNPay QR</span>
+                                        <div class="check-icon absolute top-2 right-2 text-blue-600 opacity-0 transform scale-50 transition-all duration-300">
+                                            <span class="material-symbols-outlined">check_circle</span>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- VietQR -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="payment_method" value="vietqr" class="payment-radio sr-only"/>
+                                    <div class="p-4 rounded-xl border-2 border-gray-100 bg-white dark:bg-[#361c23] dark:border-[#4a2630] hover:border-green-200 transition-all flex flex-col items-center gap-3 h-full relative overflow-hidden">
+                                        <div class="w-12 h-12 rounded-lg bg-[#27ae60] flex items-center justify-center text-white shadow-md mb-1">
+                                            <span class="material-symbols-outlined text-2xl">qr_code_2</span>
+                                        </div>
+                                        <span class="font-bold text-text-main dark:text-white text-sm">VietQR</span>
+                                        <div class="check-icon absolute top-2 right-2 text-green-600 opacity-0 transform scale-50 transition-all duration-300">
+                                            <span class="material-symbols-outlined">check_circle</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
+                <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl border border-pink-100 dark:border-[#4a2630]">
+                    <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                        Tóm tắt đơn hàng
+                    </h3>
+                    
+                    <div class="space-y-4 mb-6 relative">
+                        <div class="absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100 dark:bg-[#4a2630]"></div>
+                        
+                        @foreach(var mem in session.Members)
+                        {
+                            @foreach(var s in mem.SelectedServices)
+                            {
+                                int? staffId = null;
+                                if (mem.ServiceStaffMap != null && mem.ServiceStaffMap.ContainsKey(s.Id))
+                                {
+                                    staffId = mem.ServiceStaffMap[s.Id];
+                                }
+                                var staffName = GetStaffName(staffId);
+
+                                <div class="relative pl-6">
+                                    <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-white dark:bg-[#29151b]"></div>
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm font-semibold text-text-main dark:text-white">@s.Name</p>
+                                            <p class="text-xs text-text-muted mt-0.5">@s.DurationMinutes phút • @staffName</p>
+                                            @if(session.IsGroupBooking) { <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-1 rounded text-text-muted">@mem.Name</span> }
+                                        </div>
+                                        <span class="text-sm font-medium text-text-main dark:text-white">@s.Price.ToString("N0") đ</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <div class="border-t border-dashed border-gray-200 dark:border-[#4a2630] my-4"></div>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between text-sm text-text-muted">
+                            <span>Tạm tính</span>
+                            <span>@session.TotalAmount.ToString("N0") đ</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-text-muted">
+                            <span>Thời lượng</span>
+                            @{ var totalDuration = session.Members.Sum(m => m.SelectedServices.Sum(s => s.DurationMinutes)); }
+                            <span>@totalDuration phút</span>
+                        </div>
+                        <div class="flex justify-between items-end pt-2 border-t border-gray-100 dark:border-[#4a2630] mt-2">
+                            <span class="text-base font-bold text-text-main dark:text-white">Tổng cộng</span>
+                            <span class="text-xl font-black text-text-main dark:text-white">@session.TotalAmount.ToString("N0") đ</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-pink-50 dark:bg-[#4a2630]/30 rounded-xl p-4 mb-4 border border-pink-100 dark:border-pink-900/50">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-semibold text-primary-dark dark:text-pink-300">Cần thanh toán ngay (@Model.DepositPercent%)</span>
+                            <span class="text-lg font-black text-primary">@Model.DepositAmount.ToString("N0") đ</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-text-muted">
+                            <span>Thanh toán tại Spa</span>
+                            <span>@((session.TotalAmount - Model.DepositAmount).ToString("N0")) đ</span>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="document.getElementById('bookingForm').submit()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2">
+                        <span>Thanh toán &amp; Đặt lịch</span>
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                    
+                    <p class="text-center text-xs text-text-muted">
+                        Bằng việc xác nhận, bạn đồng ý với <a class="underline text-primary" href="#">Điều khoản dịch vụ</a> của chúng tôi.
+                    </p>
+                </div>
+                
+                <div class="mt-6 flex justify-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all">
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="material-symbols-outlined text-2xl text-text-muted">verified_user</span>
+                        <span class="text-[10px] uppercase font-bold text-text-muted">Bảo mật</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="material-symbols-outlined text-2xl text-text-muted">event_available</span>
+                        <span class="text-[10px] uppercase font-bold text-text-muted">Tức thì</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="material-symbols-outlined text-2xl text-text-muted">thumb_up</span>
+                        <span class="text-[10px] uppercase font-bold text-text-muted">Uy tín</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    
+    <footer class="mt-auto border-t border-pink-100 dark:border-[#4a2630] bg-white dark:bg-[#29151b] py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-sm text-text-muted">© 2023 Lotus Spa. All rights reserved.</p>
+            <div class="flex gap-4 text-sm font-medium text-text-muted">
+                <a class="hover:text-primary" href="#">Chính sách bảo mật</a>
+                <a class="hover:text-primary" href="#">Điều khoản sử dụng</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

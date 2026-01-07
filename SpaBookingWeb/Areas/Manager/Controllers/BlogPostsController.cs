@@ -2,7 +2,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SpaBookingWeb.Constants; // Để dùng Permissions
+
 using SpaBookingWeb.Services.Interfaces;
 using SpaBookingWeb.ViewModels.BlogPosts;
 
@@ -21,7 +21,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
         // 1. Danh sách: Yêu cầu quyền VIEW
         [HttpGet]
-        // [Authorize(Policy = Permissions.BlogPosts.View)]
+
         public async Task<IActionResult> Index()
         {
             var posts = await _blogService.GetAllAsync();
@@ -30,14 +30,14 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
         // 2. Tạo mới: Yêu cầu quyền CREATE
         [HttpGet]
-        // [Authorize(Policy = Permissions.BlogPosts.Create)]
+
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        // [Authorize(Policy = Permissions.BlogPosts.Create)]
+
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateBlogPostRequest request)
         {
@@ -54,7 +54,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
         // 3. Chỉnh sửa: Yêu cầu quyền EDIT
         [HttpGet]
-        // [Authorize(Policy = Permissions.BlogPosts.Edit)]
+
         public async Task<IActionResult> Edit(int id)
         {
             var post = await _blogService.GetByIdAsync(id);
@@ -74,7 +74,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         }
 
         [HttpPost]
-        // [Authorize(Policy = Permissions.BlogPosts.Edit)]
+
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UpdateBlogPostRequest request)
         {
@@ -95,7 +95,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
         // 4. Xóa: Yêu cầu quyền DELETE
         [HttpPost]
-        // [Authorize(Policy = Permissions.Posts.Delete)]
+
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {

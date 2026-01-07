@@ -41,12 +41,7 @@
                 <i class="fas fa-weight-hanging"></i> Đơn vị tính
             </a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles"
-                aria-selected="false">
-                <i class="fas fa-user-shield"></i> Phân quyền
-            </a>
-        </li>
+
         <li class="nav-item">
             <a class="nav-link" id="deposit-tab" data-toggle="tab" href="#deposit" role="tab" aria-controls="deposit"
                 aria-selected="false">
@@ -249,82 +244,7 @@
             </div>
         </div>
 
-        <!-- TAB 3: QUẢN LÝ PHÂN QUYỀN (ROLES) -->
-        <div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Danh sách Quyền hạn (Roles)</h6>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered table-sm">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Tên Quyền</th>
-                                        <th style="width: 300px;">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if (Model.Roles != null)
-                                    {
-                                        foreach (var role in Model.Roles)
-                                        {
-                                            <tr>
-                                                <td class="align-middle">@role.Name</td>
-                                                <td>
-                                                    <div class="row no-gutters">
-                                                        <div class="col-6 pr-1">
-                                                            <a asp-action="ManagePermissions" asp-route-roleId="@role.Id"
-                                                                class="btn btn-info btn-sm btn-block"
-                                                                title="Phân quyền chi tiết">
-                                                                <i class="fas fa-user-lock"></i> Phân quyền
-                                                            </a>
-                                                        </div>
-                                                        <div class="col-6 pl-1">
-                                                            @if (role.Name == "Admin" || role.Name == "Manager")
-                                                            {
-                                                                <span class="badge badge-secondary p-2 w-100 d-flex align-items-center justify-content-center" style="height: 31px;">
-                                                                    Mặc định
-                                                                </span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <form asp-action="DeleteRole" method="post" class="w-100"
-                                                                    onsubmit="return confirm('Xóa quyền này có thể ảnh hưởng đến người dùng đang sử dụng. Tiếp tục?');">
-                                                                    <input type="hidden" name="id" value="@role.Id" />
-                                                                    <button type="submit" class="btn btn-danger btn-sm w-100" title="Xóa">
-                                                                        <i class="fas fa-trash"></i> Xóa
-                                                                    </button>
-                                                                </form>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-success">Thêm Quyền mới</h6>
-                        </div>
-                        <div class="card-body">
-                            <form asp-action="AddRole" method="post" class="form-inline">
-                                <label asp-for="NewRoleName" class="sr-only">Tên quyền</label>
-                                <input asp-for="NewRoleName" class="form-control mb-2 mr-sm-2 w-50" placeholder="Tên quyền (VD: Accountant)" required />
-                                <button type="submit" class="btn btn-success mb-2"><i class="fas fa-plus"></i> Thêm quyền</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- TAB 4: QUẢN LÝ QUY TẮC ĐẶT CỌC -->
         <div class="tab-pane fade" id="deposit" role="tabpanel" aria-labelledby="deposit-tab">

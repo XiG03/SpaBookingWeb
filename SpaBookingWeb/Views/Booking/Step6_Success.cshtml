@@ -1,0 +1,178 @@
+﻿@model SpaBookingWeb.ViewModels.Client.AppointmentSuccessViewModel
+@{
+    Layout = null;
+    var culture = new System.Globalization.CultureInfo("vi-VN");
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Hoàn tất Đặt lịch - Lotus Spa</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec4899",
+                        "primary-dark": "#be185d",
+                        "background-light": "#fdf2f8",
+                        "background-dark": "#181012",
+                        "text-main": "#1f2937",
+                        "text-muted": "#6b7280",
+                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] }
+                },
+            },
+        }
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased min-h-screen flex flex-col">
+    <header class="bg-white dark:bg-[#29151b] border-b border-pink-100 dark:border-[#4a2630] sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-primary/20 p-2 rounded-lg text-primary-dark">
+                    <span class="material-symbols-outlined">spa</span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Lotus Spa</h1>
+            </div>
+            <a href="/" class="text-sm font-medium hover:text-primary">Về trang chủ</a>
+        </div>
+    </header>
+
+    <main
+        class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center justify-center min-h-[70vh]">
+        <div class="w-full max-w-2xl animate-fade-in-up">
+            <div class="text-center mb-10">
+                <div
+                    class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 mb-6 shadow-sm ring-8 ring-green-50">
+                    <span class="material-symbols-outlined text-[48px]">check_circle</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black text-text-main dark:text-white mb-3">Đặt lịch thành công!
+                </h1>
+                <p class="text-text-muted text-lg">Cảm ơn bạn đã sử dụng dịch vụ. Mã đặt lịch của bạn là
+                    <b>#@Model.AppointmentId</b>.</p>
+            </div>
+
+            <div
+                class="bg-white dark:bg-[#29151b] rounded-3xl p-6 md:p-8 shadow-xl shadow-pink-100/50 border border-pink-100 dark:border-[#4a2630] relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary to-pink-300"></div>
+
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-text-main dark:text-white flex items-center gap-2">
+                            Lotus Spa &amp; Salon
+                            <span class="material-symbols-outlined text-primary text-xl">verified</span>
+                        </h2>
+                        <p class="text-text-muted text-sm mt-1">123 Đường Nguyễn Huệ, Quận 1</p>
+                    </div>
+                    @if (Model.IsDepositPaid)
+                    {
+                        <div
+                            class="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border border-green-200">
+                            <span class="material-symbols-outlined text-[18px]">payments</span>
+                            Đã thanh toán cọc
+                        </div>
+                    }
+                    else
+                    {
+                        <div
+                            class="bg-yellow-100 text-yellow-700 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 border border-yellow-200">
+                            <span class="material-symbols-outlined text-[18px]">pending</span>
+                            Thanh toán tại quầy
+                        </div>
+                    }
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div
+                        class="bg-background-light dark:bg-[#361c23] p-4 rounded-2xl border border-pink-50 dark:border-[#4a2630]">
+                        <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Thời gian</p>
+                        <p class="font-bold text-text-main dark:text-white flex items-center gap-2 text-lg">
+                            @Model.TimeSlot
+                        </p>
+                    </div>
+                    <div
+                        class="bg-background-light dark:bg-[#361c23] p-4 rounded-2xl border border-pink-50 dark:border-[#4a2630]">
+                        <p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Khách hàng</p>
+                        <p class="font-bold text-text-main dark:text-white flex items-center gap-2 text-lg">
+                            @Model.CustomerName
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3
+                        class="text-sm font-bold text-text-main mb-5 uppercase tracking-wider border-b border-gray-100 pb-2">
+                        Dịch vụ đã đặt</h3>
+                    <div class="space-y-4">
+                        @foreach (var svc in Model.Services)
+                        {
+                            <div class="flex items-start justify-between group">
+                                <div>
+                                    <p class="font-bold text-text-main text-lg leading-tight mb-1">@svc.ServiceName</p>
+                                    <p class="text-sm text-text-muted flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">person</span> @svc.StaffName
+                                    </p>
+                                    <p class="text-sm text-text-muted flex items-center gap-1 mt-0.5">
+                                        <span class="material-symbols-outlined text-[14px]">schedule</span> @svc.Duration
+                                        phút
+                                    </p>
+                                </div>
+                                <p class="font-bold text-lg text-text-main">@svc.Price.ToString("N0") đ</p>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="border-t border-dashed border-gray-200 my-6"></div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm text-text-muted">
+                            <span>Tổng tiền dịch vụ</span>
+                            <span>@Model.TotalAmount.ToString("N0") đ</span>
+                        </div>
+                        @if (Model.IsDepositPaid)
+                        {
+                            <div class="flex justify-between text-sm text-primary font-medium">
+                                <span>Đã đặt cọc (Momo)</span>
+                                <span>-@Model.DepositAmount.ToString("N0") đ</span>
+                            </div>
+                        }
+                        <div class="flex justify-between items-center pt-4 mt-2 border-t border-gray-100">
+                            <span class="block text-sm text-text-muted">Cần thanh toán tại Spa</span>
+                            <span class="text-3xl font-black text-primary-dark">
+                                @((Model.TotalAmount - (Model.IsDepositPaid ? Model.DepositAmount : 0)).ToString("N0"))
+                                đ
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <a href="/"
+                        class="group w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 transform active:scale-[0.98]">
+                        <span class="material-symbols-outlined">home</span>
+                        Về trang chủ
+                    </a>
+                </div>
+            </div>
+
+            <p class="text-center text-sm text-text-muted mt-8 mb-4">
+                Cần hỗ trợ? Gọi ngay <span class="font-semibold">1900-123-456</span>
+            </p>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -7,13 +7,32 @@ namespace SpaBookingWeb.Services.Client
 {
     public interface IBookingService
     {
-        // Lấy dữ liệu khởi tạo cho trang booking (Danh sách dịch vụ, nhân viên)
+        // Quản lý Session
+        BookingSessionModel GetSession();
+        void SaveSession(BookingSessionModel session);
+        void ClearSession();
+
+        // Lấy dữ liệu hiển thị
         Task<BookingPageViewModel> GetBookingPageDataAsync();
 
-        // Kiểm tra khung giờ trống cho nhân viên vào ngày cụ thể
-        Task<List<TimeSpan>> GetAvailableTimeSlotsAsync(DateTime date, int? staffId, int totalDuration);
+        // Logic nghiệp vụ
+        Task<List<string>> GetAvailableTimeSlotsAsync(DateTime date, BookingSessionModel session);
+        Task<int> SaveBookingAsync(BookingSessionModel session); // Trả về AppointmentId
 
-        // Lưu booking mới
-        Task<int> CreateBookingAsync(BookingSubmissionModel model, string userId = null);
+        // [MỚI] Cập nhật trạng thái đã thanh toán cọc
+        Task UpdateDepositStatusAsync(int appointmentId, string transactionId);
+        // [MỚI] Lấy thông tin Appointment để hiển thị trang Success
+        Task<AppointmentSuccessViewModel> GetAppointmentSuccessInfoAsync(int appointmentId);
+
+        Task<List<AppointmentHistoryViewModel>> GetBookingHistoryAsync(string userEmail);
+
+        Task<AppointmentHistoryViewModel> GetAppointmentDetailAsync(int appointmentId);
+
+        // [MỚI] Lấy lịch sử (Hoàn thành/Hủy)
+        Task<List<AppointmentHistoryViewModel>> GetBookingHistoryArchiveAsync(string userEmail);
+
+        // [MỚI] Tái tạo session từ đơn hàng cũ (Đặt lại)
+        Task<bool> RebookAsync(int appointmentId);
+
     }
 }

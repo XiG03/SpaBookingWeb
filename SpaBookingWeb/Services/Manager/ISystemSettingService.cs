@@ -14,12 +14,9 @@ namespace SpaBookingWeb.Services.Manager
         Task DeleteUnitAsync(int id);
         
         // 3. Quản lý Vai trò (Roles)
-        Task AddRoleAsync(string roleName);
-        Task DeleteRoleAsync(string roleId);
 
-        // --- QUẢN LÝ QUYỀN HẠN ---
-        Task<PermissionViewModel> GetPermissionsByRoleIdAsync(string roleId);
-        Task UpdatePermissionsAsync(PermissionViewModel model);
+
+
 
         // 4. Quản lý Quy tắc đặt cọc (Deposit Rules)
         Task AddDepositRuleAsync(SystemSettingViewModel model); 

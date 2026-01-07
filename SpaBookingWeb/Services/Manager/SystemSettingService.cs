@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq; 
 using System.Threading.Tasks;
-using SpaBookingWeb.Constants;
-using System.Security.Claims;
+
+
 
 namespace SpaBookingWeb.Services.Manager
 {
@@ -54,7 +54,7 @@ namespace SpaBookingWeb.Services.Manager
             };
 
             model.Units = await _context.Units.ToListAsync();
-            model.Roles = await _roleManager.Roles.ToListAsync();
+
             model.DepositRules = await _context.DepositRules
                 .Include(d => d.TargetService)
                 .Include(d => d.TargetMembershipType)
@@ -153,65 +153,7 @@ namespace SpaBookingWeb.Services.Manager
             }
         }
 
-        // --- 2. LOGIC QUẢN LÝ QUYỀN (PERMISSIONS) ---
-        public async Task<PermissionViewModel> GetPermissionsByRoleIdAsync(string roleId)
-        {
-            var role = await _roleManager.FindByIdAsync(roleId);
-            if (role == null) return null;
 
-            var model = new PermissionViewModel
-            {
-                RoleId = roleId,
-                RoleName = role.Name,
-                RoleClaims = new List<RoleClaimsDto>()
-            };
-
-            var allPermissions = Permissions.GetAllPermissions();
-            var currentClaims = await _roleManager.GetClaimsAsync(role);
-            var currentPermissions = currentClaims.Select(c => c.Value).ToList();
-
-            foreach (var permission in allPermissions)
-            {
-                model.RoleClaims.Add(new RoleClaimsDto
-                {
-                    Value = permission,
-                    Type = "Permission",
-                    IsSelected = currentPermissions.Contains(permission)
-                });
-            }
-            return model;
-        }
-
-        public async Task UpdatePermissionsAsync(PermissionViewModel model)
-        {
-            var role = await _roleManager.FindByIdAsync(model.RoleId);
-            if (role == null) return;
-
-            var claims = await _roleManager.GetClaimsAsync(role);
-            foreach (var claim in claims)
-            {
-                await _roleManager.RemoveClaimAsync(role, claim);
-            }
-
-            var selectedClaims = model.RoleClaims.Where(a => a.IsSelected).ToList();
-            foreach (var claim in selectedClaims)
-            {
-                await _roleManager.AddClaimAsync(role, new Claim("Permission", claim.Value));
-            }
-
-            // Ghi Log
-            var permissionsString = string.Join(", ", selectedClaims.Select(c => c.Value.Replace("Permissions.", "")));
-            var log = new ActivityLog
-            {
-                Action = "Update",
-                EntityName = "IdentityRole",
-                EntityId = role.Id,
-                Description = $"Cập nhật quyền cho Role '{role.Name}': {permissionsString}",
-                AffectedColumns = "[]"
-            };
-            _context.ActivityLogs.Add(log);
-            await _context.SaveChangesAsync();
-        }
 
         // --- 3. CÁC HÀM CRUD PHỤ TRỢ (Unit, Role, DepositRule) ---
         public async Task AddUnitAsync(string unitName)
@@ -232,38 +174,7 @@ namespace SpaBookingWeb.Services.Manager
             }
         }
 
-        public async Task AddRoleAsync(string roleName)
-        {
-            if (string.IsNullOrWhiteSpace(roleName)) return;
-            if (!await _roleManager.RoleExistsAsync(roleName))
-            {
-                await _roleManager.CreateAsync(new IdentityRole(roleName));
-                
-                var log = new ActivityLog 
-                { 
-                    Action = "Create", EntityName = "IdentityRole", EntityId = roleName,
-                    Description = $"Tạo Role mới: {roleName}", AffectedColumns = "[]"
-                };
-                _context.ActivityLogs.Add(log);
-                await _context.SaveChangesAsync();
-            }
-        }
 
-        public async Task DeleteRoleAsync(string roleId)
-        {
-            var role = await _roleManager.FindByIdAsync(roleId);
-            if (role != null)
-            {
-                await _roleManager.DeleteAsync(role);
-                var log = new ActivityLog
-                {
-                    Action = "Delete", EntityName = "IdentityRole", EntityId = roleId,
-                    Description = $"Xóa Role: {role.Name}", AffectedColumns = "[]"
-                };
-                _context.ActivityLogs.Add(log);
-                await _context.SaveChangesAsync();
-            }
-        }
 
         // --- 4. LOGIC QUY TẮC ĐẶT CỌC ---
         public async Task AddDepositRuleAsync(SystemSettingViewModel model)
