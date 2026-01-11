@@ -111,6 +111,7 @@ namespace SpaBookingWeb.Services.Manager
                 .Include(a => a.Employee)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Technician)
+                .Include(a => a.Invoice) // Include Invoice để check PaymentStatus
                 .FirstOrDefaultAsync(a => a.AppointmentId == id);
 
             if (app == null) return null;
@@ -125,6 +126,10 @@ namespace SpaBookingWeb.Services.Manager
                 Status = app.Status,
                 Note = app.Notes,
                 TotalAmount = app.AppointmentDetails.Sum(ad => ad.PriceAtBooking),
+                IsDepositPaid = app.IsDepositPaid,
+                DepositAmount = app.DepositAmount,
+                // Kiểm tra Invoice liên kết (nếu có)
+                IsPaidFull = app.Invoice != null && app.Invoice.PaymentStatus == "Paid",
                 Services = app.AppointmentDetails.Select(ad => new ServiceDetailDto
                 {
                     ServiceName = ad.Service?.ServiceName ?? "Dịch vụ khác",

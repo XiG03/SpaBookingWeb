@@ -12,6 +12,7 @@ namespace SpaBookingWeb.ViewModels.Manager
         public int CancelledAppointments { get; set; }
         
         // Doanh thu ước tính hôm nay (Optional)
+        // Doanh thu ước tính hôm nay (Optional)
         public decimal EstimatedRevenueToday { get; set; }
 
         // 2. Danh sách lịch hẹn hôm nay (Chi tiết)
@@ -71,6 +72,9 @@ namespace SpaBookingWeb.ViewModels.Manager
         public string Status { get; set; }
         public string Note { get; set; }
         public decimal TotalAmount { get; set; }
+        public bool IsDepositPaid { get; set; }
+        public decimal DepositAmount { get; set; }
+        public bool IsPaidFull { get; set; } // Đã thanh toán hết chưa
         public List<ServiceDetailDto> Services { get; set; } = new List<ServiceDetailDto>();
     }
 

@@ -19,8 +19,8 @@
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-alert alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
+        <div class="alert alert-danger alert-dismissible fade show font-weight-bold" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i> @TempData["ErrorMessage"]
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -46,6 +46,12 @@
             <a class="nav-link" id="deposit-tab" data-toggle="tab" href="#deposit" role="tab" aria-controls="deposit"
                 aria-selected="false">
                 <i class="fas fa-money-bill-wave"></i> Quy tắc đặt cọc
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="promotion-tab" data-toggle="tab" href="#promotion" role="tab" aria-controls="promotion"
+                aria-selected="false">
+                <i class="fas fa-user-shield"></i> Nâng quyền
             </a>
         </li>
     </ul>
@@ -333,6 +339,59 @@
                                 }
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: NÂNG QUYỀN KHÁCH HÀNG -->
+        <div class="tab-pane fade" id="promotion" role="tabpanel" aria-labelledby="promotion-tab">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Danh sách Khách hàng (Nâng quyền thành Nhân viên)</h6>
+                    <small class="text-muted">Tính năng này sẽ tạo tài khoản nhân viên mới dựa trên thông tin khách hàng. Dữ liệu khách hàng cũ vẫn được giữ nguyên.</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                       <table class="table table-bordered table-striped" id="dataTablePromotion" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tên Khách Hàng</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Email</th>
+                                    <th>Điểm tích lũy</th>
+                                    <th class="text-center" style="width: 150px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(Model.AllCustomers != null && Model.AllCustomers.Any())
+                                {
+                                    foreach(var c in Model.AllCustomers)
+                                    {
+                                        <tr>
+                                            <td>@c.FullName</td>
+                                            <td>@c.PhoneNumber</td>
+                                            <td>@c.Email</td>
+                                            <td>@c.Point</td>
+                                            <td class="text-center">
+                                                <form asp-action="PromoteCustomer" method="post" onsubmit="return confirm('Bạn có chắc muốn nâng khách hàng @c.FullName thành Nhân viên? Tài khoản đăng nhập sẽ được tạo tự động.');">
+                                                    <input type="hidden" name="customerId" value="@c.CustomerId" />
+                                                    <button type="submit" class="btn btn-sm btn-info shadow-sm">
+                                                        <i class="fas fa-arrow-up"></i> Nâng quyền
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                     <tr>
+                                        <td colspan="5" class="text-center text-muted">Không có khách hàng nào trong hệ thống.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                       </table>
                     </div>
                 </div>
             </div>

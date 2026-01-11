@@ -49,5 +49,8 @@ namespace SpaBookingWeb.ViewModels.Manager
 
         // Danh sách để đổ dữ liệu vào Dropdown (Select2)
         public IEnumerable<SelectListItem>? AvailableServices { get; set; }
+
+        // Map: ServiceId -> List of Consumables (dùng để JS tính toán hiển thị)
+        public Dictionary<int, List<ServiceConsumableDto>> ServiceConsumablesMap { get; set; } = new Dictionary<int, List<ServiceConsumableDto>>();
     }
 }

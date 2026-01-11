@@ -95,5 +95,17 @@ namespace SpaBookingWeb.ViewModels.Manager
             new SelectListItem { Value = "Percent", Text = "Phần trăm (%)" },
             new SelectListItem { Value = "FixedAmount", Text = "Số tiền cố định (VNĐ)" }
         };
+
+        // --- 5. DANH SÁCH KHÁCH HÀNG (Cho tab Nâng quyền) ---
+        public List<CustomerViewModel> AllCustomers { get; set; } = new List<CustomerViewModel>();
+    }
+
+    public class CustomerViewModel
+    {
+        public int CustomerId { get; set; }
+        public string FullName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        public int Point { get; set; }
     }
 }

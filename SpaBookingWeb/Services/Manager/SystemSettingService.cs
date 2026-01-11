@@ -21,14 +21,17 @@ namespace SpaBookingWeb.Services.Manager
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public SystemSettingService(ApplicationDbContext context, 
                                     IWebHostEnvironment webHostEnvironment,
-                                    RoleManager<IdentityRole> roleManager)
+                                    RoleManager<IdentityRole> roleManager,
+                                    UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         // --- 1. LOGIC CẤU HÌNH CHUNG ---
@@ -59,6 +62,17 @@ namespace SpaBookingWeb.Services.Manager
                 .Include(d => d.TargetService)
                 .Include(d => d.TargetMembershipType)
                 .ToListAsync();
+
+            // Load Customer List for Promotion Tab
+            var customers = await _context.Customers.OrderBy(c => c.FullName).ToListAsync();
+            model.AllCustomers = customers.Select(c => new CustomerViewModel
+            {
+                CustomerId = c.CustomerId,
+                FullName = c.FullName,
+                PhoneNumber = c.PhoneNumber,
+                Email = c.Email,
+                Point = c.Point
+            }).ToList();
 
             // Load Dropdown Data
             var services = await _context.Services.Where(s => s.IsActive).ToListAsync();
@@ -228,6 +242,90 @@ namespace SpaBookingWeb.Services.Manager
 
                 await _context.SaveChangesAsync();
             }
+        }
+
+        // --- 5. NÂNG QUYỀN KHÁCH HÀNG ---
+        // --- 5. NÂNG QUYỀN KHÁCH HÀNG ---
+        public async Task PromoteCustomerAsync(int customerId)
+        {
+            var customer = await _context.Customers.FindAsync(customerId);
+            if (customer == null) throw new Exception("Không tìm thấy khách hàng.");
+
+            // 1. Kiểm tra User
+            string email = customer.Email;
+            string phone = customer.PhoneNumber;
+
+            if (string.IsNullOrEmpty(email)) 
+            {
+                // Nếu không có email, tạo email giả: phone@spa.system
+                email = $"{phone}@spa.system"; 
+            }
+
+            var user = await _userManager.FindByNameAsync(email) ?? await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                // Tạo User mới
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FullName = customer.FullName,
+                    PhoneNumber = phone,
+                    EmailConfirmed = true,
+                    Address = "Chưa cập nhật", 
+                    CreatedDate = DateTime.Now
+                };
+                var result = await _userManager.CreateAsync(user, "Password123!"); // Pass mặc định
+                if (!result.Succeeded)
+                {
+                    throw new Exception("Lỗi tạo tài khoản User: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
+
+            // 2. Tạo Employee
+            var existingEmp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == user.Id);
+            if (existingEmp != null)
+            {
+                // Nếu User đã là Employee -> Bỏ qua hoặc báo lỗi
+                throw new Exception("Tài khoản này (Email/SĐT) đã là nhân viên trong hệ thống.");
+            }
+
+            // Tạo Employee với đầy đủ thông tin mặc định để tránh lỗi database constraint
+            var newEmployee = new Employee
+            {
+                IdentityUserId = user.Id,
+                FullName = customer.FullName,
+                Gender = "Khác", // Default gender
+                DateOfBirth = new DateTime(2000, 1, 1), // Default DOB
+                Address = "Chưa cập nhật",
+                BaseSalary = 5000000, 
+                HireDate = DateTime.Now,
+                IsActive = true,
+                Avatar = "/ManagerAssets/assets/avatars/face-1.jpg" // Default Avatar
+            };
+
+            _context.Employees.Add(newEmployee);
+            await _context.SaveChangesAsync(); // Lưu để sinh EmployeeId
+
+            // 3. Tạo TechnicianDetail mặc định (Quan hệ 1-1, nên có để tránh lỗi ở các module khác)
+            var techDetail = new TechnicianDetail
+            {
+                EmployeeId = newEmployee.EmployeeId,
+                SkillLevel = "Junior",
+                Bio = "Nhân viên mới được thăng cấp từ khách hàng.",
+                CommissionRate = 0,
+                IsDeleted = false
+            };
+            _context.TechnicianDetails.Add(techDetail);
+            await _context.SaveChangesAsync();
+
+            // 4. Gán quyền "Staff"
+            if (!await _roleManager.RoleExistsAsync("Staff"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Staff"));
+            }
+            await _userManager.AddToRoleAsync(user, "Staff");
         }
 
         private async Task<string> SaveImageAsync(IFormFile imageFile)

@@ -127,6 +127,9 @@ builder.Services.AddScoped<IComboListService,ComboListService>();
 builder.Services.AddScoped<IPostService,PostService>();
 builder.Services.AddScoped<IReviewClientService,ReviewClientService>();
 
+// Background Services
+builder.Services.AddHostedService<BookingCleanupService>();
+
 
 
 // Authorization with Permission

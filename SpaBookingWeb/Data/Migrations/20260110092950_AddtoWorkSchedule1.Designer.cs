@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SpaBookingWeb.Data;
 
@@ -11,9 +12,11 @@ using SpaBookingWeb.Data;
 namespace SpaBookingWeb.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110092950_AddtoWorkSchedule1")]
+    partial class AddtoWorkSchedule1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1034,9 +1037,6 @@ namespace SpaBookingWeb.Data.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("FromDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1047,9 +1047,6 @@ namespace SpaBookingWeb.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("ToDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("TotalCommission")
                         .HasColumnType("decimal(18,2)");
@@ -1408,9 +1405,6 @@ namespace SpaBookingWeb.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ScheduleId"));
 
-                    b.Property<TimeSpan?>("BreakStartTime")
-                        .HasColumnType("time");
-
                     b.Property<DateTime?>("CheckInTime")
                         .HasColumnType("datetime2");
 
@@ -1421,9 +1415,6 @@ namespace SpaBookingWeb.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsOnBreak")
                         .HasColumnType("bit");
 
                     b.Property<string>("Note")

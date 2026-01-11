@@ -47,6 +47,12 @@ namespace SpaBookingWeb.Controllers
             {
                 var roles = await _userManager.GetRolesAsync(user);
 
+                // Nếu là Manager, Receptionist hoặc Technician thì hiện trang chọn Role
+                if (roles.Contains("Manager") || roles.Contains("Receptionist") || roles.Contains("Technician"))
+                {
+                    return RedirectToAction("RoleSelection");
+                }
+
                 if (roles.Contains("Manager") || roles.Contains("Admin"))
                 {
                     return RedirectToAction("Index", "Home", new { area = "Manager" });
@@ -115,6 +121,38 @@ namespace SpaBookingWeb.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult RoleSelection()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> RoleRedirect(string mode)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            if (mode == "Employee")
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                // Logic điều hướng employee cũ
+                if (roles.Contains("Manager") || roles.Contains("Admin"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Manager" });
+                }
+                if (roles.Contains("Technician") || roles.Contains("Receptionist") || roles.Contains("Staff"))
+                {
+                    return RedirectToAction("Index", "Schedule", new { area = "Staff" });
+                }
+            }
+
+            // Default hoặc Customer
+            return RedirectToAction("HomeClient", "Home");
         }
 
         public class LoginCheckResult
@@ -485,6 +523,131 @@ namespace SpaBookingWeb.Controllers
             }
         }
 
-        // Quên mật khẩu, đổi mật khẩu (Milestone 1 end)
+        // --- QUÊN MẬT KHẨU & KHÔI PHỤC ---
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                {
+                    // Don't reveal that the user does not exist or is not confirmed
+                    // But for this specific flow "System provided password", we kinda have to imply something worked.
+                    // Let's just say "check email".
+                    return RedirectToAction("ForgotPasswordConfirmation");
+                }
+
+                // 1. Generate Random Readable Password
+                 string tempPassword = GenerateRandomPassword(8);
+
+                // 2. Force Reset Password
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, tempPassword);
+
+                if (result.Succeeded)
+                {
+                    // 3. Send Email
+                    string subject = "Cấp lại mật khẩu - Lotus Spa";
+                    string message = $@"
+                        <h3>Chào {user.FullName},</h3>
+                        <p>Bạn (hoặc ai đó) đã yêu cầu khôi phục mật khẩu.</p>
+                        <p>Mật khẩu tạm thời của bạn là: <strong style='font-size: 20px; color: #ec4899;'>{tempPassword}</strong></p>
+                        <p>Vui lòng sử dụng mật khẩu này để đăng nhập và đổi sang mật khẩu mới.</p>
+                        <p><a href='{Url.Action("LoginWithRecovery", "Account", new { email = user.Email }, Request.Scheme)}'>Nhấn vào đây để đổi mật khẩu ngay</a></p>
+                        <p>Trân trọng,<br/>Lotus Spa Team</p>";
+
+                    try
+                    {
+                        await _emailService.SendEmailAsync(user.Email, subject, message);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send recovery email");
+                        ModelState.AddModelError("", "Không thể gửi email. Vui lòng thử lại sau.");
+                        return View(model);
+                    }
+
+                    return RedirectToAction("LoginWithRecovery", new { email = user.Email });
+                }
+                
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult LoginWithRecovery(string email)
+        {
+            if (email == null) return RedirectToAction("ForgotPassword");
+            var model = new RecoveryPasswordViewModel { Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoginWithRecovery(RecoveryPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Tài khoản không tồn tại.");
+                return View(model);
+            }
+
+            // 1. Verify Temp Password by trying to Change it
+            // We can't just "CheckPassword" then "ChangePassword" because of race conditions or lockout policies, but it's safe enough here.
+            // Actually, ChangePasswordAsync takes (user, current, new). This is exactly what we need.
+
+            var result = await _userManager.ChangePasswordAsync(user, model.SystemPassword, model.NewPassword);
+            
+            if (result.Succeeded)
+            {
+                // 2. Sign In
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
+                return await RedirectToRoleAsync(user, null);
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    // Map "Incorrect password" to "Mật khẩu hệ thống cấp không đúng"
+                    if (error.Code == "PasswordMismatch")
+                        ModelState.AddModelError("SystemPassword", "Mật khẩu hệ thống cấp không đúng.");
+                    else
+                        ModelState.AddModelError("", error.Description);
+                }
+                return View(model);
+            }
+        }
+
+        private string GenerateRandomPassword(int length)
+        {
+            const string chars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@$";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
     }
 }

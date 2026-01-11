@@ -24,9 +24,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var model = await _serviceService.GetServiceForCreateAsync();
+            return View(model);
         }
 
         [HttpPost]

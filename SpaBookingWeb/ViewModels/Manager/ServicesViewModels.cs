@@ -60,5 +60,17 @@ namespace SpaBookingWeb.ViewModels.Manager
 
         [Display(Name = "Yêu cầu đặt cọc")]
         public bool RequiresDeposit { get; set; }
+
+        // --- MỚI: Quản lý tiêu hao ---
+        public List<ServiceConsumableDto> Consumables { get; set; } = new List<ServiceConsumableDto>();
+        public List<SpaBookingWeb.Models.Product>? AvailableProducts { get; set; }
+    }
+
+    public class ServiceConsumableDto
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public string? ProductName { get; set; }
+        public string? UnitName { get; set; }
     }
 }

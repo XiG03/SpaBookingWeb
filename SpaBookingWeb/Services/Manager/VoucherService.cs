@@ -61,8 +61,10 @@ namespace SpaBookingWeb.Services.Manager
             if (model.EndDate.Date < model.StartDate.Date)
                 throw new ArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
 
-            var exists = await _context.Vouchers.AnyAsync(d => d.Code == model.Code && !d.IsDeleted && d.IsActive);
-            if (exists) throw new ArgumentException($"Mã voucher '{model.Code}' đang hoạt động đã tồn tại.");
+            // Kiểm tra trùng mã (Case-insensitive) - Bao gồm cả mã đã xóa để tránh conflict logic
+            var codeToCheck = model.Code.Trim().ToUpper();
+            var exists = await _context.Vouchers.AnyAsync(d => d.Code == codeToCheck);
+            if (exists) throw new ArgumentException($"Mã voucher '{model.Code}' đã được sử dụng trong hệ thống (bao gồm cả mã cũ). Vui lòng chọn mã khác.");
 
             var voucher = new Voucher
             {
@@ -93,8 +95,13 @@ namespace SpaBookingWeb.Services.Manager
             if (model.EndDate.Date < model.StartDate.Date)
                 throw new ArgumentException("Ngày kết thúc không hợp lệ.");
 
+            // Kiểm tra trùng mã khi update (loại trừ chính nó)
+            var codeToCheck = model.Code.Trim().ToUpper();
+            var exists = await _context.Vouchers.AnyAsync(d => d.Code == codeToCheck && d.VoucherId != model.VoucherId);
+            if (exists) throw new ArgumentException($"Mã voucher '{model.Code}' đã được sử dụng bởi một chiến dịch khác.");
+
             voucher.Name = model.Name;
-            voucher.Code = model.Code.ToUpper().Trim();
+            voucher.Code = codeToCheck; // Đảm bảo lưu UpperCase
             voucher.Description = model.Description;
             voucher.DiscountType = model.DiscountType;
             voucher.DiscountValue = model.DiscountValue;

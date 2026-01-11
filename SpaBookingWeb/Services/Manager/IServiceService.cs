@@ -21,6 +21,9 @@ namespace SpaBookingWeb.Services.Manager
         // Xóa mềm (Chuyển trạng thái hoạt động thành false hoặc xóa nếu có cột IsDeleted)
         Task DeleteServiceAsync(int id);
 
+        // Helper cho trang Create
+        Task<ServiceViewModel> GetServiceForCreateAsync();
+
         Task<Service?> GetServiceByIdAsync(int id);
     }
 }

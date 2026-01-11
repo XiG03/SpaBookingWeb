@@ -7,7 +7,7 @@
 
 
     <div class="row justify-content-center">
-        <div class="col-12 col-lg-10 col-xl-8">
+        <div class="col-12 col-lg-10 col-xl-10">
             <h2 class="h3 mb-4 page-title">Cập nhật Combo</h2>
             <div class="card shadow mb-4">
                 <div class="card-header">
@@ -81,6 +81,13 @@
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
+                        <hr />
+                        <h5 class="mb-3">Ước tính tiêu hao nguyên liệu (Tự động từ các dịch vụ)</h5>
+                        <div id="consumables-display-area" class="alert alert-secondary">
+                            <p class="text-muted mb-0 font-italic">Đang tính toán...</p>
+                        </div>
+                        <hr />
+
                         <div class="mt-4 d-flex justify-content-end">
                             <a asp-action="Index" class="btn btn-secondary mr-2">Hủy bỏ</a>
                             <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
@@ -106,12 +113,65 @@
 
             // Select2 tự động nhận diện các giá trị đã chọn (selected) từ Model.SelectedServiceIds
             // nhờ Tag Helper asp-for bind dữ liệu vào thẻ <select>
-            $('.select2-multi').select2({
+            var $select = $('.select2-multi').select2({
                 theme: 'bootstrap4',
                 placeholder: "--- Chọn các dịch vụ ---",
                 allowClear: true,
                 width: '100%'
             });
+
+            // --- Logic Nguyên Liệu Display Only ---
+            var serviceConsumablesMap = @Html.Raw(Json.Serialize(Model.ServiceConsumablesMap));
+
+             $select.on('change', function () {
+                var selectedServiceIds = $(this).val(); 
+                updateConsumablesDisplay(selectedServiceIds);
+            });
+
+            function updateConsumablesDisplay(ids) {
+                var $container = $("#consumables-display-area");
+                if (!ids || ids.length === 0) {
+                    $container.html('<p class="text-muted mb-0 font-italic">Chưa có dịch vụ nào được chọn.</p>');
+                    return;
+                }
+
+                var summary = {};
+                ids.forEach(function(sidStr) {
+                    var sid = parseInt(sidStr);
+                    if (serviceConsumablesMap[sid]) {
+                        var list = serviceConsumablesMap[sid];
+                        list.forEach(function(item) {
+                            if (!summary[item.productId]) {
+                                summary[item.productId] = {
+                                    name: item.productName,
+                                    unit: item.unitName,
+                                    qty: 0
+                                };
+                            }
+                            summary[item.productId].qty += item.quantity;
+                        });
+                    }
+                });
+
+                var keys = Object.keys(summary);
+                if (keys.length === 0) {
+                    $container.html('<p class="text-muted mb-0 font-italic">Các dịch vụ đã chọn không tiêu hao nguyên liệu nào.</p>');
+                } else {
+                     var html = '<ul class="list-group list-group-flush" style="background: transparent;">';
+                    keys.forEach(function(pid) {
+                        var data = summary[pid];
+                        html += `<li class="list-group-item d-flex justify-content-between align-items-center" style="background: transparent; padding: 0.5rem 0;">
+                                    <span>${data.name}</span>
+                                    <span class="badge badge-info badge-pill" style="font-size: 1rem;">${data.qty} ${data.unit || ''}</span>
+                                 </li>`;
+                    });
+                    html += '</ul>';
+                    $container.html(html);
+                }
+            }
+
+            // Trigger initial calculation
+            updateConsumablesDisplay($select.val());
         });
     </script>
 }
