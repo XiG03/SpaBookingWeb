@@ -1,228 +1,150 @@
 ﻿@model SpaBookingWeb.ViewModels.Client.ServiceListViewModel
 
 @{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = "Danh sách Dịch vụ";
 }
 
-<!DOCTYPE html>
-<html class="light" lang="vi">
-
-<head>
-  <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Danh sách Dịch vụ</title>
-  <link href="https://fonts.googleapis.com" rel="preconnect" />
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-    rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#ff6b95",
-            "background-light": "#fff5f7",
-            "background-dark": "#251016",
-            "text-main": "#2b1218",
-            "text-muted": "#96757f",
-          },
-          fontFamily: {
-            "display": ["Inter", "sans-serif"]
-          },
-          borderRadius: {
-            "DEFAULT": "0.5rem",
-            "lg": "1rem",
-            "xl": "1.5rem",
-            "full": "9999px"
-          },
-        },
-      },
-    }
-  </script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
+<style>
     .no-scrollbar::-webkit-scrollbar {
-      display: none;
+        display: none;
     }
 
     .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
-  </style>
-</head>
+</style>
 
-<body class="bg-background-light dark:bg-background-dark transition-colors duration-200">
-  <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
-    <!-- Header -->
-    <header
-      class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f0d5de] bg-white/90 backdrop-blur-md px-4 py-3 dark:bg-[#251016]/90 dark:border-[#45222c] lg:px-10">
-      <div class="flex items-center gap-4 text-text-main dark:text-white">
-        <div
-            class="flex items-center gap-4 text-text-main dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
-            <span class="material-symbols-outlined text-primary text-3xl">spa</span>
-            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">SpaBookingWeb</h2>
-        </div>
-      </div>
-      <div class="hidden lg:flex flex-1 justify-center gap-8">
-        <nav class="flex items-center gap-9">
-          <a class="text-sm font-medium leading-normal text-text-main hover:text-primary dark:text-white dark:hover:text-primary transition-colors"
-            asp-area="" asp-controller="Home" asp-action="HomeClient">Trang chủ</a>
-          <a class="text-sm font-bold leading-normal text-primary" href="/Services">Dịch vụ</a>
-          <a class="text-sm font-medium leading-normal text-text-main hover:text-primary dark:text-white dark:hover:text-primary transition-colors"
-            href="#">Combo Hot</a>
-          <a class="text-sm font-medium leading-normal text-text-main hover:text-primary dark:text-white dark:hover:text-primary transition-colors"
-            href="#">Về chúng tôi</a>
-        </nav>
-      </div>
-      <div class="flex items-center gap-4">
-        <button class="lg:hidden p-2 text-text-main dark:text-white">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <button
-          class="hidden lg:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-opacity shadow-sm hover:shadow-md">
-          <a asp-area="" asp-controller="Booking" asp-action="Index" class="truncate">Đặt lịch ngay</a>
-        </button>
-      </div>
-    </header>
-
-    <main class="flex flex-col grow">
-      <!-- Banner & Search -->
-      <div class="@@container w-full">
-        <div
-          class="flex min-h-[320px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-8 relative"
-          style='background-image: linear-gradient(rgba(50, 10, 20, 0.6) 0%, rgba(50, 10, 20, 0.7) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAazVwZuNGafGMOKPoFnfwFFwn2hyN6_hNS07O55sKrrOT6wRNqTVfrKyMkTV8eeUWWNgzdsizvzbjGim15V83w7ZyKlbV1PrZByHZKiZmsUY7FQoPL4eJ0nXkAft7gRrHMDtgypnQEeIHfay7QSR9C99BoV8LQ2G8Kw6voV8RexbFRS95PzQCyESr0RN3fYYyOD1fvhZPWQ9YaUg2nr5i1XK1iDTLDB7ylqyoOA88cgVJBlzBwRS_bJXXLme3BmAxP8Xs5P6dyzpg");'>
-          <div class="flex flex-col gap-3 text-center max-w-2xl z-10">
+<!-- Banner & Search -->
+<div class="@@container w-full">
+    <div
+        class="flex min-h-[320px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-8 relative"
+        style='background-image: linear-gradient(rgba(50, 10, 20, 0.6) 0%, rgba(50, 10, 20, 0.7) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAazVwZuNGafGMOKPoFnfwFFwn2hyN6_hNS07O55sKrrOT6wRNqTVfrKyMkTV8eeUWWNgzdsizvzbjGim15V83w7ZyKlbV1PrZByHZKiZmsUY7FQoPL4eJ0nXkAft7gRrHMDtgypnQEeIHfay7QSR9C99BoV8LQ2G8Kw6voV8RexbFRS95PzQCyESr0RN3fYYyOD1fvhZPWQ9YaUg2nr5i1XK1iDTLDB7ylqyoOA88cgVJBlzBwRS_bJXXLme3BmAxP8Xs5P6dyzpg");'>
+        <div class="flex flex-col gap-3 text-center max-w-2xl z-10">
             <h1 class="text-white text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-              Thư giãn &amp; Tái tạo năng lượng
+                Thư giãn &amp; Tái tạo năng lượng
             </h1>
             <h2 class="text-pink-100 text-base font-normal sm:text-lg">
-              Khám phá hơn 50+ liệu trình chăm sóc chuyên sâu và combo ưu đãi độc quyền
+                Khám phá hơn 50+ liệu trình chăm sóc chuyên sâu và combo ưu đãi độc quyền
             </h2>
-          </div>
-          
-          <!-- Search Form -->
-          <form method="get" action="/Services" class="flex flex-col h-14 w-full max-w-[560px] relative z-10 shadow-lg">
-            <div class="flex w-full flex-1 items-stretch rounded-xl h-full overflow-hidden">
-              <div class="text-[#96757f] flex border-r-0 bg-white items-center justify-center pl-4 pr-2">
-                <span class="material-symbols-outlined">search</span>
-              </div>
-              <input name="search" value="@Model.CurrentSearch"
-                class="flex w-full min-w-0 flex-1 resize-none outline-none text-text-main bg-white h-full placeholder:text-[#96757f] px-2 text-base"
-                placeholder="Tìm kiếm dịch vụ, combo..." />
-              <div class="flex items-center justify-center bg-white pr-2">
-                <button type="submit"
-                  class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold hover:bg-opacity-90 transition-colors">
-                  Tìm kiếm
-                </button>
-              </div>
-            </div>
-          </form>
         </div>
-      </div>
+        
+        <!-- Search Form -->
+        <form method="get" action="/Services" class="flex flex-col h-14 w-full max-w-[560px] relative z-10 shadow-lg">
+            <div class="flex w-full flex-1 items-stretch rounded-xl h-full overflow-hidden">
+                <div class="text-[#96757f] flex border-r-0 bg-white items-center justify-center pl-4 pr-2">
+                    <span class="material-symbols-outlined">search</span>
+                </div>
+                <input name="search" value="@Model.CurrentSearch"
+                    class="flex w-full min-w-0 flex-1 resize-none outline-none text-gray-900 bg-white h-full placeholder:text-[#96757f] px-2 text-base"
+                    placeholder="Tìm kiếm dịch vụ, combo..." />
+                <div class="flex items-center justify-center bg-white pr-2">
+                    <button type="submit"
+                        class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold hover:bg-opacity-90 transition-colors">
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
-      <div class="layout-container flex w-full max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-12 gap-8">
-        <!-- Sidebar Filter -->
-        <aside class="hidden lg:flex flex-col w-72 shrink-0 gap-8">
-          <div class="flex flex-col gap-4">
-            <h3 class="text-text-main dark:text-white text-lg font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">category</span>
-              Danh mục
+<div class="layout-container flex w-full max-w-[1440px] mx-auto px-4 py-8 lg:px-10 lg:py-12 gap-8">
+    <!-- Sidebar Filter -->
+    <aside class="hidden lg:flex flex-col w-72 shrink-0 gap-8">
+        <div class="flex flex-col gap-4">
+            <h3 class="text-gray-900 dark:text-white text-lg font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">category</span>
+                Danh mục
             </h3>
             <div class="flex flex-col gap-2">
-              <a href="/Services?sortOrder=@Model.SortOrder" 
-                 class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors">
-                <input @(!Model.CurrentCategoryId.HasValue ? "checked" : "")
-                  class="w-4 h-4 text-primary bg-pink-50 border-pink-200 focus:ring-primary focus:ring-2"
-                  type="radio" readonly />
-                <span class="text-sm font-medium text-text-main dark:text-gray-300 group-hover:text-primary transition-colors">Tất cả dịch vụ</span>
-              </a>
-              
-              @foreach(var cat in Model.Categories)
-              {
-                  <a href="/Services?categoryId=@cat.Id&sortOrder=@Model.SortOrder" 
-                     class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors">
-                    <input @(Model.CurrentCategoryId == cat.Id ? "checked" : "")
-                      class="w-4 h-4 text-primary bg-pink-50 border-pink-200 focus:ring-primary focus:ring-2"
-                      type="radio" readonly />
-                    <span class="text-sm font-medium text-text-main dark:text-gray-300 group-hover:text-primary transition-colors">
-                        @cat.Name
-                    </span>
-                  </a>
-              }
+                <a href="/Services?sortOrder=@Model.SortOrder" 
+                    class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors">
+                    <input @(!Model.CurrentCategoryId.HasValue ? "checked" : "")
+                        class="w-4 h-4 text-primary bg-pink-50 border-pink-200 focus:ring-primary focus:ring-2"
+                        type="radio" readonly />
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-300 group-hover:text-primary transition-colors">Tất cả dịch vụ</span>
+                </a>
+                
+                @foreach(var cat in Model.Categories)
+                {
+                    <a href="/Services?categoryId=@cat.Id&sortOrder=@Model.SortOrder" 
+                        class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-pink-50 dark:hover:bg-white/5 transition-colors">
+                        <input @(Model.CurrentCategoryId == cat.Id ? "checked" : "")
+                            class="w-4 h-4 text-primary bg-pink-50 border-pink-200 focus:ring-primary focus:ring-2"
+                            type="radio" readonly />
+                        <span class="text-sm font-medium text-gray-900 dark:text-gray-300 group-hover:text-primary transition-colors">
+                            @cat.Name
+                        </span>
+                    </a>
+                }
             </div>
-          </div>
-          
-          <div class="h-px bg-[#f0d5de] dark:bg-[#45222c] w-full"></div>
-          
-          <!-- Sắp xếp (Dùng link để filter) -->
-          <div class="flex flex-col gap-4">
-            <h3 class="text-text-main dark:text-white text-lg font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">sort</span>
-              Sắp xếp
+        </div>
+        
+        <div class="h-px bg-[#f0d5de] dark:bg-[#45222c] w-full"></div>
+        
+        <!-- Sắp xếp (Dùng link để filter) -->
+        <div class="flex flex-col gap-4">
+            <h3 class="text-gray-900 dark:text-white text-lg font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">sort</span>
+                Sắp xếp
             </h3>
             <div class="flex flex-col gap-2">
-              <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=popular"
-                class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                <span class="text-sm font-medium text-text-main dark:text-white">Phổ biến nhất</span>
-                <input @(Model.SortOrder != "price_asc" && Model.SortOrder != "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
-              </a>
-              <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_asc"
-                class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                <span class="text-sm font-medium text-text-main dark:text-white">Giá thấp đến cao</span>
-                <input @(Model.SortOrder == "price_asc" ? "checked" : "") class="accent-primary" type="radio" readonly />
-              </a>
-              <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_desc"
-                class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                <span class="text-sm font-medium text-text-main dark:text-white">Giá cao đến thấp</span>
-                <input @(Model.SortOrder == "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
-              </a>
+                <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=popular"
+                    class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Phổ biến nhất</span>
+                    <input @(Model.SortOrder != "price_asc" && Model.SortOrder != "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
+                </a>
+                <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_asc"
+                    class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Giá thấp đến cao</span>
+                    <input @(Model.SortOrder == "price_asc" ? "checked" : "") class="accent-primary" type="radio" readonly />
+                </a>
+                <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_desc"
+                    class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Giá cao đến thấp</span>
+                    <input @(Model.SortOrder == "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
+                </a>
             </div>
-          </div>
-        </aside>
+        </div>
+    </aside>
 
-        <!-- Main Content -->
-        <div class="flex flex-col flex-1 gap-6">
-          
-          <!-- Category Filter Mobile/Horizontal -->
-          <div class="flex flex-col gap-4">
+    <!-- Main Content -->
+    <div class="flex flex-col flex-1 gap-6">
+        
+        <!-- Category Filter Mobile/Horizontal -->
+        <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-2xl font-bold text-text-main dark:text-white">
-                  @(Model.CurrentCategoryId.HasValue ? Model.Categories.FirstOrDefault(c => c.Id == Model.CurrentCategoryId)?.Name : "Tất cả dịch vụ") 
-                  (@Model.TotalItems)
-              </h2>
-              <button class="lg:hidden flex items-center gap-2 text-sm font-medium text-primary">
-                <span class="material-symbols-outlined">tune</span> Bộ lọc
-              </button>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    @(Model.CurrentCategoryId.HasValue ? Model.Categories.FirstOrDefault(c => c.Id == Model.CurrentCategoryId)?.Name : "Tất cả dịch vụ") 
+                    (@Model.TotalItems)
+                </h2>
+                <button class="lg:hidden flex items-center gap-2 text-sm font-medium text-primary">
+                    <span class="material-symbols-outlined">tune</span> Bộ lọc
+                </button>
             </div>
             
             <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-              <a href="/Services" 
-                 class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-bold shadow-md transition-colors 
-                 @(!Model.CurrentCategoryId.HasValue ? "bg-primary text-white shadow-primary/20" : "bg-white border border-[#f0d5de] text-text-main hover:border-primary hover:text-primary dark:bg-[#33161f] dark:border-[#45222c] dark:text-gray-300")">
-                Tất cả
-              </a>
-              
-              @foreach(var cat in Model.Categories)
-              {
-                  <a href="/Services?categoryId=@cat.Id"
+                <a href="/Services" 
                     class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-bold shadow-md transition-colors 
-                    @(Model.CurrentCategoryId == cat.Id ? "bg-primary text-white shadow-primary/20" : "bg-white border border-[#f0d5de] text-text-main hover:border-primary hover:text-primary dark:bg-[#33161f] dark:border-[#45222c] dark:text-gray-300")">
-                    @cat.Name
-                  </a>
-              }
+                    @(!Model.CurrentCategoryId.HasValue ? "bg-primary text-white shadow-primary/20" : "bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary dark:bg-[#33161f] dark:border-[#45222c] dark:text-gray-300")">
+                    Tất cả
+                </a>
+                
+                @foreach(var cat in Model.Categories)
+                {
+                    <a href="/Services?categoryId=@cat.Id"
+                        class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-bold shadow-md transition-colors 
+                        @(Model.CurrentCategoryId == cat.Id ? "bg-primary text-white shadow-primary/20" : "bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary dark:bg-[#33161f] dark:border-[#45222c] dark:text-gray-300")">
+                        @cat.Name
+                    </a>
+                }
             </div>
-          </div>
+        </div>
 
-          <!-- Product Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             
             <!-- Hiển thị Combo (nếu có) -->
             @if(Model.Combos != null && Model.Combos.Any())
@@ -230,38 +152,39 @@
                 foreach(var combo in Model.Combos)
                 {
                     <div class="group flex flex-col rounded-xl border border-[#f0d5de] bg-white p-3 dark:bg-[#33161f] dark:border-[#45222c] hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-                      <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
-                        <div class="absolute top-2 right-2 z-10 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
-                          Combo Hot
-                        </div>
-                        <img alt="@combo.Name"
-                          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                          src="@combo.ImageUrl" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      </div>
-                      <div class="flex flex-1 flex-col gap-2 pt-4">
-                        <div class="flex items-start justify-between">
-                          <h3 class="text-base font-bold text-text-main dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
-                            @combo.Name
-                          </h3>
-                        </div>
-                        <p class="text-xs text-text-muted dark:text-gray-400 line-clamp-2">@combo.Description</p>
-                        <div class="mt-auto pt-3 flex items-end justify-between border-t border-dashed border-[#f0d5de] dark:border-[#45222c]">
-                          <div class="flex flex-col">
-                            @if(combo.OriginalPrice > combo.Price)
-                            {
-                                <span class="text-xs text-gray-400 line-through">@combo.OriginalPrice.ToString("N0")đ</span>
-                            }
-                            <div class="flex items-baseline gap-1">
-                              <span class="text-lg font-black text-primary">@combo.Price.ToString("N0")đ</span>
-                              <span class="text-xs font-medium text-text-muted">/ @combo.DurationMinutes phút</span>
+                        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
+                            <div class="absolute top-2 right-2 z-10 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
+                                Combo Hot
                             </div>
-                          </div>
-                          <button class="flex size-9 items-center justify-center rounded-full bg-primary text-white hover:bg-[#e64e7b] transition-colors shadow-sm">
-                            <span class="material-symbols-outlined text-[20px]">add</span>
-                          </button>
+                            <img alt="@combo.Name"
+                                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                src="@combo.ImageUrl" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
-                      </div>
+                        <div class="flex flex-1 flex-col gap-2 pt-4">
+                            <div class="flex items-start justify-between">
+                                <h3 class="text-base font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
+                                    @combo.Name
+                                </h3>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">@combo.Description</p>
+                            <div class="mt-auto pt-3 flex items-end justify-between border-t border-dashed border-[#f0d5de] dark:border-[#45222c]">
+                                <div class="flex flex-col">
+                                    @if(combo.OriginalPrice > combo.Price)
+                                    {
+                                        <span class="text-xs text-gray-400 line-through">@combo.OriginalPrice.ToString("N0")đ</span>
+                                    }
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="text-lg font-black text-primary">@combo.Price.ToString("N0")đ</span>
+                                        <span class="text-xs font-medium text-gray-500">/ @combo.DurationMinutes phút</span>
+                                    </div>
+                                </div>
+                                <!-- [CẬP NHẬT] Link đến Action BookCombo -->
+                                <a href="/Booking/BookCombo?id=@combo.Id" class="flex size-9 items-center justify-center rounded-full bg-primary text-white hover:bg-[#e64e7b] transition-colors shadow-sm" title="Đặt ngay">
+                                    <span class="material-symbols-outlined text-[20px]">add</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 }
             }
@@ -270,82 +193,73 @@
             @foreach(var svc in Model.Services)
             {
                 <div class="group flex flex-col rounded-xl border border-[#f0d5de] bg-white p-3 dark:bg-[#33161f] dark:border-[#45222c] hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-                  <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
-                    <img alt="@svc.Name"
-                      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      src="@svc.ImageUrl" />
-                  </div>
-                  <div class="flex flex-1 flex-col gap-2 pt-4">
-                    <div class="flex items-start justify-between">
-                      <h3 class="text-base font-bold text-text-main dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
-                        @svc.Name
-                      </h3>
+                    <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
+                        <img alt="@svc.Name"
+                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            src="@svc.ImageUrl" />
                     </div>
-                    <p class="text-xs text-text-muted dark:text-gray-400 line-clamp-2">@svc.Description</p>
-                    <div class="mt-auto pt-3 flex items-end justify-between border-t border-dashed border-[#f0d5de] dark:border-[#45222c]">
-                      <div class="flex flex-col">
-                        <div class="flex items-baseline gap-1">
-                          <span class="text-lg font-black text-text-main dark:text-white">@svc.Price.ToString("N0")đ</span>
-                          <span class="text-xs font-medium text-text-muted">/ @svc.DurationMinutes phút</span>
+                    <div class="flex flex-1 flex-col gap-2 pt-4">
+                        <div class="flex items-start justify-between">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-primary transition-colors">
+                                @svc.Name
+                            </h3>
                         </div>
-                      </div>
-                      <button class="flex size-9 items-center justify-center rounded-full bg-white border border-[#f0d5de] text-text-main hover:border-primary hover:text-primary dark:bg-[#45222c] dark:border-[#45222c] dark:text-white dark:hover:border-primary dark:hover:text-primary transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[20px]">add</span>
-                      </button>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">@svc.Description</p>
+                        <div class="mt-auto pt-3 flex items-end justify-between border-t border-dashed border-[#f0d5de] dark:border-[#45222c]">
+                            <div class="flex flex-col">
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-lg font-black text-gray-900 dark:text-white">@svc.Price.ToString("N0")đ</span>
+                                    <span class="text-xs font-medium text-gray-500">/ @svc.DurationMinutes phút</span>
+                                </div>
+                            </div>
+                            <!-- [CẬP NHẬT] Link đến Action BookService -->
+                            <a href="/Booking/BookService?id=@svc.Id" class="flex size-9 items-center justify-center rounded-full bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary hover:bg-primary hover:text-white transition-colors shadow-sm dark:bg-[#45222c] dark:border-[#45222c] dark:text-white dark:hover:border-primary" title="Đặt ngay">
+                                <span class="material-symbols-outlined text-[20px]">add</span>
+                            </a>
+                        </div>
                     </div>
-                  </div>
                 </div>
             }
-          </div>
-
-          <!-- Pagination -->
-          @if(Model.TotalPages > 1)
-          {
-              <div class="flex justify-center mt-8">
-                <div class="flex items-center gap-2">
-                  <!-- Prev Button -->
-                  @if(Model.CurrentPage > 1)
-                  {
-                      <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@(Model.CurrentPage - 1)"
-                        class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-text-main hover:bg-gray-50 dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                      </a>
-                  }
-                  
-                  <!-- Page Numbers -->
-                  @for(int i = 1; i <= Model.TotalPages; i++)
-                  {
-                      if(i == Model.CurrentPage)
-                      {
-                          <button class="flex size-10 items-center justify-center rounded-lg bg-primary text-white font-bold shadow-md shadow-primary/30">@i</button>
-                      }
-                      else
-                      {
-                          <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@i"
-                            class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-text-main hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">@i</a>
-                      }
-                  }
-
-                  <!-- Next Button -->
-                  @if(Model.CurrentPage < Model.TotalPages)
-                  {
-                      <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@(Model.CurrentPage + 1)"
-                        class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-text-main hover:bg-gray-50 dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                      </a>
-                  }
-                </div>
-              </div>
-          }
         </div>
-      </div>
-    </main>
 
-    <footer class="bg-white py-8 border-t border-[#f0d5de] dark:bg-[#251016] dark:border-[#45222c]">
-      <div class="max-w-[1440px] mx-auto px-4 text-center">
-        <p class="text-sm text-text-muted dark:text-gray-500">© 2024 Sen Beauty Spa. All rights reserved.</p>
-      </div>
-    </footer>
-  </div>
-</body>
-</html>
+        <!-- Pagination -->
+        @if(Model.TotalPages > 1)
+        {
+            <div class="flex justify-center mt-8">
+                <div class="flex items-center gap-2">
+                    <!-- Prev Button -->
+                    @if(Model.CurrentPage > 1)
+                    {
+                        <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@(Model.CurrentPage - 1)"
+                            class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-gray-900 hover:bg-gray-50 dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                    }
+                    
+                    <!-- Page Numbers -->
+                    @for(int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if(i == Model.CurrentPage)
+                        {
+                            <button class="flex size-10 items-center justify-center rounded-lg bg-primary text-white font-bold shadow-md shadow-primary/30">@i</button>
+                        }
+                        else
+                        {
+                            <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@i"
+                                class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-gray-900 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">@i</a>
+                        }
+                    }
+
+                    <!-- Next Button -->
+                    @if(Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=@Model.SortOrder&page=@(Model.CurrentPage + 1)"
+                            class="flex size-10 items-center justify-center rounded-lg border border-[#f0d5de] bg-white text-gray-900 hover:bg-gray-50 dark:bg-[#33161f] dark:border-[#45222c] dark:text-white">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

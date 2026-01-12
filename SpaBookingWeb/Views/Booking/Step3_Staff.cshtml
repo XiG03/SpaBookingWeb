@@ -1,525 +1,531 @@
 ﻿@using SpaBookingWeb.ViewModels.Client
 @model Step3ViewModel
 @{
-    Layout = null;
-    var currentMemberIndex = 1;
-    // Đếm tổng số dịch vụ đã chọn để hiển thị ở thẻ tóm tắt đầu trang
-    var totalServicesCount = Model.CurrentSession.Members.Sum(m => m.SelectedServices.Count);
+    Layout = "_Layout";
+    ViewData["Title"] = "Chọn Chuyên gia";
+
+    // Helper functions
+    string GetStaffName(int? staffId)
+    {
+        if (staffId == null) return "Bất kỳ ai";
+        var staff = Model.Staffs?.FirstOrDefault(s => s.Id == staffId);
+        return staff != null ? staff.Name : "Bất kỳ ai";
+    }
+
+    // Helper to check selection
+    // Returns the selected staff ID for a specific service/member, or null if "Any"
+    int? GetSelectedStaffId(int memberIndex, int serviceId)
+    {
+        var member = Model.CurrentSession.Members.FirstOrDefault(m => m.MemberIndex == memberIndex);
+        if (member?.ServiceStaffMap != null && member.ServiceStaffMap.ContainsKey(serviceId))
+        {
+            return member.ServiceStaffMap[serviceId];
+        }
+        return null;
+    }
 }
 
-<!DOCTYPE html>
-<html class="light" lang="vi">
+<style>
+    /* Custom Scrollbar */
+    .staff-scroll-container {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+    }
+    .staff-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Animations & Transitions */
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Chọn Chuyên gia (Bước 3) - Lotus Spa</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ec4899", "primary-dark": "#be185d",
-                        "background-light": "#fdf2f8", "background-dark": "#181012",
-                        "text-main": "#1f2937", "text-muted": "#6b7280",
-                    },
-                    fontFamily: { "display": ["Inter", "sans-serif"], "sans": ["Inter", "sans-serif"] },
-                }
+    /* Radio Checked Visuals */
+    .staff-radio:checked + label {
+        border-color: #ec4899; /* primary */
+        background-color: #fdf2f8; /* pink-50 */
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+        color: #be185d;
+    }
+    .staff-radio:checked + label .check-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+    .staff-radio:checked + label img {
+        border-color: #ec4899;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+        backdrop-filter: blur(2px);
+    }
+</style>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-white/50">
+    <div class="flex flex-col items-center">
+        <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <span class="mt-3 text-sm font-semibold text-primary">Đang cập nhật...</span>
+    </div>
+</div>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <!-- STEP INDICATOR -->
+    <div class="mb-12">
+         <div class="flex items-center justify-between w-full max-w-3xl mx-auto relative">
+            <!-- Progress Track -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1.5 bg-gray-100 rounded-full -z-10"></div>
+            <!-- Progress Fill -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[60%] h-1.5 bg-gradient-to-r from-pink-400 to-primary rounded-full -z-10 transition-all duration-500"></div>
+            
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Index" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Dịch vụ</span>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Step2_Services" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Gói & Combo</span>
+            </div>
+
+            <!-- Step 3 (Active) -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-primary text-white flex items-center justify-center font-bold text-lg shadow-xl shadow-pink-300 ring-4 ring-white">
+                    3
+                </div>
+                <span class="text-sm font-bold text-primary">Kỹ thuật viên</span>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="flex flex-col items-center gap-2 opacity-40">
+                <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm">
+                    4
+                </div>
+                <span class="text-xs font-semibold text-gray-400">Thời gian</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-10 items-start">
+        
+        <!-- LEFT COLUMN: MAIN CONTENT -->
+        <div class="flex-1 w-full min-w-0 flex flex-col gap-8">
+            
+            <!-- HEADING -->
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 pb-2">Chọn chuyên gia của bạn</h1>
+                <p class="text-gray-500">Vui lòng chọn kỹ thuật viên ưu thích cho từng dịch vụ để có trải nghiệm tốt nhất.</p>
+            </div>
+
+            <!-- MEMBER TABS (Group Booking) -->
+            @if (Model.CurrentSession.IsGroupBooking)
+            {
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Đang chọn cho thành viên:</h3>
+                    <div class="flex gap-3 flex-wrap">
+                        @foreach (var member in Model.CurrentSession.Members)
+                        {
+                            <button onclick="switchMember(@member.MemberIndex)" id="btn-member-@member.MemberIndex"
+                                class="member-tab px-5 py-2.5 rounded-xl border-2 transition-all duration-200 font-bold text-sm flex items-center gap-2
+                                @(member.MemberIndex == 1 
+                                    ? "bg-primary border-primary text-white shadow-lg shadow-pink-200" 
+                                    : "bg-white border-gray-100 text-gray-600 hover:border-pink-200 hover:bg-pink-50")">
+                                <span class="material-symbols-outlined text-[20px]">account_circle</span>
+                                <span>@member.Name</span>
+                            </button>
+                        }
+                    </div>
+                </div>
             }
-        }
-    </script>
-    <style>
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
 
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+            @foreach (var member in Model.CurrentSession.Members)
+            {
+                <div id="panel-member-@member.MemberIndex" class="member-panel animate-fade-in @(member.MemberIndex == 1 ? "" : "hidden")">
+                    
+                    <!-- PREFERENCE: ANY vs SPECIFIC -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                         <label class="group relative flex items-center gap-4 p-5 rounded-2xl border-2 border-transparent bg-white shadow-sm cursor-pointer transition-all hover:bg-white hover:shadow-md hover:-translate-y-0.5" style="border-color: transparent;">
+                            <input class="peer sr-only" type="radio" name="pref_@member.MemberIndex" value="any" onchange="toggleDetail(@member.MemberIndex, false)">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                                <span class="material-symbols-outlined text-2xl">groups</span>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-bold text-gray-900 text-lg">Bất kỳ ai</span>
+                                <span class="text-xs text-gray-500">Spa sẽ tự sắp xếp nhân viên phù hợp nhất</span>
+                            </div>
+                            <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary text-white transition-all">
+                                <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100">check</span>
+                            </div>
+                        </label>
 
-        .member-tab.active {
-            background-color: #ec4899;
-            color: white;
-            border-color: #ec4899;
-        }
-
-        .staff-radio:checked+label {
-            border-color: #ec4899;
-            background-color: rgba(236, 72, 153, 0.05);
-        }
-
-        .staff-radio:checked+label .check-icon {
-            opacity: 1;
-        }
-
-        /* Ẩn hiện vùng chọn chi tiết */
-        .staff-selection-area {
-            transition: all 0.3s ease;
-            max-height: 2000px;
-            opacity: 1;
-            overflow: hidden;
-        }
-
-        .staff-selection-area.collapsed {
-            max-height: 0;
-            opacity: 0;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        /* Class ẩn item khi tìm kiếm */
-        .staff-item-container.hidden-by-search {
-            display: none !important;
-        }
-    </style>
-</head>
-
-<body
-    class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased min-h-screen flex flex-col">
-
-    <!-- HEADER -->
-    <header class="bg-white dark:bg-[#29151b] border-b border-pink-100 dark:border-[#4a2630] sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-primary/20 p-2 rounded-lg text-primary-dark">
-                            <span class="material-symbols-outlined">spa</span>
-                        </div>
-                        <h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Lotus Spa</h1>
+                        <label class="group relative flex items-center gap-4 p-5 rounded-2xl border-2 border-primary/10 bg-pink-50/30 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5">
+                            <input class="peer sr-only" type="radio" name="pref_@member.MemberIndex" value="specific" checked onchange="toggleDetail(@member.MemberIndex, true)">
+                            <div class="w-12 h-12 rounded-full bg-pink-100 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-2xl">person_search</span>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block font-bold text-gray-900 text-lg">Chọn theo dịch vụ</span>
+                                <span class="text-xs text-gray-500">Chỉ định kỹ thuật viên cho từng dịch vụ</span>
+                            </div>
+                            <div class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary text-white transition-all">
+                                <span class="material-symbols-outlined text-sm opacity-0 peer-checked:opacity-100">check</span>
+                            </div>
+                        </label>
                     </div>
-                    <!-- SEARCH BAR -->
-                    <div class="hidden md:flex relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-text-muted text-[20px]">search</span>
-                        </div>
-                        <input id="staff-search-input" onkeyup="searchStaff()"
-                            class="block w-64 pl-10 pr-3 py-2 border-none rounded-xl bg-background-light dark:bg-[#361c23] text-sm text-text-main dark:text-white placeholder-text-muted focus:ring-2 focus:ring-primary"
-                            placeholder="Tìm kiếm chuyên gia..." type="text" />
-                    </div>
-                </div>
-                <div class="flex items-center gap-6">
-                    <nav class="hidden md:flex gap-6 text-sm font-medium text-text-main dark:text-gray-300">
-                        <a class="hover:text-primary transition-colors" href="#">Trang chủ</a>
-                        <a class="hover:text-primary transition-colors" href="#">Lịch của tôi</a>
-                        <a class="hover:text-primary transition-colors" href="#">Đối tác</a>
-                    </nav>
-                    <button
-                        class="bg-primary hover:bg-primary-dark transition-colors text-white font-bold py-2 px-5 rounded-xl text-sm shadow-md shadow-pink-200 dark:shadow-none">
-                        Đăng nhập
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
 
-    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        <!-- STEP INDICATOR -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between w-full relative">
-                <div
-                    class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full -z-10">
-                </div>
-                <div
-                    class="absolute left-0 top-1/2 -translate-y-1/2 w-[60%] h-1 bg-primary rounded-full -z-10 transition-all duration-300">
-                </div>
-                <!-- Steps icons -->
-                <div class="flex flex-col items-center gap-2">
-                    <a asp-action="Index"
-                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg hover:bg-primary-dark transition-colors"
-                        title="Quay lại chọn Loại">1</a>
-                </div>
-                <div class="flex flex-col items-center gap-2">
-                    <a asp-action="Step2_Services"
-                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg hover:bg-primary-dark transition-colors"
-                        title="Quay lại chọn Dịch vụ">2</a>
-                </div>
-                <div class="flex flex-col items-center gap-2">
-                    <div
-                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg">
-                        3</div>
-                    <span class="text-xs font-bold text-primary">KTV</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 opacity-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-text-muted flex items-center justify-center font-bold text-sm">
-                        4</div>
-                    <span class="text-xs font-medium text-text-muted">Giờ</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-col lg:flex-row gap-8 items-start relative">
-            <div class="flex-1 w-full min-w-0 flex flex-col gap-6">
-
-                <!-- [MỚI] REVIEW STEP TRƯỚC (Giống thiết kế gốc) -->
-                <section
-                    class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630] flex items-center justify-between opacity-80 hover:opacity-100 transition-opacity">
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm shrink-0">
-                            <span class="material-symbols-outlined text-lg">check</span>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-text-main dark:text-white">Dịch vụ</h3>
-                            <p class="text-sm text-text-muted">@totalServicesCount dịch vụ đã chọn</p>
-                        </div>
-                    </div>
-                    <a asp-action="Step2_Services"
-                        class="text-primary font-semibold text-sm hover:underline px-3 py-1 flex items-center gap-1">
-                        Thay đổi <span class="material-symbols-outlined text-sm">edit</span>
-                    </a>
-                </section>
-
-                <!-- GROUP TABS (Nếu có nhiều thành viên) -->
-                @if (Model.CurrentSession.IsGroupBooking)
-                {
-                    <div
-                        class="bg-white dark:bg-[#29151b] rounded-2xl p-4 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <h3 class="text-sm font-bold text-text-muted uppercase mb-3">Chọn chuyên gia cho:</h3>
-                        <div class="flex gap-2 flex-wrap">
-                            @foreach (var member in Model.CurrentSession.Members)
+                    <!-- SERVICE LIST & STAFF SELECTION -->
+                    <div id="detail-list-@member.MemberIndex" class="space-y-8 transition-all duration-300">
+                        @if(member.SelectedServices != null && member.SelectedServices.Any())
+                        {
+                            foreach (var service in member.SelectedServices)
                             {
-                                <button onclick="switchMember(@member.MemberIndex)" id="btn-member-@member.MemberIndex"
-                                    class="member-tab px-4 py-2 rounded-xl border border-pink-100 text-sm font-bold transition-all hover:border-primary @(member.MemberIndex == 1 ? "active" : "")">
-                                    <span class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-[18px]">person</span>
-                                        @member.Name
-                                    </span>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @foreach (var member in Model.CurrentSession.Members)
-                {
-                    <div id="panel-member-@member.MemberIndex"
-                        class="member-panel @(member.MemberIndex == 1 ? "" : "hidden")">
-
-                        <!-- OPTION SELECTION -->
-                        <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-lg border-2 border-primary/20">
-                            <div class="flex items-center gap-3 mb-6">
-                                <h3 class="text-xl font-bold text-text-main dark:text-white">Tùy chọn chuyên gia
-                                    (@member.Name)</h3>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                                <!-- Option 1: Bất kỳ ai -->
-                                <label
-                                    class="group relative flex flex-col p-5 rounded-2xl border-2 border-gray-100 dark:border-[#4a2630] cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-all h-full">
-                                    <input class="peer sr-only" type="radio" name="pref_@member.MemberIndex" value="any"
-                                        onchange="toggleDetail(@member.MemberIndex, false)">
-                                    <div class="flex items-center gap-4 mb-2">
-                                        <div
-                                            class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-white text-primary flex items-center justify-center shadow-sm">
-                                            <span class="material-symbols-outlined text-2xl">flash_on</span>
-                                        </div>
-                                        <h4 class="text-lg font-bold text-text-main dark:text-white">Bất kỳ Chuyên gia nào
-                                        </h4>
-                                    </div>
-                                    <p class="text-sm text-text-muted pl-[64px]">Hệ thống sẽ tự động chọn người phù hợp
-                                        nhất.</p>
-                                    <div
-                                        class="absolute top-4 right-4 text-primary opacity-0 peer-checked:opacity-100 transition-opacity">
-                                        <span class="material-symbols-outlined">check_circle</span>
-                                    </div>
-                                    <div
-                                        class="absolute inset-0 border-2 border-primary rounded-2xl opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity">
-                                    </div>
-                                </label>
-
-                                <!-- Option 2: Chọn theo dịch vụ -->
-                                <label
-                                    class="group relative flex flex-col p-5 rounded-2xl border-2 border-gray-100 dark:border-[#4a2630] cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-all h-full">
-                                    <input class="peer sr-only" type="radio" name="pref_@member.MemberIndex"
-                                        value="specific" checked onchange="toggleDetail(@member.MemberIndex, true)">
-                                    <div class="flex items-center gap-4 mb-2">
-                                        <div
-                                            class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-white text-primary flex items-center justify-center shadow-sm">
-                                            <span class="material-symbols-outlined text-2xl">person_search</span>
-                                        </div>
-                                        <h4 class="text-lg font-bold text-text-main dark:text-white">Theo từng dịch vụ</h4>
-                                    </div>
-                                    <p class="text-sm text-text-muted pl-[64px]">Chọn chuyên gia yêu thích cho từng dịch vụ.
-                                    </p>
-                                    <div
-                                        class="absolute top-4 right-4 text-primary opacity-0 peer-checked:opacity-100 transition-opacity">
-                                        <span class="material-symbols-outlined">check_circle</span>
-                                    </div>
-                                    <div
-                                        class="absolute inset-0 border-2 border-primary rounded-2xl opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity">
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div class="h-px bg-gray-100 dark:bg-[#4a2630] mb-8"></div>
-
-                            <!-- DETAIL LIST (Per Service) -->
-                            <div id="detail-list-@member.MemberIndex" class="staff-selection-area space-y-10">
-                                @foreach (var service in member.SelectedServices)
+                                // === COMBO LOGIC ===
+                                if (service.ChildServices != null && service.ChildServices.Any())
                                 {
-                                    <div>
-                                        <div class="flex items-center justify-between mb-4 px-1">
-                                            <h4
-                                                class="font-bold text-text-main dark:text-white flex items-center gap-2 text-lg">
-                                                <span class="w-1.5 h-6 rounded-full bg-primary inline-block"></span>
+                                    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                                        <!-- Header Combo -->
+                                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                                <span class="material-symbols-outlined">inventory_2</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900">@service.Name</h4>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-600 uppercase tracking-wide">
+                                                    Combo tiết kiệm
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Child Services -->
+                                        <div class="p-6 space-y-8">
+                                            @foreach (var child in service.ChildServices)
+                                            {
+                                                // Check Selection Logic
+                                                int? selectedStaffId = GetSelectedStaffId(member.MemberIndex, child.Id);
+                                                
+                                                <div>
+                                                    <div class="flex items-center justify-between mb-4">
+                                                        <h5 class="font-bold text-gray-800 flex items-center gap-2">
+                                                            <span class="material-symbols-outlined text-gray-400 text-sm">subdirectory_arrow_right</span>
+                                                            @child.Name
+                                                        </h5>
+                                                        <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">@child.DurationMinutes phút</span>
+                                                    </div>
+                                                    
+                                                    <!-- Horizontal Scroll Staff List -->
+                                                    <div class="flex gap-4 overflow-x-auto pb-4 px-1 snap-x staff-scroll-container">
+                                                        
+                                                        <!-- Option: ANY -->
+                                                        <div class="flex-shrink-0 snap-start">
+                                                            <input class="staff-radio sr-only" type="radio"
+                                                                name="staff_@member.MemberIndex-@child.Id"
+                                                                id="staff_any_@member.MemberIndex-@child.Id"
+                                                                onchange="selectStaff(@member.MemberIndex, @child.Id, null)"
+                                                                @(selectedStaffId == null ? "checked" : "")>
+                                                            
+                                                            <label for="staff_any_@member.MemberIndex-@child.Id" class="group relative flex flex-col items-center justify-center gap-2 w-28 h-36 rounded-2xl border-2 border-gray-100 bg-white cursor-pointer hover:border-gray-300 transition-all duration-200">
+                                                                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                                                                    <span class="material-symbols-outlined text-gray-400 text-2xl">groups</span>
+                                                                </div>
+                                                                <span class="text-xs font-bold text-gray-600">Bất kỳ ai</span>
+                                                                <div class="check-icon absolute top-2 right-2 opacity-0 text-white bg-green-500 rounded-full p-0.5 transform scale-0 transition-all">
+                                                                    <span class="material-symbols-outlined text-[14px]">check</span>
+                                                                </div>
+                                                            </label>
+                                                        </div>
+
+                                                        <!-- List Staffs -->
+                                                        @foreach (var staff in Model.Staffs)
+                                                        {
+                                                            <div class="flex-shrink-0 snap-start">
+                                                                <input class="staff-radio sr-only" type="radio"
+                                                                    name="staff_@member.MemberIndex-@child.Id"
+                                                                    id="staff_@staff.Id-@member.MemberIndex-@child.Id"
+                                                                    onchange="selectStaff(@member.MemberIndex, @child.Id, @staff.Id)"
+                                                                    @(selectedStaffId == staff.Id ? "checked" : "")>
+                                                                
+                                                                <label for="staff_@staff.Id-@member.MemberIndex-@child.Id" class="group relative flex flex-col items-center justify-center w-28 h-36 rounded-2xl border-2 border-gray-100 bg-white cursor-pointer hover:border-pink-200 transition-all duration-200 overflow-hidden">
+                                                                    <!-- Avatar -->
+                                                                    <div class="relative w-14 h-14 mb-2">
+                                                                        <img src="@staff.Avatar" class="w-full h-full rounded-full object-cover border-2 border-transparent transition-colors" />
+                                                                        <!-- Only show green dot if selected? Or always? Let's just standard avatar. -->
+                                                                    </div>
+                                                                    
+                                                                    <!-- Name & Rating -->
+                                                                    <div class="px-2 text-center w-full">
+                                                                        <span class="block text-xs font-bold text-gray-800 truncate mb-0.5">@staff.Name</span>
+                                                                        <div class="flex justify-center text-[10px] text-yellow-400">
+                                                                            <span class="material-symbols-outlined text-[12px] filled">star</span>
+                                                                            <span class="text-gray-400 ml-0.5">4.9</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- Check Icon -->
+                                                                    <div class="check-icon absolute top-2 right-2 opacity-0 text-white bg-primary rounded-full p-0.5 transform scale-0 transition-all shadow-sm">
+                                                                        <span class="material-symbols-outlined text-[14px]">check</span>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                // === SINGLE SERVICE LOGIC ===
+                                else 
+                                {
+                                    // Check selection logic
+                                    int? selectedStaffId = GetSelectedStaffId(member.MemberIndex, service.Id);
+
+                                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <h4 class="font-bold text-gray-900 text-lg flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-xl bg-pink-50 text-primary flex items-center justify-center">
+                                                    <span class="material-symbols-outlined">spa</span>
+                                                </div>
                                                 @service.Name
                                             </h4>
-                                            <span
-                                                class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-[#361c23] rounded text-text-muted">@service.DurationMinutes
-                                                phút</span>
+                                            <span class="text-xs font-semibold px-3 py-1 bg-gray-100 rounded-full text-gray-600">@service.DurationMinutes phút</span>
                                         </div>
 
-                                        <!-- Horizontal Staff Scroll -->
-                                        <div
-                                            class="flex gap-4 overflow-x-auto pb-4 px-1 snap-x scrollbar-hide staff-scroll-container">
-
-                                            <!-- Option: Random (Bất kỳ ai) - Luôn hiển thị -->
-                                            <div class="flex-shrink-0 snap-start staff-item-container" data-name="bất kỳ ai">
-                                                <input class="staff-radio sr-only" type="radio"
-                                                    name="staff_@member.MemberIndex@service.Id"
-                                                    id="staff_any_@member.MemberIndex@service.Id"
-                                                    onchange="selectStaff(@member.MemberIndex, @service.Id, null)" checked>
-                                                <!-- Mặc định check Random -->
-                                                <label for="staff_any_@member.MemberIndex@service.Id"
-                                                    class="flex flex-col items-center gap-3 w-[140px] p-4 rounded-2xl border border-gray-200 cursor-pointer transition-all h-full relative group hover:bg-pink-50">
-                                                    <div
-                                                        class="w-20 h-20 rounded-full bg-gradient-to-br from-primary/80 to-pink-400 flex items-center justify-center text-white shadow-md">
-                                                        <span class="material-symbols-outlined text-3xl">groups</span>
+                                        <!-- Horizontal Scroll Staff List -->
+                                        <div class="flex gap-4 overflow-x-auto pb-4 px-1 snap-x staff-scroll-container">
+                                            
+                                            <!-- Option: ANY -->
+                                            <div class="flex-shrink-0 snap-start">
+                                                <input class="staff-radio sr-only" type="radio" 
+                                                    name="staff_@member.MemberIndex-@service.Id" 
+                                                    id="staff_any_@member.MemberIndex-@service.Id" 
+                                                    onchange="selectStaff(@member.MemberIndex, @service.Id, null)"
+                                                    @(selectedStaffId == null ? "checked" : "")>
+                                                
+                                                <label for="staff_any_@member.MemberIndex-@service.Id" class="group relative flex flex-col items-center justify-center gap-2 w-32 h-40 rounded-2xl border-2 border-gray-100 bg-white cursor-pointer hover:border-gray-300 transition-all duration-200">
+                                                    <div class="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                                                        <span class="material-symbols-outlined text-gray-400 text-3xl">groups</span>
                                                     </div>
-                                                    <div class="text-center">
-                                                        <span class="block text-sm font-bold text-text-main">Bất kỳ ai</span>
-                                                        <span class="block text-xs text-text-muted mt-1">Sớm nhất</span>
-                                                    </div>
-                                                    <div
-                                                        class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center opacity-0 transition-opacity">
-                                                        <span
-                                                            class="material-symbols-outlined text-[12px] font-bold">check</span>
+                                                    <span class="text-xs font-bold text-gray-600">Bất kỳ ai</span>
+                                                    <div class="check-icon absolute top-3 right-3 opacity-0 text-white bg-green-500 rounded-full p-0.5 transform scale-0 transition-all">
+                                                        <span class="material-symbols-outlined text-[14px]">check</span>
                                                     </div>
                                                 </label>
                                             </div>
 
-                                            <!-- Specific Staffs -->
+                                            <!-- List Staffs -->
                                             @foreach (var staff in Model.Staffs)
                                             {
-                                                <div class="flex-shrink-0 snap-start staff-item-container"
-                                                    data-name="@staff.Name.ToLower()">
-                                                    <input class="staff-radio sr-only" type="radio"
-                                                        name="staff_@member.MemberIndex@service.Id"
-                                                        id="staff_@staff.Id@member.MemberIndex@service.Id"
-                                                        onchange="selectStaff(@member.MemberIndex, @service.Id, @staff.Id)">
-                                                    <label for="staff_@staff.Id@member.MemberIndex@service.Id"
-                                                        class="flex flex-col items-center gap-3 w-[140px] p-4 rounded-2xl border border-gray-200 cursor-pointer transition-all h-full relative group hover:bg-pink-50">
-                                                        <img src="@staff.Avatar"
-                                                            class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white"
-                                                            alt="@staff.Name">
-                                                        <div class="text-center">
-                                                            <span class="block text-sm font-bold text-text-main">@staff.Name</span>
-                                                            <span class="block text-xs text-text-muted mt-1">@staff.Role</span>
+                                                <div class="flex-shrink-0 snap-start">
+                                                    <input class="staff-radio sr-only" type="radio" 
+                                                        name="staff_@member.MemberIndex-@service.Id" 
+                                                        id="staff_@staff.Id-@member.MemberIndex-@service.Id" 
+                                                        onchange="selectStaff(@member.MemberIndex, @service.Id, @staff.Id)"
+                                                        @(selectedStaffId == staff.Id ? "checked" : "")>
+                                                    
+                                                    <label for="staff_@staff.Id-@member.MemberIndex-@service.Id" class="group relative flex flex-col items-center justify-center w-32 h-40 rounded-2xl border-2 border-gray-100 bg-white cursor-pointer hover:border-pink-200 transition-all duration-200 overflow-hidden">
+                                                        <div class="relative w-16 h-16 mb-3">
+                                                            <img src="@staff.Avatar" class="w-full h-full rounded-full object-cover border-2 border-transparent transition-colors shadow-sm" />
                                                         </div>
-                                                        <div
-                                                            class="check-icon absolute top-3 right-3 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center opacity-0 transition-opacity">
-                                                            <span
-                                                                class="material-symbols-outlined text-[12px] font-bold">check</span>
+                                                        <div class="px-2 text-center w-full">
+                                                            <span class="block text-sm font-bold text-gray-800 truncate mb-1">@staff.Name</span>
+                                                            <div class="flex justify-center text-[10px] text-yellow-400 items-center">
+                                                                <span class="material-symbols-outlined text-[14px] filled">star</span>
+                                                                <span class="text-gray-500 font-medium ml-1">4.9</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="check-icon absolute top-3 right-3 opacity-0 text-white bg-primary rounded-full p-1 transform scale-0 transition-all shadow-sm">
+                                                            <span class="material-symbols-outlined text-[14px]">check</span>
                                                         </div>
                                                     </label>
                                                 </div>
                                             }
                                         </div>
-                                        <div class="no-staff-msg hidden text-center text-sm text-text-muted mt-2">Không tìm thấy
-                                            chuyên gia phù hợp.</div>
                                     </div>
                                 }
-                            </div>
-                        </section>
-                    </div>
-                }
-
-                <!-- [ĐÃ CẬP NHẬT] THANH ĐIỀU HƯỚNG CUỐI TRANG -->
-                <div class="mt-8 pt-6 border-t border-gray-100 flex justify-between">
-                    <a asp-action="Step2_Services"
-                        class="bg-white border-2 border-gray-200 hover:border-primary/50 text-text-main hover:text-primary font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">arrow_back</span> Quay lại
-                    </a>
-
-                    <a asp-action="Step4_Time"
-                        class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-xl shadow-lg flex items-center gap-2 transition-all">
-                        Tiếp tục <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                    </a>
-                </div>
-
-            </div>
-
-            <!-- RIGHT SIDEBAR (Tóm tắt đặt lịch) -->
-            <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
-                <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl border border-pink-100">
-                    <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
-                        Tóm tắt đặt lịch
-                    </h3>
-                    <div class="space-y-4 mb-6 relative">
-                        <div class="absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100 dark:bg-[#4a2630]"></div>
-
-                        <!-- Iterate hiển thị dịch vụ đã chọn -->
-                        @foreach (var member in Model.CurrentSession.Members)
-                        {
-                            @foreach (var s in member.SelectedServices)
-                            {
-                                <div class="relative pl-6">
-                                    <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-white">
-                                    </div>
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <p class="text-sm font-semibold text-text-main">@s.Name</p>
-                                            <p class="text-xs text-text-muted mt-0.5">
-                                                @s.DurationMinutes phút •
-                                                <span id="staff-display-@member.MemberIndex@s.Id"
-                                                    class="text-primary font-medium">Bất kỳ ai</span>
-                                            </p>
-                                            @if (Model.CurrentSession.IsGroupBooking)
-                                            {
-                                                <span class="text-[10px] bg-gray-100 px-1 rounded">@member.Name</span>
-                                            }
-                                        </div>
-                                        <div class="text-right">
-                                            <span
-                                                class="block text-sm font-medium text-text-main">@s.Price.ToString("N0")</span>
-                                            <!-- [MỚI] Link sửa nhanh ở Sidebar -->
-                                            <a asp-action="Step2_Services"
-                                                class="text-[10px] text-text-muted hover:text-primary underline cursor-pointer">Sửa</a>
-                                        </div>
-                                    </div>
-                                </div>
                             }
                         }
-                    </div>
-
-                    <div class="border-t border-dashed border-gray-200 my-4"></div>
-                    <div class="space-y-2 mb-6">
-                        <div class="flex justify-between items-end pt-2">
-                            <div>
-                                <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
-                                <span class="text-base font-semibold text-text-main">@Model.TotalDuration phút</span>
+                        else 
+                        {
+                            <div class="flex flex-col items-center justify-center py-16 bg-white rounded-3xl border border-dashed border-gray-200">
+                                <span class="material-symbols-outlined text-gray-300 text-6xl mb-4">spa</span>
+                                <p class="text-gray-500 mb-4">Chưa có dịch vụ nào được chọn.</p>
+                                <a asp-action="Step2_Services" class="text-primary hover:text-primary-dark font-bold hover:underline">Quay lại chọn dịch vụ</a>
                             </div>
-                            <div class="text-right">
-                                <span class="block text-sm text-text-muted mb-1">Tổng tiền</span>
-                                <span class="text-2xl font-black text-primary-dark">@Model.TotalAmount.ToString("N0")
-                                    đ</span>
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
-            </aside>
+            }
+            
+            <!-- NAVIGATION BUTTONS -->
+            <div class="mt-4 pt-8 border-t border-gray-100 flex justify-between items-center">
+                <a asp-action="Step2_Services" class="group flex items-center gap-2 px-6 py-3 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-colors">
+                    <span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                    Quay lại
+                </a>
+                <a asp-action="Step4_Time" class="group relative flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-10 rounded-xl shadow-lg shadow-pink-200 hover:shadow-pink-300 hover:-translate-y-0.5 transition-all">
+                    Tiếp tục
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            </div>
         </div>
-    </main>
+        
+        <!-- RIGHT SIDEBAR: SUMMARY -->
+        <aside class="hidden lg:block w-96 shrink-0 h-fit sticky top-24">
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-gray-200/50 border border-white ring-1 ring-gray-100">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">receipt_long</span>
+                    Tóm tắt booking
+                </h3>
+                
+                <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2 scrollbar-thin">
+                    @foreach (var member in Model.CurrentSession.Members)
+                    {
+                        <div class="relative">
+                            @if(Model.CurrentSession.IsGroupBooking) {
+                                <div class="flex items-center gap-2 mb-3">
+                                    <span class="material-symbols-outlined text-gray-400 text-sm">person</span>
+                                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wide">@member.Name</span>
+                                </div>
+                            }
 
-    <script>
-        // 1. Chuyển tab thành viên
-        function switchMember(index) {
-            // Tab UI
-            document.querySelectorAll('.member-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`btn-member-${index}`).classList.add('active');
-
-            // Show Panel
-            document.querySelectorAll('.member-panel').forEach(p => p.classList.add('hidden'));
-            document.getElementById(`panel-member-${index}`).classList.remove('hidden');
-        }
-
-        // 2. Toggle giữa "Bất kỳ ai" và "Theo dịch vụ"
-        function toggleDetail(memberIndex, show) {
-            const list = document.getElementById(`detail-list-${memberIndex}`);
-
-            if (show) {
-                list.classList.remove('collapsed');
-                // Logic: Khi bật lại mode detail, giữ nguyên các lựa chọn cũ (không cần reset)
-            } else {
-                list.classList.add('collapsed');
-                // Logic: Khi chọn "Bất kỳ ai" cho cả gói -> Gửi request set All null
-                fetch('/Booking/SetStaffAll', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `memberIndex=${memberIndex}&staffId=` // Empty staffId = null
-                });
-
-                // Reset UI hiển thị bên Sidebar về "Bất kỳ ai"
-                document.querySelectorAll(`[id^='staff-display-${memberIndex}']`).forEach(el => {
-                    el.innerText = 'Bất kỳ ai';
-                });
-
-                // Reset các radio button bên dưới về "Any" để đồng bộ
-                document.querySelectorAll(`#detail-list-${memberIndex} input[id^='staff_any_']`).forEach(r => r.checked = true);
-            }
-        }
-
-        // 3. Chọn nhân viên cụ thể
-        function selectStaff(memberIndex, serviceId, staffId) {
-            // Update UI Sidebar ngay lập tức cho mượt
-            const displayEl = document.getElementById(`staff-display-${memberIndex}${serviceId}`);
-            if (displayEl) {
-                // Tìm tên nhân viên (hacky way: lấy từ alt ảnh hoặc label)
-                if (staffId == null) {
-                    displayEl.innerText = "Bất kỳ ai";
-                } else {
-                    displayEl.innerText = "Đã chọn KTV";
-                }
-            }
-
-            // Gọi Backend
-            const formData = new FormData();
-            formData.append('memberIndex', memberIndex);
-            formData.append('serviceId', serviceId);
-            if (staffId) formData.append('staffId', staffId);
-
-            fetch('/Booking/SetStaff', {
-                method: 'POST',
-                body: formData
-            });
-        }
-
-        // 4. Tìm kiếm nhân viên (Client-side filtering)
-        function searchStaff() {
-            const input = document.getElementById('staff-search-input');
-            const filter = input.value.toLowerCase().trim();
-
-            // Tìm tất cả các container chứa list nhân viên
-            const scrollContainers = document.querySelectorAll('.staff-scroll-container');
-
-            scrollContainers.forEach(container => {
-                const items = container.querySelectorAll('.staff-item-container');
-                let hasVisible = false;
-
-                items.forEach(item => {
-                    const name = item.getAttribute('data-name');
-                    // Luôn hiện "Bất kỳ ai" (nếu bạn muốn) hoặc cũng lọc nó. 
-                    // Ở đây tôi chọn: nếu search rỗng -> hiện hết. Nếu search có text -> lọc.
-                    // Lưu ý: "Bất kỳ ai" có data-name="bất kỳ ai"
-
-                    if (name.includes(filter)) {
-                        item.classList.remove('hidden-by-search');
-                        hasVisible = true;
-                    } else {
-                        item.classList.add('hidden-by-search');
+                            @if(member.SelectedServices != null)
+                            {
+                                <div class="pl-4 border-l-2 border-dashed border-gray-200 space-y-4">
+                                @foreach (var service in member.SelectedServices)
+                                {
+                                    <div class="group">
+                                        <div class="flex justify-between items-start">
+                                            <div class="w-full">
+                                                <p class="text-sm font-bold text-gray-900 leading-tight mb-1">@service.Name</p>
+                                                
+                                                <!-- COMBO DETAILS -->
+                                                @if (service.ChildServices != null && service.ChildServices.Any())
+                                                {
+                                                    <div class="mt-2 space-y-2">
+                                                        @foreach(var child in service.ChildServices)
+                                                        {
+                                                            int? sId = null;
+                                                            if (member.ServiceStaffMap != null && member.ServiceStaffMap.ContainsKey(child.Id)) {
+                                                                sId = member.ServiceStaffMap[child.Id];
+                                                            }
+                                                            var staffName = GetStaffName(sId);
+                                                            <div class="flex items-start justify-between bg-gray-50 p-2 rounded-lg">
+                                                                <div class="text-[11px]">
+                                                                    <p class="text-gray-700 font-medium">@child.Name</p>
+                                                                    <p class="text-gray-400 mt-0.5">KTV: <span class="text-primary font-bold">@staffName</span></p>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                                else 
+                                                {
+                                                    /* SINGLE SERVICE */
+                                                    int? sId = null;
+                                                    if (member.ServiceStaffMap != null && member.ServiceStaffMap.ContainsKey(service.Id)) {
+                                                        sId = member.ServiceStaffMap[service.Id];
+                                                    }
+                                                    var staffName = GetStaffName(sId);
+                                                    <p class="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                                        <span class="material-symbols-outlined text-[14px]">schedule</span> @service.DurationMinutes phút
+                                                    </p>
+                                                    <p class="text-xs mt-1 bg-pink-50 text-pink-600 inline-block px-2 py-1 rounded font-medium">
+                                                        KTV: @staffName
+                                                    </p>
+                                                }
+                                            </div>
+                                            <span class="text-sm font-bold text-primary shrink-0 ml-3">@service.Price.ToString("N0")</span>
+                                        </div>
+                                    </div>
+                                }
+                                </div>
+                            }
+                        </div>
                     }
-                });
+                </div>
 
-                // Hiển thị thông báo nếu không tìm thấy trong nhóm này
-                const msg = container.nextElementSibling; // div.no-staff-msg
-                if (msg && msg.classList.contains('no-staff-msg')) {
-                    if (!hasVisible) msg.classList.remove('hidden');
-                    else msg.classList.add('hidden');
-                }
-            });
+                <div class="border-t border-dashed border-gray-200 my-6"></div>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>Tổng thời gian</span>
+                        <span class="font-semibold text-gray-900">@Model.TotalDuration phút</span>
+                    </div>
+                    <div class="flex justify-between items-end pt-2">
+                        <span class="text-sm font-bold text-gray-700">Tổng tiền</span>
+                        <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-primary">
+                            @Model.TotalAmount.ToString("N0") <span class="text-sm text-gray-500 font-medium">đ</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+
+<script>
+    function switchMember(index) {
+        document.querySelectorAll('.member-tab').forEach(t => {
+            t.classList.remove('bg-primary', 'border-primary', 'text-white', 'shadow-lg');
+            t.classList.add('bg-white', 'border-gray-100', 'text-gray-600');
+        });
+        
+        const activeBtn = document.getElementById(`btn-member-${index}`);
+        activeBtn.classList.remove('bg-white', 'border-gray-100', 'text-gray-600', 'hover:border-pink-200');
+        activeBtn.classList.add('bg-primary', 'border-primary', 'text-white', 'shadow-lg');
+
+        document.querySelectorAll('.member-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(`panel-member-${index}`).classList.remove('hidden');
+    }
+
+    function toggleDetail(memberIndex, show) {
+        const list = document.getElementById(`detail-list-${memberIndex}`);
+        if(show) {
+            list.style.display = 'block';
+            setTimeout(() => list.classList.remove('opacity-0', 'translate-y-4'), 10);
+        } else {
+            list.classList.add('opacity-0', 'translate-y-4');
+            setTimeout(() => list.style.display = 'none', 300);
         }
-    </script>
-</body>
+    }
 
-</html>
+    function selectStaff(memberIndex, serviceId, staffId) {
+        const overlay = document.getElementById('loading-overlay');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+
+        const formData = new FormData();
+        formData.append('memberIndex', memberIndex);
+        formData.append('serviceId', serviceId);
+        if (staffId) formData.append('staffId', staffId);
+
+        fetch('/Booking/SetStaff', { method: 'POST', body: formData })
+            .then(res => {
+                if(res.ok) {
+                    location.reload(); 
+                } else {
+                    alert('Có lỗi xảy ra, vui lòng thử lại.');
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('flex');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            });
+    }
+</script>

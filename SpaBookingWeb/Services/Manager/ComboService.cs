@@ -49,8 +49,24 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task<ComboViewModel> GetComboForCreateAsync()
         {
-            // Lấy danh sách dịch vụ (Global Filter tự động lọc Active)
-            var services = await _context.Services.Where(s => s.IsActive).ToListAsync();
+            // Lấy danh sách dịch vụ (Global Filter tự động lọc Active) và kèm theo Consumables
+            var services = await _context.Services
+                .Include(s => s.ServiceConsumables)
+                .ThenInclude(sc => sc.Product)
+                .ThenInclude(p => p.Unit)
+                .Where(s => s.IsActive).ToListAsync();
+
+            // Build Map
+            var map = services.ToDictionary(
+                s => s.ServiceId,
+                s => s.ServiceConsumables.Select(sc => new ServiceConsumableDto
+                {
+                    ProductId = sc.ProductId,
+                    Quantity = sc.Quantity,
+                    ProductName = sc.Product.ProductName,
+                    UnitName = sc.Product.Unit?.UnitName
+                }).ToList()
+            );
 
             return new ComboViewModel
             {
@@ -58,7 +74,8 @@ namespace SpaBookingWeb.Services.Manager
                 {
                     Value = s.ServiceId.ToString(),
                     Text = $"{s.ServiceName} ({s.Price:N0}đ)"
-                })
+                }),
+                ServiceConsumablesMap = map
             };
         }
 
@@ -70,7 +87,22 @@ namespace SpaBookingWeb.Services.Manager
 
             if (combo == null) return null;
 
-            var services = await _context.Services.Where(s => s.IsActive).ToListAsync();
+            var services = await _context.Services
+                .Include(s => s.ServiceConsumables)
+                .ThenInclude(sc => sc.Product)
+                .ThenInclude(p => p.Unit)
+                .Where(s => s.IsActive).ToListAsync();
+
+            var map = services.ToDictionary(
+                s => s.ServiceId,
+                s => s.ServiceConsumables.Select(sc => new ServiceConsumableDto
+                {
+                    ProductId = sc.ProductId,
+                    Quantity = sc.Quantity,
+                    ProductName = sc.Product.ProductName,
+                    UnitName = sc.Product.Unit?.UnitName
+                }).ToList()
+            );
 
             return new ComboViewModel
             {
@@ -79,13 +111,13 @@ namespace SpaBookingWeb.Services.Manager
                 Price = combo.Price,
                 Description = combo.Description,
                 ExistingImage = combo.Image,
-                // Lấy ra các ID dịch vụ đang Active trong Combo
                 SelectedServiceIds = combo.ComboDetails.Select(cd => cd.ServiceId).ToList(),
                 AvailableServices = services.Select(s => new SelectListItem
                 {
                     Value = s.ServiceId.ToString(),
                     Text = $"{s.ServiceName} ({s.Price:N0}đ)"
-                })
+                }),
+                ServiceConsumablesMap = map
             };
         }
 

@@ -9,6 +9,7 @@ namespace SpaBookingWeb.ViewModels.Client
     // ==========================================
     public class BookingSessionModel
     {
+        public int? ExistingAppointmentId { get; set; }
         public bool IsGroupBooking { get; set; }
         public List<BookingMember> Members { get; set; } = new List<BookingMember>();
 
@@ -63,6 +64,11 @@ namespace SpaBookingWeb.ViewModels.Client
         public int DurationMinutes { get; set; }
         public string Type { get; set; } // "Service" hoặc "Combo"
         public bool IsSelected { get; set; }
+
+        public List<string> Consumables { get; set; } = new List<string>();
+
+        public List<ServiceItemViewModel> ChildServices { get; set; } = new List<ServiceItemViewModel>();
+        
     }
 
     public class ServiceCategoryGroupViewModel
@@ -128,5 +134,10 @@ namespace SpaBookingWeb.ViewModels.Client
         public int DepositPercent { get; set; }
         public decimal DepositAmount { get; set; }
         public List<StaffViewModel> Staffs { get; set; }
+
+
+         public string VoucherCode { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public string VoucherMessage { get; set; }
     }
 }

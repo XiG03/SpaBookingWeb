@@ -1,4 +1,8 @@
 ﻿@model SpaBookingWeb.ViewModels.Client.ClientHomeViewModel
+@using Microsoft.AspNetCore.Identity
+@using SpaBookingWeb.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
 
 @{
   Layout = null; // Tắt layout mặc định để dùng full HTML cấu trúc của bạn
@@ -71,7 +75,7 @@
           <div
             class="flex items-center gap-4 text-text-main dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
             <span class="material-symbols-outlined text-primary text-3xl">spa</span>
-            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">@Model.SpaName</h2>
+            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">SpaBookingWebsite</h2>
           </div>
         </div>
         <div class="hidden md:flex flex-1 justify-end gap-8 items-center">
@@ -79,7 +83,9 @@
             <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
               asp-area="" asp-controller="Services" asp-action="Index">Dịch vụ</a>
             <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-              href="#">Combo</a>
+              asp-area="" asp-controller="Combos" asp-action="Index">Combo</a>
+            <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
+              asp-area="" asp-controller="Posts" asp-action="Index">Blog</a>
             <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
               href="#">Về chúng tôi</a>
             <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
@@ -89,6 +95,79 @@
             class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors shadow-md shadow-pink-200 dark:shadow-none">
             <a class="truncate" asp-area="" asp-controller="Booking" asp-action="Index">Đặt lịch ngay</a>
           </button>
+
+          <!-- USER PROFILE BUTTON -->
+          @if (SignInManager.IsSignedIn(User))
+          {
+            var user = await UserManager.GetUserAsync(User);
+            <div class="relative ml-4 group z-50">
+              <button class="flex items-center gap-2 focus:outline-none">
+                @if (user != null && !string.IsNullOrEmpty(user.FullName))
+                {
+                  <div
+                    class="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center text-primary dark:text-pink-300 font-bold text-lg border-2 border-primary shadow-sm">
+                    @user.FullName.Substring(0, 1).ToUpper()
+                  </div>
+                }
+                else
+                {
+                  <div
+                    class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 overflow-hidden shadow-sm">
+                    <span class="material-symbols-outlined">person</span>
+                  </div>
+                }
+                <div class="flex flex-col items-start hidden lg:block">
+                  <span class="text-sm font-bold text-gray-900 dark:text-white leading-none">@(user?.FullName ??
+                                      "User")</span>
+                  <span class="text-[10px] text-gray-500 font-medium">Thành viên</span>
+                </div>
+                <span
+                  class="material-symbols-outlined text-gray-400 text-sm hidden lg:block group-hover:text-primary transition-colors">expand_more</span>
+              </button>
+
+              <!-- Dropdown -->
+              <div
+                class="absolute right-0 top-full pt-2 w-60 hidden group-hover:block hover:block z-50 animation-fade-in-down">
+                <div
+                  class="bg-white dark:bg-[#2a0a12] rounded-2xl shadow-xl border border-pink-100 dark:border-pink-900 overflow-hidden">
+                  <div class="px-4 py-3 border-b border-gray-100 dark:border-pink-900/50">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate">@(user?.FullName ?? "User")</p>
+                    <p class="text-xs text-gray-500 truncate">@User.Identity.Name</p>
+                  </div>
+                  <div class="py-1">
+                    <a asp-controller="Profile" asp-action="Appointments"
+                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
+                      <span
+                        class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">person</span>
+                      Hồ sơ cá nhân
+                    </a>
+                    <a asp-controller="Profile" asp-action="History"
+                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
+                      <span
+                        class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">history</span>
+                      Lịch sử đặt hẹn
+                    </a>
+                  </div>
+                  <div class="border-t border-gray-100 dark:border-pink-900/50 py-1">
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="w-full">
+                      <button type="submit"
+                        class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">logout</span> Đăng xuất
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+          else
+          {
+            <a asp-controller="Account" asp-action="Login"
+              class="ml-6 flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-[20px]">login</span>
+              <span class="hidden lg:inline">Đăng nhập</span>
+            </a>
+          }
         </div>
         <div class="flex md:hidden items-center">
           <span class="material-symbols-outlined text-gray-900 dark:text-white">menu</span>
@@ -96,8 +175,9 @@
       </header>
     </div>
 
-    <!-- MAIN CONTENT GIỮ NGUYÊN (Banner, Category, Combo, Services, Promotion...) -->
+    <!-- MAIN CONTENT -->
     <div class="w-full bg-white dark:bg-background-dark">
+      <!-- HERO BANNER -->
       <div class="@@container">
         <div
           class="flex flex-col gap-6 bg-cover bg-center bg-no-repeat min-h-[500px] items-center justify-center p-4 relative"
@@ -126,6 +206,7 @@
           </div>
         </div>
       </div>
+
       <div class="flex flex-1 justify-center py-10 px-4 md:px-10 lg:px-40 bg-background-light dark:bg-background-dark">
         <div class="flex flex-col max-w-[1200px] flex-1 gap-12">
 
@@ -199,10 +280,11 @@
                       <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái</span>
                       <span class="text-sm font-semibold text-green-600 dark:text-green-400">@combo.StatusText</span>
                     </div>
-                    <button
+                    <!-- Liên kết đến trang đặt lịch combo -->
+                    <a asp-controller="Booking" asp-action="BookCombo" asp-route-id="@combo.ComboId"
                       class="bg-primary/10 hover:bg-primary text-primary hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
                       Đặt ngay
-                    </button>
+                    </a>
                   </div>
                 </div>
               }
@@ -220,7 +302,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               @foreach (var svc in Model.FeaturedServices)
               {
-                <div class="flex flex-col gap-3 group cursor-pointer">
+                <div class="flex flex-col gap-3 group cursor-pointer" onclick="window.location.href='/Booking/BookService?id=@svc.ServiceId'">
                   <div class="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
                     <div
                       class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
@@ -270,6 +352,45 @@
               </div>
             </div>
           </section>
+
+          <!-- [MỚI] TIN TỨC & SỰ KIỆN -->
+          @if (Model.LatestPosts.Any())
+          {
+            <section class="mt-8">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-gray-900 dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Tin tức
+                  &amp; Sự kiện</h2>
+                <a class="text-sm font-medium text-pink-600 dark:text-primary hover:underline" asp-area=""
+                  asp-controller="Posts" asp-action="Index">Xem tất cả</a>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                @foreach (var post in Model.LatestPosts)
+                {
+                  <article
+                    class="group bg-white dark:bg-[#3d101c] rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-pink-50 dark:border-pink-900">
+                    <a asp-controller="Posts" asp-action="Detail" asp-route-id="@post.Id"
+                      class="block relative aspect-video overflow-hidden">
+                      <img src="@post.Thumbnail" alt="@post.Title"
+                        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    </a>
+                    <div class="p-4 flex flex-col gap-2">
+                      <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                        @post.PublishedDateStr
+                      </div>
+                      <h3 class="text-base font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">
+                        <a asp-controller="Posts" asp-action="Detail" asp-route-id="@post.Id">@post.Title</a>
+                      </h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                        @post.Summary
+                      </p>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+          }
+
         </div>
       </div>
 

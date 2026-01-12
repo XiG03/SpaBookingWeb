@@ -1,4 +1,6 @@
-﻿using SpaBookingWeb.ViewModels.Client;
+﻿using SpaBookingWeb.Models;
+using SpaBookingWeb.Services.Manager;
+using SpaBookingWeb.ViewModels.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,5 +36,17 @@ namespace SpaBookingWeb.Services.Client
         // [MỚI] Tái tạo session từ đơn hàng cũ (Đặt lại)
         Task<bool> RebookAsync(int appointmentId);
 
+        Task<VoucherCheckResult> ValidateVoucherAsync(string code, decimal orderTotal);
+
+        Task<bool> ResumeBookingAsync(int appointmentId);
+
+
+    }
+
+    public class VoucherCheckResult
+    {
+        public bool IsValid { get; set; }
+        public string Message { get; set; }
+        public Voucher Voucher { get; set; } // Trả về thông tin voucher để hiển thị nếu cần
     }
 }

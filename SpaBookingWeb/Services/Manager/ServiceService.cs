@@ -30,23 +30,33 @@ namespace SpaBookingWeb.Services.Manager
         public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync()
         {
             var services = await _context.Services.ToListAsync();
-            var appointmentDetails = await _context.AppointmentDetails
+            // Lấy tất cả chi tiết đơn hàng mà (Đã hoàn thành HOẶC Đã đặt cọc)
+            var relevantDetails = await _context.AppointmentDetails
                 .Include(ad => ad.Appointment)
-                .Where(ad => ad.Appointment.Status == "Completed" && ad.ServiceId != null) 
+                .Where(ad => ad.ServiceId != null && !ad.IsDeleted
+                             && (ad.Appointment.Status == "Completed" || ad.Appointment.IsDepositPaid))
                 .ToListAsync();
 
             var stats = new List<ServiceStatisticDto>();
             foreach (var service in services)
             {
-                var detailsForService = appointmentDetails.Where(x => x.ServiceId == service.ServiceId).ToList();
+                var detailsForService = relevantDetails.Where(x => x.ServiceId == service.ServiceId).ToList();
+
+                // Logic:
+                // 1. Lượt sử dụng: Chỉ tính những đơn đã Complete
+                var usageCount = detailsForService.Count(x => x.Appointment.Status == "Completed");
+
+                // 2. Doanh thu: Tính tổng giá trị booking của (Completed + Đã cọc)
+                var revenue = detailsForService.Sum(x => x.PriceAtBooking);
+
                 stats.Add(new ServiceStatisticDto
                 {
                     ServiceId = service.ServiceId,
                     ServiceName = service.ServiceName,
                     Price = service.Price,
                     IsActive = service.IsActive,
-                    UsageCount = detailsForService.Count,
-                    TotalRevenue = detailsForService.Sum(x => x.PriceAtBooking)
+                    UsageCount = usageCount,
+                    TotalRevenue = revenue
                 });
             }
 
@@ -63,9 +73,13 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task<ServiceViewModel?> GetServiceForEditAsync(int id)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await _context.Services
+                .Include(s => s.ServiceConsumables).ThenInclude(sc => sc.Product).ThenInclude(p => p.Unit)
+                .FirstOrDefaultAsync(s => s.ServiceId == id);
+
             if (service == null) return null;
-            return new ServiceViewModel
+
+            var model = new ServiceViewModel
             {
                 ServiceId = service.ServiceId,
                 ServiceName = service.ServiceName,
@@ -74,7 +88,33 @@ namespace SpaBookingWeb.Services.Manager
                 Description = service.Description,
                 ExistingImage = service.Image,
                 IsActive = service.IsActive,
-                RequiresDeposit = service.RequiresDeposit
+                RequiresDeposit = service.RequiresDeposit,
+                Consumables = service.ServiceConsumables.Where(sc => !sc.IsDeleted).Select(sc => new ServiceConsumableDto
+                {
+                    ProductId = sc.ProductId,
+                    Quantity = sc.Quantity,
+                    ProductName = sc.Product.ProductName,
+                    UnitName = sc.Product.Unit?.UnitName
+                }).ToList()
+            };
+
+            // Load danh sách sản phẩm để chọn
+            model.AvailableProducts = await _context.Products
+                .Include(p => p.Unit)
+                .Where(p => !p.IsDeleted && p.IsForSale)
+                .ToListAsync();
+
+            return model;
+        }
+
+        public async Task<ServiceViewModel> GetServiceForCreateAsync()
+        {
+            return new ServiceViewModel
+            {
+                AvailableProducts = await _context.Products
+                    .Include(p => p.Unit)
+                    .Where(p => !p.IsDeleted)
+                    .ToListAsync()
             };
         }
 
@@ -102,6 +142,25 @@ namespace SpaBookingWeb.Services.Manager
             };
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
+
+            // Lưu định mức tiêu hao
+            if (model.Consumables != null && model.Consumables.Any())
+            {
+                foreach (var item in model.Consumables)
+                {
+                    if (item.Quantity > 0)
+                    {
+                        var consumable = new ServiceConsumable
+                        {
+                            ServiceId = service.ServiceId,
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity
+                        };
+                        _context.ServiceConsumables.Add(consumable);
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateServiceAsync(ServiceViewModel model)
@@ -118,6 +177,26 @@ namespace SpaBookingWeb.Services.Manager
             service.IsActive = model.IsActive;
             service.RequiresDeposit = model.RequiresDeposit;
 
+            // Cập nhật ServiceConsumables: Xóa cũ (Hard delete vì đây là bảng cấu hình)
+            var existingConsumables = await _context.ServiceConsumables.Where(sc => sc.ServiceId == model.ServiceId).ToListAsync();
+            _context.ServiceConsumables.RemoveRange(existingConsumables);
+
+            if (model.Consumables != null && model.Consumables.Any())
+            {
+                foreach (var item in model.Consumables)
+                {
+                    if (item.Quantity > 0)
+                    {
+                        _context.ServiceConsumables.Add(new ServiceConsumable
+                        {
+                            ServiceId = service.ServiceId,
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity
+                        });
+                    }
+                }
+            }
+
             _context.Services.Update(service);
             await _context.SaveChangesAsync();
         }
@@ -127,7 +206,7 @@ namespace SpaBookingWeb.Services.Manager
             var service = await _context.Services.FindAsync(id);
             if (service != null)
             {
-                service.IsActive = false; 
+                service.IsActive = false;
                 _context.Services.Update(service);
                 await _context.SaveChangesAsync();
             }

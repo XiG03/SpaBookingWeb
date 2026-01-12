@@ -1,0 +1,249 @@
+﻿@model SpaBookingWeb.ViewModels.Client.ComboDetailViewModel
+@using System.Globalization
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Name;
+    var culture = new CultureInfo("vi-VN");
+}
+
+<!-- Tích hợp CSS từ file HTML gốc -->
+<style>
+    /* Custom scrollbar if needed */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .font-display { font-family: 'Plus Jakarta Sans', 'Noto Sans', sans-serif; }
+</style>
+
+<main class="w-full max-w-[1120px] mx-auto px-4 sm:px-6 py-6 flex flex-col gap-8 bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200 font-display">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex flex-wrap gap-2 items-center text-sm">
+        <a class="text-text-muted hover:text-primary transition-colors" href="/">Trang chủ</a>
+        <span class="material-symbols-outlined text-text-muted text-[16px]">chevron_right</span>
+        <a class="text-text-muted hover:text-primary transition-colors" href="/Combos">Combo</a>
+        <span class="material-symbols-outlined text-text-muted text-[16px]">chevron_right</span>
+        <span class="text-text-main dark:text-white font-medium">@Model.Name</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        
+        <!-- LEFT CONTENT -->
+        <div class="lg:col-span-7 flex flex-col gap-10">
+            
+            <!-- Hero Images & Info -->
+            <div class="flex flex-col gap-4">
+                <!-- Main Image -->
+                <div class="w-full aspect-video rounded-2xl overflow-hidden shadow-sm relative group">
+                    <img alt="@Model.Name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                         src="@Model.ImageUrl" />
+                    <!-- Video Button Placeholder (Optional) -->
+                    <div class="absolute top-4 right-4 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-xs font-bold shadow-sm cursor-pointer hover:bg-white transition-colors">
+                        <span class="material-symbols-outlined text-primary text-sm">videocam</span>
+                        <span class="text-text-main dark:text-white">Xem Video</span>
+                    </div>
+                </div>
+
+                <!-- Thumbnails (Lấy từ các dịch vụ con để làm thư viện ảnh) -->
+                <div class="grid grid-cols-3 gap-4">
+                    @foreach(var svc in Model.IncludedServices.Take(3))
+                    {
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                            <img alt="@svc.Name" class="w-full h-full object-cover" src="@svc.ImageUrl" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Title & Description -->
+            <div class="flex flex-col gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">Combo Hot</span>
+                        <div class="flex items-center gap-1 text-amber-400 text-sm font-medium">
+                            <span class="material-symbols-outlined text-sm fill-current">star</span>
+                            <span>@Model.AverageRating.ToString("0.0") (@Model.TotalReviews đánh giá)</span>
+                        </div>
+                    </div>
+                    <h1 class="text-text-main dark:text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight">@Model.Name</h1>
+                </div>
+                <p class="text-text-muted dark:text-gray-300 text-base md:text-lg leading-relaxed">
+                    @Model.Description
+                </p>
+            </div>
+
+            <div class="border-t border-gray-100 dark:border-white/10 w-full"></div>
+
+            <!-- Services List -->
+            <div class="flex flex-col gap-6">
+                <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">spa</span>
+                    Dịch vụ bao gồm
+                </h2>
+                <div class="flex flex-col gap-4">
+                    @foreach (var svc in Model.IncludedServices)
+                    {
+                        <div class="flex gap-4 p-4 rounded-xl bg-surface-light dark:bg-[#2f1b25] border border-gray-100 dark:border-white/5 shadow-sm transition-shadow hover:shadow-md">
+                            <div class="shrink-0 size-16 bg-background-light dark:bg-white/10 rounded-lg overflow-hidden">
+                                <img alt="@svc.Name" class="w-full h-full object-cover" src="@svc.ImageUrl" />
+                            </div>
+                            <div class="flex flex-col justify-center">
+                                <h3 class="font-bold text-lg text-text-main dark:text-white">@svc.Name</h3>
+                                <p class="text-sm text-text-muted dark:text-gray-400 mt-1">@svc.DurationMinutes phút • @svc.Description</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Consumables List (Nguyên liệu) -->
+            @if (Model.Consumables.Any())
+            {
+                <div class="flex flex-col gap-6">
+                    <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">inventory_2</span>
+                        Sản phẩm sử dụng
+                    </h2>
+                    <div class="overflow-hidden rounded-xl border border-gray-100 dark:border-white/10">
+                        <table class="w-full text-left border-collapse bg-surface-light dark:bg-[#2f1b25]">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">
+                                    <th class="p-4 font-semibold text-sm text-text-muted">Sản phẩm</th>
+                                    <th class="p-4 font-semibold text-sm text-text-muted">Phân loại</th>
+                                    <th class="p-4 font-semibold text-sm text-text-muted text-right">Định lượng</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+                                @foreach (var item in Model.Consumables)
+                                {
+                                    <tr>
+                                        <td class="p-4 flex items-center gap-3">
+                                            <div class="size-10 rounded bg-gray-100 dark:bg-white/10 bg-center bg-cover" 
+                                                 style="background-image: url('@item.ImageUrl')"></div>
+                                            <span class="font-medium text-text-main dark:text-white">@item.ProductName</span>
+                                        </td>
+                                        <td class="p-4 text-sm text-text-muted">@item.UsageContext</td>
+                                        <td class="p-4 text-sm text-text-main dark:text-white font-medium text-right">@item.Quantity @item.UnitName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- Reviews -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">reviews</span>
+                        Đánh giá từ khách hàng
+                    </h2>
+                    <div class="flex items-center gap-1 text-amber-400 font-bold">
+                        <span class="text-2xl text-text-main dark:text-white mr-1">@Model.AverageRating.ToString("0.0")</span>
+                        <span class="material-symbols-outlined fill-current">star</span>
+                        <span class="text-sm text-text-muted font-normal ml-1">(@Model.TotalReviews đánh giá)</span>
+                    </div>
+                </div>
+                
+                @if (Model.Reviews.Any())
+                {
+                    <div class="grid grid-cols-1 gap-6">
+                        @foreach (var review in Model.Reviews)
+                        {
+                            <div class="bg-surface-light dark:bg-[#2f1b25] rounded-xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
+                                            @review.CustomerName.Substring(0,1).ToUpper()
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-text-main dark:text-white text-sm">@review.CustomerName</h4>
+                                            <p class="text-xs text-text-muted">@review.TimeAgo</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex text-amber-400">
+                                        @for(int i=0; i<review.Rating; i++) { <span class="material-symbols-outlined text-sm fill-current">star</span> }
+                                    </div>
+                                </div>
+                                <p class="text-text-main dark:text-gray-300 text-sm leading-relaxed">
+                                    "@review.Comment"
+                                </p>
+                            </div>
+                        }
+                    </div>
+                    <button class="w-full py-3 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-medium text-text-muted hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                        Xem thêm đánh giá khác
+                    </button>
+                }
+                else
+                {
+                    <p class="text-text-muted italic">Chưa có đánh giá nào cho combo này.</p>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR (Sticky Booking) -->
+        <div class="lg:col-span-5 relative h-full">
+            <div class="sticky top-24 flex flex-col gap-6">
+                <div class="bg-white dark:bg-[#2f1b25] rounded-2xl p-6 md:p-8 shadow-lg border border-gray-100 dark:border-white/10 flex flex-col gap-6">
+                    
+                    <!-- Price Info -->
+                    <div class="flex flex-col gap-2">
+                        <span class="text-text-muted text-sm font-medium">Tổng giá combo</span>
+                        <div class="flex items-baseline gap-3">
+                            <h2 class="text-3xl font-bold text-text-main dark:text-white">@Model.Price.ToString("N0")₫</h2>
+                            @if (Model.OriginalPrice > Model.Price)
+                            {
+                                <span class="text-lg text-text-muted line-through decoration-primary decoration-2">@Model.OriginalPrice.ToString("N0")₫</span>
+                            }
+                        </div>
+                        @if (Model.SavingAmount > 0)
+                        {
+                            <div class="inline-flex self-start bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded">
+                                Tiết kiệm @Model.SavingPercent% (@Model.SavingAmount.ToString("N0")₫)
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Summary Info -->
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center gap-3 text-sm text-text-muted">
+                            <span class="material-symbols-outlined text-primary">schedule</span>
+                            <span>Thời gian thực hiện: <strong class="text-text-main dark:text-white">@Model.DurationMinutes phút</strong></span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-text-muted">
+                            <span class="material-symbols-outlined text-primary">check_circle</span>
+                            <span>Bao gồm đầy đủ liệu trình &amp; sản phẩm</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-text-muted">
+                            <span class="material-symbols-outlined text-primary">event_available</span>
+                            <span>Đặt lịch trước, hủy miễn phí</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <a href="/Booking/BookCombo?id=@Model.Id" 
+                       class="w-full bg-primary hover:bg-pink-600 text-white font-bold text-lg py-4 px-6 rounded-xl shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+                        <span>Đặt lịch ngay</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </a>
+                    
+                    <p class="text-center text-xs text-text-muted">
+                        Chưa thanh toán ngay. Bạn sẽ thanh toán tại spa.
+                    </p>
+                </div>
+
+                <!-- Promo Banner -->
+                <div class="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-[#3a222e] dark:to-[#2f1b25] rounded-xl p-5 border border-pink-100 dark:border-white/10 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary mt-1">redeem</span>
+                    <div class="flex flex-col gap-1">
+                        <h4 class="font-bold text-text-main dark:text-white text-sm">Ưu đãi đặc biệt</h4>
+                        <p class="text-xs text-text-muted">Tặng thêm voucher 5% cho lần đặt tiếp theo khi sử dụng combo này trong tháng.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

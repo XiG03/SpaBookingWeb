@@ -73,6 +73,38 @@
                                 <label class="custom-control-label" for="customCheck2">Yêu cầu đặt cọc</label>
                             </div>
                         </div>
+
+                        <hr />
+                        <h5 class="mb-3">Định mức tiêu hao (Nguyên liệu)</h5>
+                        <div id="consumables-container">
+                            @if (Model.Consumables != null)
+                            {
+                                for (int i = 0; i < Model.Consumables.Count; i++)
+                                {
+                                    <div class="form-row consumable-row mb-2 align-items-end" id="row-@i">
+                                        <div class="form-group col-md-6 mb-0">
+                                            <label>Nguyên liệu</label>
+                                            <select name="Consumables[@i].ProductId" class="form-control" asp-items="@(new SelectList(Model.AvailableProducts, "ProductId", "ProductName", Model.Consumables[i].ProductId))" required>
+                                                <option value="">-- Chọn nguyên liệu --</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-4 mb-0">
+                                            <label>Số lượng</label>
+                                            <input type="number" name="Consumables[@i].Quantity" class="form-control" value="@Model.Consumables[i].Quantity" min="1" required />
+                                        </div>
+                                        <div class="form-group col-md-2 mb-0">
+                                            <button type="button" class="btn btn-outline-danger btn-block font-weight-bold" onclick="removeRow(@i)" title="Xóa nguyên liệu này">
+                                                <i class="fas fa-trash-alt mr-1"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btnAddConsumable">
+                            <i class="fas fa-plus"></i> Thêm nguyên liệu
+                        </button>
+                        <hr />
                         
                         <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                         <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
@@ -90,5 +122,55 @@
             var fileName = $(this).val().split('\\').pop();
             $(this).next('.custom-file-label').addClass("selected").html(fileName);
         });
+
+        // --- Logic Nguyên Liệu ---
+        var availableProducts = @Html.Raw(Json.Serialize(Model.AvailableProducts));
+
+        function addConsumableRow() {
+            var index = $("#consumables-container .consumable-row").length;
+            var options = '<option value="">-- Chọn nguyên liệu --</option>';
+            if(availableProducts) {
+                availableProducts.forEach(function(p) {
+                    var unitName = p.unit ? p.unit.unitName : '';
+                    options += `<option value="${p.productId}">${p.productName} (${unitName})</option>`;
+                });
+            }
+
+            var html = `
+                <div class="form-row consumable-row mb-2 align-items-end" id="row-${index}">
+                    <div class="form-group col-md-6 mb-0">
+                        <label>Nguyên liệu</label>
+                        <select name="Consumables[${index}].ProductId" class="form-control" required>
+                            ${options}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4 mb-0">
+                        <label>Số lượng</label>
+                        <input type="number" name="Consumables[${index}].Quantity" class="form-control" value="1" min="1" required />
+                    </div>
+                    <div class="form-group col-md-2 mb-0">
+                        <button type="button" class="btn btn-outline-danger btn-block font-weight-bold" onclick="removeRow(${index})" title="Xóa nguyên liệu này">
+                            <i class="fas fa-trash-alt mr-1"></i> Xóa
+                        </button>
+                    </div>
+                </div>`;
+            $("#consumables-container").append(html);
+        }
+
+        window.removeRow = function(index) {
+            $("#row-" + index).remove();
+            reindexRows();
+        }
+
+        function reindexRows() {
+             $("#consumables-container .consumable-row").each(function(i, row) {
+                 $(row).attr("id", "row-" + i);
+                 $(row).find("select").attr("name", `Consumables[${i}].ProductId`);
+                 $(row).find("input[type=number]").attr("name", `Consumables[${i}].Quantity`);
+                 $(row).find("button").attr("onclick", `removeRow(${i})`);
+             });
+        }
+
+        $("#btnAddConsumable").click(addConsumableRow);
     </script>
 }

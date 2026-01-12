@@ -1,0 +1,93 @@
+@{
+    ViewData["Title"] = "Chọn tư cách đăng nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] - Spa &amp; Salon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff94c2",
+                        "background-light": "#fff5f7",
+                        "background-dark": "#1f1014",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display flex flex-col min-h-screen">
+
+    <header class="w-full border-b border-[#fceef5] dark:border-[#331d23] bg-white dark:bg-[#1f1014] px-6 py-4 md:px-10 lg:px-40 sticky top-0 z-50">
+        <div class="flex items-center justify-between">
+            <a class="flex items-center gap-3 text-[#29181d] dark:text-white group" href="/">
+                <div class="size-8 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">spa</span>
+                </div>
+                <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">Spa &amp; Salon</h2>
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8">
+        <div class="w-full max-w-[600px] bg-white dark:bg-[#1f1014] rounded-3xl shadow-xl overflow-hidden border border-[#fceef5] dark:border-[#331d23] flex flex-col p-8 md:p-12">
+            
+            <div class="mb-8 text-center">
+                <h1 class="text-[#29181d] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] mb-2">
+                    Chào mừng trở lại!
+                </h1>
+                <p class="text-[#8a6d75] text-base font-medium">
+                    Bạn muốn tiếp tục với tư cách nào?
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Customer Option -->
+                <a href="@Url.Action("RoleRedirect", "Account", new { mode = "Customer" })" class="group relative flex flex-col items-center justify-center p-6 border-2 border-[#fceef5] hover:border-primary dark:border-[#331d23] dark:hover:border-primary rounded-2xl transition-all hover:shadow-lg bg-[#fffbfd] dark:bg-[#2a161b]">
+                    <div class="mb-4 size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <span class="material-symbols-outlined text-4xl text-primary">person</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#29181d] dark:text-white mb-1">Khách hàng</h3>
+                    <p class="text-sm text-[#8a6d75] text-center">Đặt lịch và sử dụng dịch vụ</p>
+                </a>
+
+                <!-- Employee Option -->
+                <a href="@Url.Action("RoleRedirect", "Account", new { mode = "Employee" })" class="group relative flex flex-col items-center justify-center p-6 border-2 border-[#fceef5] hover:border-primary dark:border-[#331d23] dark:hover:border-primary rounded-2xl transition-all hover:shadow-lg bg-[#fffbfd] dark:bg-[#2a161b]">
+                    <div class="mb-4 size-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <span class="material-symbols-outlined text-4xl text-primary">badge</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#29181d] dark:text-white mb-1">Nhân viên</h3>
+                    <p class="text-sm text-[#8a6d75] text-center">Quản lý và công việc</p>
+                </a>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <a href="/" class="text-sm font-bold text-[#8a6d75] hover:text-primary transition-colors">Trở về trang chủ</a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="py-6 text-center text-[#8a6d75] text-xs">
+        <p>© 2024 Spa &amp; Salon. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

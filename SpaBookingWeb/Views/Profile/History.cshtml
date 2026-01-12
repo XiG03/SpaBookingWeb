@@ -1,17 +1,16 @@
 ﻿@model List<SpaBookingWeb.ViewModels.Client.AppointmentHistoryViewModel>
 @using System.Globalization
 @{
-    Layout = null; // Không dùng Layout chung
+    Layout = "_Layout";
     ViewData["Title"] = "Lịch sử của tôi";
     var culture = new CultureInfo("vi-VN");
-    var userName = ViewData["UserName"] as string;
-    var userEmail = ViewData["UserEmail"] as string;
+    var userName = ViewData["UserName"] as string ?? "Khách hàng";
+    var userEmail = ViewData["UserEmail"] as string ?? "email@example.com";
 
     var completed = Model.Where(a => a.Status == "Completed").ToList();
     var cancelled = Model.Where(a => a.Status == "Cancelled").ToList();
 
     // --- ĐỊNH NGHĨA HÀM RENDER (Thay thế cho @functions) ---
-    
     Func<SpaBookingWeb.ViewModels.Client.AppointmentHistoryViewModel, object> RenderHistoryCard = 
         @<div class="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-gray-800 hover:shadow-md transition-shadow cursor-pointer" onclick="openDetail(@item.AppointmentId)">
             @{
@@ -29,20 +28,20 @@
                             <p class="text-@color-600 dark:text-@color-400 text-xs font-bold tracking-wide uppercase">@statusText</p>
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white">@item.SpaName</h3>
-                            <p class="text-text-secondary dark:text-gray-400 text-sm mt-1">@item.SpaAddress</p>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">@item.SpaName</h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">@item.SpaAddress</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 mt-2 text-sm text-text-main dark:text-gray-200">
+                        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 mt-2 text-sm text-gray-900 dark:text-gray-200">
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-text-secondary text-[20px]">spa</span>
+                                <span class="material-symbols-outlined text-gray-400 text-[20px]">spa</span>
                                 <span class="font-medium">@(item.Services.FirstOrDefault()?.ServiceName ?? "Dịch vụ")</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-text-secondary text-[20px]">event</span>
+                                <span class="material-symbols-outlined text-gray-400 text-[20px]">event</span>
                                 <span>@item.StartTime.ToString("HH:mm, dd MMM", cultureLocal)</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-text-secondary text-[20px]">payments</span>
+                                <span class="material-symbols-outlined text-gray-400 text-[20px]">payments</span>
                                 <span class="font-semibold text-primary">@item.TotalAmount.ToString("N0") ₫</span>
                             </div>
                         </div>
@@ -50,13 +49,13 @@
                     <div class="flex items-center gap-3 mt-2 md:mt-0" onclick="event.stopPropagation()">
                         @if (isCompleted)
                         {
-                            <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-text-main dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+                            <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
                                 <span class="material-symbols-outlined text-[18px]">rate_review</span> Viết đánh giá
                             </button>
                         }
                         else 
                         {
-                            <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-text-main dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2" onclick="openDetail(@item.AppointmentId)">
+                            <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2" onclick="openDetail(@item.AppointmentId)">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span> Xem chi tiết
                             </button>
                         }
@@ -73,340 +72,276 @@
         </div>;
 
     Func<string, object> RenderEmptyState = 
-        @<div class="text-center py-10 text-text-secondary bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+        @<div class="text-center py-10 text-gray-500 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
             <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
             <p>@item</p>
         </div>;
 }
 
-<!DOCTYPE html>
-<html class="light" lang="vi">
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Lịch sử của tôi - Fresha Clone</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ff4785",
-                        "background-light": "#fff9fb",
-                        "background-dark": "#1f1116",
-                        "text-main": "#371f2b",
-                        "text-secondary": "#886a77",
-                    },
-                    fontFamily: { "display": ["Inter", "sans-serif"] },
-                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
-        .tab-btn.active { border-bottom-width: 2px; border-color: #ff4785; color: #371f2b; font-weight: 600; }
-        .dark .tab-btn.active { color: white; }
+<style>
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
+    .tab-btn.active { 
+        border-bottom-width: 2px; 
+        border-color: #ec4899; 
+        color: #ec4899; 
+        font-weight: 700; 
+    }
+    .dark .tab-btn.active { color: #ec4899; }
 
-        /* Modal Styles */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { margin: 5% auto; width: 90%; max-width: 600px; animation: slideDown 0.3s ease-out; }
-        @@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    </style>
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white min-h-screen flex flex-col">
-    <!-- HEADER -->
-    <header class="sticky top-0 z-50 flex items-center justify-between border-b border-pink-100 dark:border-gray-800 bg-white dark:bg-background-dark px-6 py-3 lg:px-10 shadow-sm">
-        <div class="flex items-center gap-8 w-full max-w-[1440px] mx-auto">
-            <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='/'">
-                <div class="size-8 text-primary">
-                    <svg class="h-full w-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                        <path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h2 class="text-text-main dark:text-white text-xl font-bold leading-tight tracking-tight hidden sm:block">Lotus Spa</h2>
+    /* Modal Styles */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+    .modal-content { margin: 5% auto; width: 90%; max-width: 600px; animation: slideDown 0.3s ease-out; }
+    @@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+
+<div class="flex-1 w-full max-w-[1440px] mx-auto flex flex-col lg:flex-row py-6 lg:py-10 px-4 md:px-10 lg:px-40">
+    
+    <!-- SIDEBAR -->
+    <aside class="w-full lg:w-80 lg:min-h-[calc(100vh-200px)] bg-white dark:bg-background-dark p-6 border lg:border-r-0 border-pink-100 dark:border-gray-800 rounded-2xl shadow-sm flex flex-col gap-6 self-start mb-6 lg:mb-0 lg:mr-8">
+        <div class="md:hidden flex w-full items-center rounded-xl bg-pink-50 dark:bg-gray-800 h-10 px-3">
+            <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 text-[20px]">search</span>
+            <input class="w-full bg-transparent border-none text-text-main dark:text-white placeholder:text-text-secondary focus:ring-0 text-sm" placeholder="Tìm kiếm..." />
+        </div>
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-pink-50/50 dark:bg-gray-800/50">
+            <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-sm bg-pink-200 flex items-center justify-center text-primary font-bold text-xl">
+                    @(userName?.Length > 0 ? userName.Substring(0, 1).ToUpper() : "U")
             </div>
-            <div class="hidden md:flex flex-1 max-w-md mx-4">
-                <div class="flex w-full items-center rounded-xl bg-pink-50 dark:bg-gray-800 h-11 px-4 border border-transparent focus-within:border-primary/50 transition-colors">
-                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400">search</span>
-                    <input class="w-full bg-transparent border-none text-text-main dark:text-white placeholder:text-text-secondary focus:ring-0 text-base" placeholder="Tìm kiếm dịch vụ, salon..." />
-                </div>
+            <div class="flex flex-col overflow-hidden">
+                <h1 class="text-gray-900 dark:text-white text-base font-bold truncate">@userName</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-xs truncate">@userEmail</p>
             </div>
-            <div class="flex items-center justify-end gap-4 md:gap-8 ml-auto">
-                <div class="hidden lg:flex items-center gap-6">
-                    <a class="text-text-main dark:text-gray-200 text-sm font-semibold hover:text-primary transition-colors" href="#">Khám phá</a>
-                    <a class="text-text-main dark:text-gray-200 text-sm font-semibold hover:text-primary transition-colors" href="#">Cho Doanh Nghiệp</a>
+        </div>
+        <nav class="flex flex-col gap-2">
+            <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" asp-controller="Profile" asp-action="Appointments">
+                <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">calendar_month</span>
+                <span class="text-sm font-medium group-hover:text-primary">Lịch hẹn của tôi</span>
+            </a>
+            <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:text-primary transition-all duration-200" href="#">
+                <span class="material-symbols-outlined">history</span>
+                <span class="text-sm font-semibold">Lịch sử</span>
+            </a>
+            <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">favorite</span>
+                <span class="text-sm font-medium group-hover:text-primary">Yêu thích</span>
+            </a>
+            <div class="h-px bg-pink-100 dark:bg-gray-800 my-2"></div>
+            <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">settings</span>
+                <span class="text-sm font-medium group-hover:text-primary">Cài đặt tài khoản</span>
+            </a>
+            <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
+                <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">credit_card</span>
+                <span class="text-sm font-medium group-hover:text-primary">Phương thức thanh toán</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-0 lg:p-0 bg-transparent min-h-screen">
+        <div class="flex flex-col gap-8">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Lịch sử đặt chỗ</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-base">Xem lại các combo và dịch vụ bạn đã sử dụng hoặc đã hủy.</p>
+            </div>
+
+            <!-- TABS -->
+            <div class="flex gap-4 border-b border-pink-100 dark:border-gray-800 pb-1 overflow-x-auto">
+                <button onclick="switchTab('all')" id="btn-all" class="tab-btn active px-2 py-3 border-b-2 border-primary text-gray-900 dark:text-white font-semibold text-sm whitespace-nowrap">Tất cả</button>
+                <button onclick="switchTab('completed')" id="btn-completed" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hoàn thành</button>
+                <button onclick="switchTab('cancelled')" id="btn-cancelled" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hủy</button>
+            </div>
+
+            <div class="flex flex-col gap-6">
+                <!-- ALL -->
+                <div id="tab-all" class="tab-content active">
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model) {
+                            @RenderHistoryCard(item)
+                        }
+                    }
+                    else {
+                        @RenderEmptyState("Lịch sử trống.")
+                    }
                 </div>
-                <div class="flex items-center gap-3 pl-4 border-l border-pink-100 dark:border-gray-800">
-                    <div class="hidden sm:block text-right">
-                        <p class="text-sm font-bold text-text-main dark:text-white">@userName</p>
-                        <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
-                             <button type="submit" class="text-xs text-text-secondary dark:text-gray-400 font-medium hover:text-primary transition-colors">Đăng xuất</button>
-                        </form>
+
+                <!-- COMPLETED -->
+                <div id="tab-completed" class="tab-content">
+                    @if (completed.Any())
+                    {
+                        foreach (var item in completed) {
+                            @RenderHistoryCard(item)
+                        }
+                    }
+                    else {
+                        @RenderEmptyState("Chưa có dịch vụ nào hoàn thành.")
+                    }
+                </div>
+
+                <!-- CANCELLED -->
+                <div id="tab-cancelled" class="tab-content">
+                    @if (cancelled.Any())
+                    {
+                        foreach (var item in cancelled) {
+                            @RenderHistoryCard(item)
+                        }
+                    }
+                    else {
+                        @RenderEmptyState("Chưa có dịch vụ nào bị hủy.")
+                    }
+                </div>
+
+                <div class="mt-4 rounded-xl bg-pink-50 dark:bg-pink-900/20 p-6 flex flex-col items-center justify-center text-center gap-3 border border-pink-100 dark:border-pink-900/50">
+                    <div class="bg-white dark:bg-pink-900 p-3 rounded-full shadow-sm">
+                        <span class="material-symbols-outlined text-primary text-3xl">add_business</span>
                     </div>
-                    <div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20 cursor-pointer flex items-center justify-center bg-pink-100 text-primary font-bold">
-                        @userName?.Substring(0,1).ToUpper()
-                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Bạn muốn trải nghiệm thêm dịch vụ mới?</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm max-w-sm">Khám phá hàng ngàn combo và sản phẩm chất lượng cao đang chờ bạn.</p>
+                    <button class="mt-2 h-10 px-6 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm cursor-pointer" onclick="window.location.href='/'">
+                        <a asp-controller="Home" asp-action="HomeClient">Khám phá ngay</a>
+                    </button>
                 </div>
             </div>
         </div>
-    </header>
+    </main>
+</div>
 
-    <div class="flex-1 w-full max-w-[1440px] mx-auto flex flex-col lg:flex-row">
-        
-        <!-- SIDEBAR -->
-        <aside class="w-full lg:w-80 lg:min-h-[calc(100vh-80px)] bg-white dark:bg-background-dark p-6 border-b lg:border-b-0 lg:border-r border-pink-100 dark:border-gray-800 flex flex-col gap-6 sticky top-[72px] self-start z-40">
-            <div class="md:hidden flex w-full items-center rounded-xl bg-pink-50 dark:bg-gray-800 h-10 px-3">
-                <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 text-[20px]">search</span>
-                <input class="w-full bg-transparent border-none text-text-main dark:text-white placeholder:text-text-secondary focus:ring-0 text-sm" placeholder="Tìm kiếm..." />
-            </div>
-            <div class="flex items-center gap-4 p-4 rounded-xl bg-pink-50/50 dark:bg-gray-800/50">
-                <div class="bg-center bg-no-repeat bg-cover rounded-full size-12 shadow-sm bg-pink-200 flex items-center justify-center text-primary font-bold text-xl">
-                     @userName?.Substring(0,1).ToUpper()
-                </div>
-                <div class="flex flex-col overflow-hidden">
-                    <h1 class="text-text-main dark:text-white text-base font-bold truncate">@userName</h1>
-                    <p class="text-text-secondary dark:text-gray-400 text-xs truncate">@userEmail</p>
-                </div>
-            </div>
-            <nav class="flex flex-col gap-2">
-                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" asp-controller="Profile" asp-action="Appointments">
-                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">calendar_month</span>
-                    <span class="text-sm font-medium">Lịch hẹn của tôi</span>
-                </a>
-                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:text-primary transition-all duration-200" href="#">
-                    <span class="material-symbols-outlined">history</span>
-                    <span class="text-sm font-semibold">Lịch sử</span>
-                </a>
-                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
-                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">favorite</span>
-                    <span class="text-sm font-medium">Yêu thích</span>
-                </a>
-                <div class="h-px bg-pink-100 dark:bg-gray-800 my-2"></div>
-                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
-                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">settings</span>
-                    <span class="text-sm font-medium">Cài đặt tài khoản</span>
-                </a>
-                <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-text-main dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
-                    <span class="material-symbols-outlined text-text-secondary dark:text-gray-400 group-hover:text-text-main dark:group-hover:text-white">credit_card</span>
-                    <span class="text-sm font-medium">Phương thức thanh toán</span>
-                </a>
-            </nav>
-        </aside>
-
-        <!-- MAIN -->
-        <main class="flex-1 p-6 lg:p-10 bg-background-light dark:bg-background-dark min-h-screen">
-            <div class="max-w-4xl mx-auto flex flex-col gap-8">
-                <div class="flex flex-col gap-2">
-                    <h1 class="text-3xl md:text-4xl font-bold text-text-main dark:text-white tracking-tight">Lịch sử đặt chỗ</h1>
-                    <p class="text-text-secondary dark:text-gray-400 text-base">Xem lại các combo và dịch vụ bạn đã sử dụng hoặc đã hủy.</p>
-                </div>
-
-                <!-- TABS -->
-                <div class="flex gap-4 border-b border-pink-100 dark:border-gray-800 pb-1 overflow-x-auto">
-                    <button onclick="switchTab('all')" id="btn-all" class="tab-btn active px-2 py-3 border-b-2 border-primary text-text-main dark:text-white font-semibold text-sm whitespace-nowrap">Tất cả</button>
-                    <button onclick="switchTab('completed')" id="btn-completed" class="tab-btn px-2 py-3 border-b-2 border-transparent text-text-secondary dark:text-gray-500 hover:text-text-main dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hoàn thành</button>
-                    <button onclick="switchTab('cancelled')" id="btn-cancelled" class="tab-btn px-2 py-3 border-b-2 border-transparent text-text-secondary dark:text-gray-500 hover:text-text-main dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hủy</button>
-                </div>
-
-                <div class="flex flex-col gap-6">
-                    <!-- ALL -->
-                    <div id="tab-all" class="tab-content active">
-                        @if (Model.Any())
-                        {
-                            foreach (var item in Model) {
-                                @RenderHistoryCard(item)
-                            }
-                        }
-                        else {
-                            @RenderEmptyState("Lịch sử trống.")
-                        }
-                    </div>
-
-                    <!-- COMPLETED -->
-                    <div id="tab-completed" class="tab-content">
-                        @if (completed.Any())
-                        {
-                            foreach (var item in completed) {
-                                @RenderHistoryCard(item)
-                            }
-                        }
-                        else {
-                            @RenderEmptyState("Chưa có dịch vụ nào hoàn thành.")
-                        }
-                    </div>
-
-                    <!-- CANCELLED -->
-                    <div id="tab-cancelled" class="tab-content">
-                        @if (cancelled.Any())
-                        {
-                            foreach (var item in cancelled) {
-                                @RenderHistoryCard(item)
-                            }
-                        }
-                        else {
-                            @RenderEmptyState("Chưa có dịch vụ nào bị hủy.")
-                        }
-                    </div>
-
-                    <div class="mt-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-6 flex flex-col items-center justify-center text-center gap-3 border border-primary/20">
-                        <div class="bg-primary/20 p-3 rounded-full">
-                            <span class="material-symbols-outlined text-primary text-3xl">add_business</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-text-main dark:text-white">Bạn muốn trải nghiệm thêm dịch vụ mới?</h3>
-                        <p class="text-text-secondary dark:text-gray-400 text-sm max-w-sm">Khám phá hàng ngàn combo và sản phẩm chất lượng cao đang chờ bạn.</p>
-                        <button class="mt-2 h-10 px-6 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm" onclick="window.location.href='/'">
-                            <a asp-controller="Booking" asp-action="Index">Khám phá ngay</a>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- DETAIL MODAL -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
-            <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
-                <h3 class="text-xl font-bold text-text-main dark:text-white">Chi tiết Lịch sử</h3>
-                <button onclick="closeModal()" class="text-text-secondary hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="p-6 overflow-y-auto max-h-[70vh]" id="modalBody">
-                <div class="flex justify-center py-10">
-                    <span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>
-                </div>
-            </div>
-             <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium hover:bg-white transition-colors">Đóng</button>
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="modal">
+    <div class="modal-content bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+        <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Chi tiết Lịch sử</h3>
+            <button onclick="closeModal()" class="text-gray-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[70vh]" id="modalBody">
+            <div class="flex justify-center py-10">
+                <span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span>
             </div>
         </div>
+         <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+            <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white font-medium hover:bg-white transition-colors">Đóng</button>
+        </div>
     </div>
+</div>
 
-    <!-- TEMPLATE CHO JS (Ẩn) -->
-    <script type="text/template" id="modalTemplate">
-        <div class="flex flex-col gap-6">
-            <div class="flex items-start gap-4">
-                <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
-                    <span class="material-symbols-outlined text-3xl">spa</span>
-                </div>
-                <div>
-                    <h4 class="text-lg font-bold text-text-main dark:text-white">{spaName}</h4>
-                    <p class="text-text-secondary text-sm mt-1">{spaAddress}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="flex size-2 rounded-full bg-{color}-500"></span>
-                        <span class="text-{color}-600 text-xs font-bold uppercase">{status}</span>
-                    </div>
-                </div>
+<!-- TEMPLATE CHO JS (Ẩn) -->
+<script type="text/template" id="modalTemplate">
+    <div class="flex flex-col gap-6">
+        <div class="flex items-start gap-4">
+            <div class="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                <span class="material-symbols-outlined text-3xl">spa</span>
             </div>
             <div>
-                <h5 class="text-sm font-bold text-text-secondary uppercase tracking-wide mb-3">Dịch vụ</h5>
-                <div class="space-y-4" id="serviceListPlaceholder"></div>
-            </div>
-            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="text-text-secondary">Tổng tiền</span>
-                    <span class="font-bold text-text-main dark:text-white">{total}</span>
-                </div>
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="text-text-secondary">Đã cọc</span>
-                    <span class="text-primary font-medium">-{deposit}</span>
-                </div>
-                <div class="border-t border-dashed border-gray-200 dark:border-gray-600 my-2 pt-2 flex justify-between">
-                    <span class="font-bold text-text-main dark:text-white">Còn lại</span>
-                    <span class="text-lg font-black text-primary">{remaining}</span>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">{spaName}</h4>
+                <p class="text-gray-500 text-sm mt-1">{spaAddress}</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="flex size-2 rounded-full bg-{color}-500"></span>
+                    <span class="text-{color}-600 text-xs font-bold uppercase">{status}</span>
                 </div>
             </div>
         </div>
-    </script>
+        <div>
+            <h5 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Dịch vụ</h5>
+            <div class="space-y-4" id="serviceListPlaceholder"></div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-500">Tổng tiền</span>
+                <span class="font-bold text-gray-900 dark:text-white">{total}</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-500">Đã cọc</span>
+                <span class="text-primary font-medium">-{deposit}</span>
+            </div>
+            <div class="border-t border-dashed border-gray-200 dark:border-gray-600 my-2 pt-2 flex justify-between">
+                <span class="font-bold text-gray-900 dark:text-white">Còn lại</span>
+                <span class="text-lg font-black text-primary">{remaining}</span>
+            </div>
+        </div>
+    </div>
+</script>
 
-    <!-- SCRIPTS -->
-    <script>
-        // Tab Logic
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active', 'border-primary', 'text-text-main', 'font-semibold');
-                el.classList.add('border-transparent', 'text-text-secondary', 'font-medium');
+<!-- SCRIPTS -->
+<script>
+    // Tab Logic
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('active', 'border-primary', 'text-gray-900', 'font-semibold');
+            el.classList.add('border-transparent', 'text-gray-500', 'font-medium');
+        });
+
+        document.getElementById('tab-' + tabName).classList.add('active');
+        
+        const btn = document.getElementById('btn-' + tabName);
+        btn.classList.remove('border-transparent', 'text-gray-500', 'font-medium');
+        btn.classList.add('active', 'border-primary', 'text-gray-900', 'font-semibold');
+    }
+
+    // Modal Logic
+    const modal = document.getElementById('detailModal');
+    const modalBody = document.getElementById('modalBody');
+    const template = document.getElementById('modalTemplate').innerHTML;
+
+    function openDetail(id) {
+        modal.style.display = 'block';
+        modalBody.innerHTML = '<div class="flex justify-center py-10"><span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span></div>';
+        
+        fetch(`/Profile/GetAppointmentDetail/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                renderModalData(data);
+            })
+            .catch(err => {
+                modalBody.innerHTML = '<p class="text-center text-red-500">Lỗi tải dữ liệu.</p>';
             });
+    }
 
-            document.getElementById('tab-' + tabName).classList.add('active');
-            
-            const btn = document.getElementById('btn-' + tabName);
-            btn.classList.remove('border-transparent', 'text-text-secondary', 'font-medium');
-            btn.classList.add('active', 'border-primary', 'text-text-main', 'font-semibold');
-        }
+    function closeModal() {
+        modal.style.display = 'none';
+    }
 
-        // Modal Logic
-        const modal = document.getElementById('detailModal');
-        const modalBody = document.getElementById('modalBody');
-        const template = document.getElementById('modalTemplate').innerHTML;
+    function renderModalData(data) {
+        let html = template;
+        const remaining = data.totalAmount - data.depositAmount;
+        const fmt = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
-        function openDetail(id) {
-            modal.style.display = 'block';
-            modalBody.innerHTML = '<div class="flex justify-center py-10"><span class="material-symbols-outlined text-4xl animate-spin text-primary">progress_activity</span></div>';
-            
-            fetch(`/Profile/GetAppointmentDetail/${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    renderModalData(data);
-                })
-                .catch(err => {
-                    modalBody.innerHTML = '<p class="text-center text-red-500">Lỗi tải dữ liệu.</p>';
-                });
-        }
+        let color = 'gray';
+        let statusText = 'Chờ xử lý';
+        if (data.status === 'Completed') { color = 'green'; statusText = 'Đã hoàn thành'; }
+        else if (data.status === 'Cancelled') { color = 'red'; statusText = 'Đã hủy'; }
 
-        function closeModal() {
-            modal.style.display = 'none';
-        }
+        html = html.replace('{spaName}', data.spaName)
+                   .replace('{spaAddress}', data.spaAddress)
+                   .replace('{status}', statusText)
+                   .replace(/{color}/g, color)
+                   .replace('{total}', fmt(data.totalAmount))
+                   .replace('{deposit}', fmt(data.depositAmount))
+                   .replace('{remaining}', fmt(remaining));
 
-        function renderModalData(data) {
-            let html = template;
-            const remaining = data.totalAmount - data.depositAmount;
-            const fmt = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+        let servicesHtml = '';
+        data.services.forEach(s => {
+            servicesHtml += `
+                <div class="flex justify-between items-start pb-3 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                    <div>
+                        <p class="font-bold text-gray-900 dark:text-white text-sm">${s.serviceName}</p>
+                        <p class="text-xs text-text-secondary mt-0.5 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">schedule</span> ${s.duration}p • 
+                            <span class="material-symbols-outlined text-[12px]">person</span> ${s.staffName}
+                        </p>
+                    </div>
+                    <span class="font-medium text-sm text-gray-900 dark:text-white">${fmt(s.price)}</span>
+                </div>`;
+        });
 
-            let color = 'gray';
-            let statusText = 'Chờ xử lý';
-            if (data.status === 'Completed') { color = 'green'; statusText = 'Đã hoàn thành'; }
-            else if (data.status === 'Cancelled') { color = 'red'; statusText = 'Đã hủy'; }
+        modalBody.innerHTML = html;
+        document.getElementById('serviceListPlaceholder').innerHTML = servicesHtml;
+    }
 
-            html = html.replace('{spaName}', data.spaName)
-                       .replace('{spaAddress}', data.spaAddress)
-                       .replace('{status}', statusText)
-                       .replace(/{color}/g, color)
-                       .replace('{total}', fmt(data.totalAmount))
-                       .replace('{deposit}', fmt(data.depositAmount))
-                       .replace('{remaining}', fmt(remaining));
-
-            let servicesHtml = '';
-            data.services.forEach(s => {
-                servicesHtml += `
-                    <div class="flex justify-between items-start pb-3 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                        <div>
-                            <p class="font-bold text-text-main dark:text-white text-sm">${s.serviceName}</p>
-                            <p class="text-xs text-text-secondary mt-0.5 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[12px]">schedule</span> ${s.duration}p • 
-                                <span class="material-symbols-outlined text-[12px]">person</span> ${s.staffName}
-                            </p>
-                        </div>
-                        <span class="font-medium text-sm text-text-main dark:text-white">${fmt(s.price)}</span>
-                    </div>`;
-            });
-
-            modalBody.innerHTML = html;
-            document.getElementById('serviceListPlaceholder').innerHTML = servicesHtml;
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) closeModal();
-        }
-    </script>
-</body>
-</html>
+    window.onclick = function(event) {
+        if (event.target == modal) closeModal();
+    }
+</script>

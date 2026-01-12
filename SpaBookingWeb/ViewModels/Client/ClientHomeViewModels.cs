@@ -10,6 +10,8 @@ namespace SpaBookingWeb.ViewModels.Client
         public List<ServiceViewModel> FeaturedServices { get; set; } = new List<ServiceViewModel>();
         public PromotionViewModel CurrentPromotion { get; set; } // Banner ưu đãi
 
+        public List<HomePostViewModel> LatestPosts { get; set; } = new List<HomePostViewModel>();
+
         public string OpenTime { get; set; }
         public string CloseTime { get; set; }
         public string FacebookUrl { get; set; }
@@ -47,6 +49,15 @@ namespace SpaBookingWeb.ViewModels.Client
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }
         public double Rating { get; set; } = 5.0; // Mặc định 5 sao nếu chưa có đánh giá
+    }
+
+    public class HomePostViewModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Summary { get; set; }
+        public string Thumbnail { get; set; }
+        public string PublishedDateStr { get; set; }
     }
 
     public class PromotionViewModel

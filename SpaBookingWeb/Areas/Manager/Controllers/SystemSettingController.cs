@@ -122,6 +122,26 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // --- PROMOTION ACTIONS ---
+        [HttpPost]
+        public async Task<IActionResult> PromoteCustomer(int customerId)
+        {
+            try
+            {
+                await _systemSettingService.PromoteCustomerAsync(customerId);
+                TempData["SuccessMessage"] = "Đã nâng quyền khách hàng lên nhân viên thành công. Tài khoản mặc định: Email/SĐT, Pass: Password123!";
+            }
+            catch (System.Exception ex)
+            {
+                var msg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    msg += " | Inner: " + ex.InnerException.Message;
+                }
+                TempData["ErrorMessage"] = "Lỗi: " + msg;
+            }
+            return RedirectToAction(nameof(Index));
+        }
 
     }
 }

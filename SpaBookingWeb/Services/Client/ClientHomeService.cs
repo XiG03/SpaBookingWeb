@@ -103,7 +103,23 @@ namespace SpaBookingWeb.Services.Client
                 };
             }
 
-            // --- 5. MỚI: LẤY CẤU HÌNH HỆ THỐNG ---
+            // 5. [MỚI] Lấy Bài viết mới nhất
+            var posts = await _context.Posts
+                .Where(p => !p.IsDeleted && p.IsPublished)
+                .OrderByDescending(p => p.PublishedDate ?? p.CreatedDate)
+                .Take(3)
+                .Select(p => new HomePostViewModel
+                {
+                    Id = p.PostId,
+                    Title = p.Title,
+                    Summary = p.Summary,
+                    Thumbnail = string.IsNullOrEmpty(p.Thumbnail) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuCLHUwV-Z7x3Pyl8s-3qZ77YyV9-k5W7qX9zR1P3uL5mN7vJ9oK4wE8rT6yS2dF1gH0jA4bC3xQ5vM8nL2kP9oJ4hG7fD6sA1wE3rT5yU8iO9pL2kM4nJ6vH0gX3zF5cR8bA9dE7w" : p.Thumbnail,
+                    PublishedDateStr = (p.PublishedDate ?? p.CreatedDate).ToString("dd/MM/yyyy")
+                })
+                .ToListAsync();
+            model.LatestPosts = posts;
+
+            // --- 6. Cấu hình hệ thống ---
             var settings = await _context.SystemSettings.ToListAsync();
             var dict = settings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
 

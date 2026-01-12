@@ -1,65 +1,187 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Microsoft.AspNetCore.Identity
+@using SpaBookingWeb.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SpaBookingWeb</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/SpaBookingWeb.styles.css" asp-append-version="true" />
-    <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
+    <title>@ViewData["Title"] - SpaBookingWebsite</title>
+    
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    
+    <!-- TAILWIND CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec4899",
+                        "primary-dark": "#be185d",
+                        "background-light": "#fff1f2",
+                        "background-dark": "#2a0a12",
+                        "text-main": "#1f2937",
+                        "text-muted": "#6b7280",
+                        "text-secondary": "#896175",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+         /* Animation cho Dropdown */
+        .animation-fade-in-down { animation: fadeInDown 0.2s ease-out; }
+        @@keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SpaBookingWeb</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="HomeClient">Home Page</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Template" asp-action="Index">Test Template</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="TestMomo">Test Momo</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Profile" asp-action="Appointments">Test Client Manager</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Manager" asp-controller="Home" asp-action="Index">Manager Test</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white flex flex-col min-h-screen">
+    
+    <!-- HEADER -->
+    <div class="sticky top-0 z-50 bg-white dark:bg-background-dark border-b border-pink-100 dark:border-pink-900 shadow-sm">
+        <header class="flex items-center justify-between whitespace-nowrap px-4 py-3 md:px-10 lg:px-40 max-w-[1440px] mx-auto w-full">
+            <!-- LOGO -->
+            <div class="flex items-center gap-4 text-gray-900 dark:text-white">
+                <a asp-controller="Home" asp-action="HomeClient" class="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity">
+                    <span class="material-symbols-outlined text-primary text-3xl">spa</span>
+                    <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">SpaBookingWeb</h2>
+                </a>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+            <!-- NAV MENU & BUTTONS -->
+            <div class="hidden md:flex flex-1 justify-end gap-8 items-center">
+                <div class="flex items-center gap-6 lg:gap-9">
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Services" asp-action="Index">Dịch vụ</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Combos" asp-action="Index">Combo</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Posts" asp-action="Index">Blog</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Về chúng tôi</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Liên hệ</a>
+                    @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                    {
+                         <a class="text-primary font-bold text-sm hover:underline" asp-area="Manager" asp-controller="Home" asp-action="Index">Quản lý</a>
+                    }
+                </div>
+                
+                <button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors shadow-md shadow-pink-200 dark:shadow-none">
+                     <a class="truncate" asp-area="" asp-controller="Booking" asp-action="Index">Đặt lịch ngay</a>
+                </button>
+
+                <!-- USER PROFILE BUTTON -->
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    <div class="relative ml-4 group z-50">
+                        <button class="flex items-center gap-2 focus:outline-none">
+                            @if(user != null && !string.IsNullOrEmpty(user.FullName)) {
+                                <div class="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center text-primary dark:text-pink-300 font-bold text-lg border-2 border-primary shadow-sm">
+                                    @user.FullName.Substring(0,1).ToUpper()
+                                </div>
+                            } else {
+                                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 overflow-hidden shadow-sm">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                            }
+                            <div class="flex flex-col items-start hidden lg:block">
+                                <span class="text-sm font-bold text-gray-900 dark:text-white leading-none">@(user?.FullName ?? "User")</span>
+                                <span class="text-[10px] text-gray-500 font-medium">Thành viên</span>
+                            </div>
+                            <span class="material-symbols-outlined text-gray-400 text-sm hidden lg:block group-hover:text-primary transition-colors">expand_more</span>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div class="absolute right-0 top-full pt-2 w-60 hidden group-hover:block hover:block z-50 animation-fade-in-down">
+                            <div class="bg-white dark:bg-[#2a0a12] rounded-2xl shadow-xl border border-pink-100 dark:border-pink-900 overflow-hidden">
+                                <div class="px-4 py-3 border-b border-gray-100 dark:border-pink-900/50">
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate">@(user?.FullName ?? "User")</p>
+                                    <p class="text-xs text-gray-500 truncate">@User.Identity.Name</p>
+                                </div>
+                                <div class="py-1">
+                                    <a asp-controller="Profile" asp-action="Appointments" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
+                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">person</span> Hồ sơ cá nhân
+                                    </a>
+                                    <a asp-controller="Profile" asp-action="History" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
+                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">history</span> Lịch sử đặt hẹn
+                                    </a>
+                                </div>
+                                <div class="border-t border-gray-100 dark:border-pink-900/50 py-1">
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="w-full">
+                                        <button type="submit" class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                            <span class="material-symbols-outlined text-[20px]">logout</span> Đăng xuất
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="ml-6 flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">login</span> 
+                        <span class="hidden lg:inline">Đăng nhập</span>
+                    </a>
+                }
+            </div>
+             <!-- Mobile Menu Icon -->
+            <div class="flex md:hidden items-center">
+                <span class="material-symbols-outlined text-gray-900 dark:text-white text-3xl">menu</span>
+            </div>
+        </header>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - SpaBookingWeb - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- MAIN BODY -->
+    <main role="main" class="flex-grow w-full bg-background-light dark:bg-background-dark">
+        @RenderBody()
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-background-dark border-t border-pink-100 dark:border-pink-900 pt-12 pb-8 px-4 md:px-10 lg:px-40 mt-auto">
+        <div class="max-w-[1440px] mx-auto flex flex-col gap-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Spa & Salon</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Mang đến vẻ đẹp và sự tự tin cho bạn mỗi ngày.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Dịch vụ</h4>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Spa & Massage</a>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Chăm sóc da</a>
+                </div>
+                 <div class="flex flex-col gap-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Hỗ trợ</h4>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Liên hệ</a>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Chính sách</a>
+                </div>
+                 <div class="flex flex-col gap-4">
+                    <h4 class="font-bold text-gray-900 dark:text-white">Liên hệ</h4>
+                    <p class="text-sm text-gray-500">Hotline: 1900 xxxx</p>
+                </div>
+            </div>
+            <div class="border-t border-pink-100 dark:border-pink-900 pt-8 text-center md:text-left">
+                <p class="text-sm text-gray-500">© 2025 Spa & Salon. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

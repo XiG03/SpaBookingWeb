@@ -206,18 +206,45 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // 2. Cập nhật Dịch vụ (Xóa cũ, thêm mới)
-            _context.TechnicianServices.RemoveRange(emp.TechnicianServices);
-            if (model.SelectedServiceIds != null && model.SelectedServiceIds.Any())
+            // 2. Cập nhật Dịch vụ (Logic Smart Merge để tránh lỗi Tracking và xử lý Soft Delete)
+            var currentServiceIds = model.SelectedServiceIds ?? new List<int>();
+            
+            // Lấy tất cả TechnicianServices (bao gồm cả đã xóa mềm) để xử lý
+            var allExistingServices = await _context.TechnicianServices
+                .IgnoreQueryFilters()
+                .Where(ts => ts.EmployeeId == emp.EmployeeId)
+                .ToListAsync();
+
+            foreach (var existing in allExistingServices)
             {
-                foreach (var serviceId in model.SelectedServiceIds)
+                if (currentServiceIds.Contains(existing.ServiceId))
                 {
-                    _context.TechnicianServices.Add(new TechnicianService
+                    // Nếu đang chọn: Đảm bảo nó Active (Khôi phục nếu cần)
+                    // Dùng Entry để set IsDeleted = false vì có thể model không expose trực tiếp hoặc để chắc chắn
+                    var entry = _context.Entry(existing);
+                    if (entry.CurrentValues.Properties.Any(p => p.Name == "IsDeleted"))
                     {
-                        EmployeeId = emp.EmployeeId,
-                        ServiceId = serviceId
-                    });
+                        entry.CurrentValues["IsDeleted"] = false;
+                    }
                 }
+                else
+                {
+                    // Nếu không chọn nữa: Xóa (Soft Delete)
+                    _context.TechnicianServices.Remove(existing);
+                }
+            }
+
+            // Thêm mới các dịch vụ chưa từng tồn tại
+            var existingIds = allExistingServices.Select(x => x.ServiceId).ToList();
+            var newIds = currentServiceIds.Except(existingIds);
+
+            foreach (var newId in newIds)
+            {
+                _context.TechnicianServices.Add(new TechnicianService
+                {
+                    EmployeeId = emp.EmployeeId,
+                    ServiceId = newId
+                });
             }
 
             _context.Employees.Update(emp);
@@ -271,6 +298,32 @@ namespace SpaBookingWeb.Services.Manager
             return shifts ?? new List<ShiftViewModel>();
         }
 
+        public async Task CreateShiftAsync(string shiftName, TimeSpan startTime, TimeSpan endTime)
+        {
+            var shift = new Shift
+            {
+                ShiftName = shiftName,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+            _context.Shifts.Add(shift);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteShiftAsync(int shiftId) 
+        {
+            var shift = await _context.Shifts.FindAsync(shiftId);
+            if (shift != null)
+            {
+                // Kiểm tra xem có lịch làm việc nào đang dùng shift này không?
+                var isUsed = await _context.WorkSchedules.AnyAsync(ws => ws.ShiftId == shiftId);
+                if (isUsed) throw new Exception("Không thể xóa ca làm việc đang được sử dụng trong lịch làm việc của nhân viên.");
+
+                _context.Shifts.Remove(shift);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task<DailyScheduleViewModel> GetDailyScheduleAsync(DateTime date)
         {
             var shifts = await _context.Shifts.ToListAsync();
@@ -314,6 +367,15 @@ namespace SpaBookingWeb.Services.Manager
             return viewModel;
         }
 
+        public async Task<List<WorkSchedule>> GetWorkSchedulesInRangeAsync(DateTime fromDate, DateTime toDate)
+        {
+            return await _context.WorkSchedules
+                .Include(ws => ws.Employee)
+                .Include(ws => ws.Shift)
+                .Where(ws => ws.WorkDate >= fromDate && ws.WorkDate <= toDate)
+                .ToListAsync();
+        }
+
         public async Task AddWorkScheduleAsync(int employeeId, int shiftId, DateTime date)
         {
             var exists = await _context.WorkSchedules
@@ -342,13 +404,15 @@ namespace SpaBookingWeb.Services.Manager
             }
         }
 
-        public async Task UpdateAttendanceStatusAsync(int scheduleId, bool isPresent, string note)
+        public async Task UpdateAttendanceStatusAsync(int scheduleId, bool isPresent, string note, bool isOnBreak, TimeSpan? breakStartTime)
         {
             var schedule = await _context.WorkSchedules.FindAsync(scheduleId);
             if (schedule == null) throw new Exception("Lịch làm việc không tồn tại.");
 
             schedule.IsCheckIn = isPresent;
-            // Nếu có cột Note trong DB thì lưu note: schedule.Note = note;
+            schedule.Note = note ?? ""; 
+            schedule.IsOnBreak = isOnBreak;
+            schedule.BreakStartTime = breakStartTime;
             
             _context.WorkSchedules.Update(schedule);
             await _context.SaveChangesAsync();
@@ -412,8 +476,34 @@ namespace SpaBookingWeb.Services.Manager
         // 4. TÍNH LƯƠNG (PAYROLL)
         // ====================================================================
 
-        public async Task<List<SalaryPayrollViewModel>> GeneratePayrollAsync(int month, int year)
+        public async Task<List<SalaryPayrollViewModel>> GeneratePayrollAsync(int month, int year, DateTime? fromDate = null, DateTime? toDate = null)
         {
+            // Determine Date Range
+            DateTime start, end;
+            
+            // 1. Check if ANY salary record exists for this month/year that specifies a range
+            var existingSalarySample = await _context.Salaries
+                .FirstOrDefaultAsync(s => s.Month == month && s.Year == year);
+
+            if (existingSalarySample != null && existingSalarySample.FromDate != DateTime.MinValue)
+            {
+                start = existingSalarySample.FromDate;
+                end = existingSalarySample.ToDate;
+            }
+            else
+            {
+                if (fromDate.HasValue && toDate.HasValue)
+                {
+                    start = fromDate.Value;
+                    end = toDate.Value;
+                }
+                else
+                {
+                    start = new DateTime(year, month, 1);
+                    end = start.AddMonths(1).AddDays(-1);
+                }
+            }
+
             var employees = await _context.Employees.Where(e => e.IsActive).ToListAsync();
             var payrolls = new List<SalaryPayrollViewModel>();
 
@@ -437,25 +527,35 @@ namespace SpaBookingWeb.Services.Manager
                         Bonus = existingSalary.Bonus,
                         Deduction = existingSalary.Deduction,
                         FinalSalary = existingSalary.TotalSalary,
-                        Status = existingSalary.Status
+                        Status = existingSalary.Status,
+                        FromDate = existingSalary.FromDate, 
+                        ToDate = existingSalary.ToDate
                     });
                 }
                 else
                 {
-                    var workDays = await _context.WorkSchedules
+                    // Calculate Draft based on Range (start -> end)
+                    
+                    // 1. Work Hours
+                    // 1. Work Hours
+                    var workSchedules = await _context.WorkSchedules
+                        .Include(ws => ws.Shift)
                         .Where(ws => ws.EmployeeId == emp.EmployeeId 
-                                     && ws.WorkDate.Month == month 
-                                     && ws.WorkDate.Year == year 
-                                     && ws.IsCheckIn)
-                        .CountAsync();
-                    double totalHours = workDays * 8; 
+                                     && ws.WorkDate.Date >= start.Date 
+                                     && ws.WorkDate.Date <= end.Date
+                                     && ws.IsCheckIn) 
+                        .ToListAsync();
 
+                    double totalHours = workSchedules.Sum(ws => 
+                        ws.Shift != null ? (ws.Shift.EndTime - ws.Shift.StartTime).TotalHours : 0); 
+
+                    // 2. Commission
                     var completedServices = await _context.Appointments
                         .Include(a => a.AppointmentDetails)
                         .Where(a => a.EmployeeId == emp.EmployeeId 
                                     && a.Status == "Completed" 
-                                    && a.CreatedDate.Month == month 
-                                    && a.CreatedDate.Year == year)
+                                    && a.CreatedDate.Date >= start.Date 
+                                    && a.CreatedDate.Date <= end.Date)
                         .ToListAsync();
                     
                     decimal totalCommission = completedServices.Sum(a => a.AppointmentDetails.Sum(ad => ad.PriceAtBooking)) * 0.1m;
@@ -477,30 +577,55 @@ namespace SpaBookingWeb.Services.Manager
                         Bonus = 0,
                         Deduction = 0,
                         FinalSalary = Math.Round(finalSalary, 0),
-                        Status = "Draft"
+                        Status = "Draft",
+                        FromDate = start, 
+                        ToDate = end
                     });
                 }
             }
             return payrolls;
         }
 
-        public async Task ConfirmPayrollAsync(int employeeId, int month, int year, decimal finalAmount)
+
+        public async Task ConfirmPayrollAsync(int employeeId, int month, int year, decimal finalAmount, DateTime fromDate, DateTime toDate, decimal bonus, decimal deduction)
         {
             var salary = await _context.Salaries
                 .FirstOrDefaultAsync(s => s.EmployeeId == employeeId && s.Month == month && s.Year == year);
 
             if (salary == null)
             {
-                var workDays = await _context.WorkSchedules
-                        .Where(ws => ws.EmployeeId == employeeId && ws.WorkDate.Month == month && ws.WorkDate.Year == year && ws.IsCheckIn)
-                        .CountAsync();
-                double totalHours = workDays * 8;
+                // Calculate again to be safe or trust passed amount?
+                // Trust passed amount for now, but ideally re-calculate.
+                // Re-calculating using Range:
+                var workSchedules = await _context.WorkSchedules
+                        .Include(ws => ws.Shift)
+                        .Where(ws => ws.EmployeeId == employeeId 
+                                     && ws.WorkDate.Date >= fromDate.Date 
+                                     && ws.WorkDate.Date <= toDate.Date 
+                                     && ws.IsCheckIn)
+                        .ToListAsync();
+
+                double totalHours = workSchedules.Sum(ws => 
+                    ws.Shift != null ? (ws.Shift.EndTime - ws.Shift.StartTime).TotalHours : 0);
 
                 var completedServices = await _context.Appointments
                         .Include(a => a.AppointmentDetails)
-                        .Where(a => a.EmployeeId == employeeId && a.Status == "Completed" && a.CreatedDate.Month == month && a.CreatedDate.Year == year)
+                        .Where(a => a.EmployeeId == employeeId 
+                                    && a.Status == "Completed" 
+                                    && a.CreatedDate.Date >= fromDate.Date 
+                                    && a.CreatedDate.Date <= toDate.Date)
                         .ToListAsync();
                 decimal totalCommission = completedServices.Sum(a => a.AppointmentDetails.Sum(ad => ad.PriceAtBooking)) * 0.1m;
+                
+                // Recalculate Final Salary with Bonus/Deduction
+                // Final = BaseSalary (by hours) + Commission + Bonus - Deduction
+                // Need Base Salary info
+                var emp = await _context.Employees.FindAsync(employeeId);
+                decimal baseSalary = emp?.BaseSalary ?? 0;
+                decimal hourlyRate = baseSalary / 26 / 8;
+                decimal salaryByHours = hourlyRate * (decimal)totalHours;
+                
+                decimal calculatedFinal = salaryByHours + totalCommission + bonus - deduction;
 
                 salary = new Salary
                 {
@@ -509,17 +634,65 @@ namespace SpaBookingWeb.Services.Manager
                     Year = year,
                     TotalWorkHours = totalHours,
                     TotalCommission = totalCommission,
-                    Bonus = 0,
-                    Deduction = 0,
-                    TotalSalary = finalAmount,
-                    Status = "ManagerConfirmed"
+                    Bonus = bonus,
+                    Deduction = deduction,
+                    TotalSalary = Math.Round(calculatedFinal, 0),
+                    Status = "ManagerConfirmed",
+                    FromDate = fromDate, // SAVE RANGE
+                    ToDate = toDate
                 };
                 _context.Salaries.Add(salary);
             }
             else
             {
+                // If exists, update status and amount and bonus/deduction
+                // Note: We should probably re-calculate the final amount here too to be safe, 
+                // but if we trust the inputs (or if the caller passed the *new* final amount which includes bonus/deduction)
+                // Actually, the caller (UI) might just pass the "Base + Commission" part as FinalAmount and we add Bonus/Deduction here?
+                // OR the Caller passes the *Final* amount.
+                // Let's assume the caller passes the components or we stick to re-calculation.
+                // Re-calculation is safer.
+                
+                // Let's just update the fields provided.
                 salary.Status = "ManagerConfirmed";
-                salary.TotalSalary = finalAmount;
+                salary.Bonus = bonus;
+                salary.Deduction = deduction;
+                // Re-calculate Final Amount: 
+                // Original Final (without bonus/deduction) ?? 
+                // To keep it simple: Let's assume 'finalAmount' passed into this function is NOT including the new bonus/deduction yet if we just typed it in?
+                // OR we re-calculate everything. 
+                
+                // Safest: Calculate SalaryByHours + Commission again.
+                // Copy-paste logic from above? Or refactor?
+                // For now, let's copy-paste for speed.
+                 var workSchedules = await _context.WorkSchedules
+                        .Include(ws => ws.Shift)
+                        .Where(ws => ws.EmployeeId == employeeId 
+                                     && ws.WorkDate.Date >= fromDate.Date 
+                                     && ws.WorkDate.Date <= toDate.Date 
+                                     && ws.IsCheckIn)
+                        .ToListAsync();
+                double totalHours = workSchedules.Sum(ws => 
+                     ws.Shift != null ? (ws.Shift.EndTime - ws.Shift.StartTime).TotalHours : 0);
+
+                var completedServices = await _context.Appointments
+                        .Include(a => a.AppointmentDetails)
+                        .Where(a => a.EmployeeId == employeeId 
+                                    && a.Status == "Completed" 
+                                    && a.CreatedDate.Date >= fromDate.Date 
+                                    && a.CreatedDate.Date <= toDate.Date)
+                        .ToListAsync();
+                decimal totalCommission = completedServices.Sum(a => a.AppointmentDetails.Sum(ad => ad.PriceAtBooking)) * 0.1m;
+                
+                var emp = await _context.Employees.FindAsync(employeeId);
+                decimal baseSalary = emp?.BaseSalary ?? 0;
+                decimal hourlyRate = baseSalary / 26 / 8;
+                decimal salaryByHours = hourlyRate * (decimal)totalHours;
+
+                salary.TotalSalary = Math.Round(salaryByHours + totalCommission + bonus - deduction, 0);                 
+                
+                salary.FromDate = fromDate; 
+                salary.ToDate = toDate;
                 _context.Salaries.Update(salary);
             }
 
@@ -540,6 +713,20 @@ namespace SpaBookingWeb.Services.Manager
             salary.Status = "Completed"; // Trạng thái cuối cùng
             _context.Salaries.Update(salary);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<(DateTime? FromDate, DateTime? ToDate)> GetLatestPayrollPeriodAsync()
+        {
+            var latestSalary = await _context.Salaries
+                .Where(s => s.Status == "ManagerConfirmed" || s.Status == "Completed")
+                .OrderByDescending(s => s.ToDate)
+                .FirstOrDefaultAsync();
+
+            if (latestSalary != null)
+            {
+                return (latestSalary.FromDate, latestSalary.ToDate);
+            }
+            return (null, null);
         }
     }
 }

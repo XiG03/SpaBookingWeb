@@ -17,5 +17,7 @@ namespace SpaBookingWeb.ViewModels.Manager
         public decimal Deduction { get; set; }
         public decimal FinalSalary { get; set; }
         public string Status { get; set; } = "Draft";
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
     }
 }

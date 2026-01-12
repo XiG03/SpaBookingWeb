@@ -25,10 +25,8 @@ namespace SpaBookingWeb.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            // Lấy dữ liệu từ Service
             var history = await _bookingService.GetBookingHistoryAsync(user.Email);
 
-            // Truyền cả thông tin User để hiển thị ở Sidebar
             ViewData["UserName"] = user.FullName ?? user.UserName;
             ViewData["UserEmail"] = user.Email;
 
@@ -40,12 +38,9 @@ namespace SpaBookingWeb.Controllers
         {
             var detail = await _bookingService.GetAppointmentDetailAsync(id);
             if (detail == null) return NotFound();
-
-            // Trả về JSON để JavaScript xử lý hiển thị lên Modal
             return Json(detail);
         }
 
-        // [MỚI] Trang Lịch sử (Đã xong/Hủy)
         [HttpGet]
         public async Task<IActionResult> History()
         {
@@ -60,19 +55,31 @@ namespace SpaBookingWeb.Controllers
             return View(history);
         }
 
-        // [MỚI] Chức năng Đặt lại
+        // [CŨ] Đặt lại từ đầu (Step 2)
         [HttpPost]
         public async Task<IActionResult> Rebook(int id)
         {
             var result = await _bookingService.RebookAsync(id);
             if (result)
             {
-                // Chuyển hướng đến bước 2 (Chọn dịch vụ) với dữ liệu đã được nạp sẵn
                 return RedirectToAction("Step2_Services", "Booking");
             }
             return RedirectToAction("History");
         }
+
+        // [MỚI] Tiếp tục thanh toán (Step 5) cho đơn Pending
+        [HttpPost]
+        public async Task<IActionResult> ContinueBooking(int id)
+        {
+            // Gọi hàm Resume để nạp dữ liệu cũ vào Session
+            var result = await _bookingService.ResumeBookingAsync(id);
+            if (result)
+            {
+                // Chuyển hướng thẳng đến bước xác nhận/thanh toán
+                return RedirectToAction("Step5_Confirm", "Booking");
+            }
+            // Nếu lỗi, quay lại trang danh sách
+            return RedirectToAction("Appointments");
+        }
     }
-
-
 }

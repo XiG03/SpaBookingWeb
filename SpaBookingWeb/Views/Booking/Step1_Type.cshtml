@@ -1,253 +1,122 @@
 ﻿@{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = "Chọn loại lịch hẹn";
 }
 
-<!DOCTYPE html>
-<html class="light" lang="vi">
+<!-- Custom styles for this page if needed, normally handled by _Layout -->
+<style>
+    /* No custom styles needed if using _Layout's tailwind config, 
+       but if specific overrides are needed, place them here inside a section if _Layout supports it, 
+       or just inline. The user's original file had .material-symbols-outlined settings which are likely global. */
+</style>
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Chọn loại lịch hẹn - Salon &amp; Spa</title>
-    <!-- Material Symbols -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <!-- Tailwind Config -->
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ee2b8c",
-                        "background-light": "#f8f6f7",
-                        "background-dark": "#221019",
-                        "text-main": "#181114",
-                        "text-secondary": "#896175",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings:
-                'FILL' 0,
-                'wght' 400,
-                'GRAD' 0,
-                'opsz' 24
-        }
-    </style>
-</head>
-
-<body
-    class="font-display bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200">
-    <div class="relative flex min-h-screen flex-col overflow-x-hidden">
-        <!-- TopNavBar -->
-        <header
-            class="sticky top-0 z-50 bg-white dark:bg-[#2f1b25] border-b border-solid border-[#f4f0f2] dark:border-[#3f2a34] px-4 md:px-10 py-3 shadow-sm">
-            <div class="mx-auto flex w-full max-w-[1200px] items-center justify-between whitespace-nowrap">
-                <div class="flex items-center gap-4 text-text-main dark:text-white">
-                    <div class="size-8 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined text-3xl">spa</span>
-                    </div>
-                    <h2 class="text-text-main dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Salon
-                        &amp; Spa</h2>
-                </div>
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex flex-1 justify-end gap-8">
-                    <div class="flex items-center gap-6 lg:gap-9">
-                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-                            href="#">Trang chủ</a>
-                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-                            href="#">Dịch vụ</a>
-                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-                            href="#">Combo</a>
-                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
-                            href="#">Liên hệ</a>
-                    </div>
-                    <div class="flex gap-3">
-                        <button
-                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-opacity shadow-md">
-                            <span class="truncate">Đăng nhập</span>
-                        </button>
-                        <button
-                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-[#f4f0f2] dark:bg-white/10 text-text-main dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
-                            <span class="truncate">Đăng ký</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Mobile Menu Icon (Placeholder) -->
-                <button class="md:hidden text-text-main dark:text-white">
-                    <span class="material-symbols-outlined">menu</span>
-                </button>
+<div class="flex-1 flex flex-col items-center justify-start py-10 px-4 md:px-8 lg:px-40 w-full">
+    <div class="layout-content-container flex flex-col max-w-[960px] w-full flex-1 gap-8">
+        <!-- PageHeading -->
+        <div class="flex flex-col gap-4 text-center md:text-left animate-fade-in-up">
+            <div class="flex flex-col gap-2">
+                <h1 class="text-text-main dark:text-white text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
+                    Chọn loại lịch hẹn
+                </h1>
+                <p class="text-text-secondary dark:text-gray-300 text-lg font-normal leading-normal max-w-2xl">
+                    Bạn muốn đặt lịch thư giãn cho riêng mình hay đi cùng bạn bè? Hãy chọn một trong hai phương
+                    thức dưới đây để bắt đầu.
+                </p>
             </div>
-        </header>
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col items-center justify-start py-10 px-4 md:px-8 lg:px-40">
-            <div class="layout-content-container flex flex-col max-w-[960px] w-full flex-1 gap-8">
-                <!-- PageHeading -->
-                <div class="flex flex-col gap-4 text-center md:text-left animate-fade-in-up">
-                    <div class="flex flex-col gap-2">
-                        <h1
-                            class="text-text-main dark:text-white text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-                            Chọn loại lịch hẹn
-                        </h1>
-                        <p class="text-text-secondary dark:text-gray-300 text-lg font-normal leading-normal max-w-2xl">
-                            Bạn muốn đặt lịch thư giãn cho riêng mình hay đi cùng bạn bè? Hãy chọn một trong hai phương
-                            thức dưới đây để bắt đầu.
+        </div>
+        <!-- Selection Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full mt-4">
+
+            <!-- Card 1: Individual -->
+            <div class="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-white dark:bg-[#2f1b25] shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border border-transparent hover:border-primary/30 cursor-pointer"
+                onclick="document.getElementById('form-individual').submit()">
+                <div class="relative h-64 w-full overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+                    <div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-105"
+                        data-alt="woman relaxing in spa with facial mask"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDITTlDwqmkkRpNDtZ5aT-vuYSltIq6bECzrcr7ZkgdvYQ3ZNbQRCL1SoCbCG0-uS7XWbnY5xCPrr8AWYIAxxPZfQyfU_v-X-TrPsQMkg1ip1--hDw5A78doId_9Aq_5tb5YDNxoZdhlfJx1qqDHjqgK9LL4RLPS3-ZIavCBqPiktYJFajSuIjlOytoTodUqmkGKYcWS-p8jonD0eTWx5BBGF9MOP_aT9KaAmkH9yhgddRc6FnL4md5DqOif7zqs5WrryAYj4xXy0w");'>
+                    </div>
+                    <div class="absolute top-4 left-4 z-20 bg-white/90 dark:bg-black/60 p-2 rounded-full backdrop-blur-sm text-primary">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                </div>
+                <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
+                    <div class="flex-1 space-y-2">
+                        <h3 class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
+                            Đặt lịch cá nhân
+                        </h3>
+                        <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
+                            Dành cho một người. Tận hưởng thời gian thư giãn riêng tư với các dịch vụ chăm sóc
+                            chuyên sâu như massage, chăm sóc da mặt và trị liệu toàn thân.
                         </p>
                     </div>
-                </div>
-                <!-- Selection Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full mt-4">
-
-                    <!-- Card 1: Individual -->
-                    <!-- BẮT ĐẦU VÙNG TƯƠNG TÁC BACKEND: CÁ NHÂN -->
-                    <div class="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-white dark:bg-[#2f1b25] shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border border-transparent hover:border-primary/30 cursor-pointer"
-                        onclick="document.getElementById('form-individual').submit()">
-                        <div class="relative h-64 w-full overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                            <div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-105"
-                                data-alt="woman relaxing in spa with facial mask"
-                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDITTlDwqmkkRpNDtZ5aT-vuYSltIq6bECzrcr7ZkgdvYQ3ZNbQRCL1SoCbCG0-uS7XWbnY5xCPrr8AWYIAxxPZfQyfU_v-X-TrPsQMkg1ip1--hDw5A78doId_9Aq_5tb5YDNxoZdhlfJx1qqDHjqgK9LL4RLPS3-ZIavCBqPiktYJFajSuIjlOytoTodUqmkGKYcWS-p8jonD0eTWx5BBGF9MOP_aT9KaAmkH9yhgddRc6FnL4md5DqOif7zqs5WrryAYj4xXy0w");'>
-                            </div>
-                            <div
-                                class="absolute top-4 left-4 z-20 bg-white/90 dark:bg-black/60 p-2 rounded-full backdrop-blur-sm text-primary">
-                                <span class="material-symbols-outlined">person</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
-                            <div class="flex-1 space-y-2">
-                                <h3
-                                    class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
-                                    Đặt lịch cá nhân
-                                </h3>
-                                <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
-                                    Dành cho một người. Tận hưởng thời gian thư giãn riêng tư với các dịch vụ chăm sóc
-                                    chuyên sâu như massage, chăm sóc da mặt và trị liệu toàn thân.
-                                </p>
-                            </div>
-                            <div class="mt-auto pt-4">
-                                <!-- FORM BACKEND -->
-                                <form id="form-individual" asp-controller="Booking" asp-action="SetBookingType"
-                                    method="post" class="w-full">
-                                    <input type="hidden" name="type" value="individual" />
-                                    <button type="submit" onclick="event.stopPropagation()"
-                                        class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-primary text-white text-base font-bold leading-normal shadow-lg shadow-primary/30 hover:bg-opacity-90 transition-all group-hover:translate-y-[-2px]">
-                                        <span>Đặt ngay</span>
-                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: Group -->
-                    <!-- BẮT ĐẦU VÙNG TƯƠNG TÁC BACKEND: NHÓM -->
-                    <div class="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-white dark:bg-[#2f1b25] shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border border-transparent hover:border-primary/30 cursor-pointer"
-                        onclick="document.getElementById('form-group').submit()">
-                        <div class="relative h-64 w-full overflow-hidden">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                            <div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-105"
-                                data-alt="three friends laughing and relaxing in spa robes"
-                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDLnf0K2HpYFdosrpQqfCODNnUtR_WMd1CmcYT6OBPMJOUNbxem4jOkwcn3BZxsBbdXXwS7vFpNoJ3YiU2oc_D6vO7HmFhD8BUC65R4edfjy9LbUmi9uokJcFHjEvusOsYH3N0ZmEB_ZNhHYLuMrdZLQJw3OFdMjxpromoMKcfrOoTIyQfK9L-d_DFk0tuwpZOvVgIns6CuNet1fGFCxHayfDNMksk4LQVddT08FxB7sFwXq7hn0llYL3popWUh0urBr6qskOMIiz0");'>
-                            </div>
-                            <div
-                                class="absolute top-4 left-4 z-20 bg-white/90 dark:bg-black/60 p-2 rounded-full backdrop-blur-sm text-primary">
-                                <span class="material-symbols-outlined">groups</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
-                            <div class="flex-1 space-y-2">
-                                <h3
-                                    class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
-                                    Đặt lịch nhóm
-                                </h3>
-                                <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
-                                    Đi cùng bạn bè hoặc người thân. Nhận ưu đãi đặc biệt giảm giá 15% khi đặt combo cho
-                                    nhóm từ 2 người trở lên. Trải nghiệm tuyệt vời hơn khi cùng nhau.
-                                </p>
-                            </div>
-                            <div class="mt-auto pt-4">
-                                <!-- FORM BACKEND -->
-                                <form id="form-group" asp-controller="Booking" asp-action="SetBookingType" method="post"
-                                    class="w-full">
-                                    <input type="hidden" name="type" value="group" />
-                                    <button type="submit" onclick="event.stopPropagation()"
-                                        class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-white dark:bg-white/10 text-primary dark:text-white border-2 border-primary/20 hover:border-primary text-base font-bold leading-normal hover:bg-primary hover:text-white transition-all group-hover:translate-y-[-2px]">
-                                        <span>Đặt cho nhóm</span>
-                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Helper Text / Trust Badges -->
-                <div class="flex flex-wrap items-center justify-center gap-6 md:gap-12 mt-8 opacity-80">
-                    <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
-                        <span class="material-symbols-outlined text-primary">verified_user</span>
-                        <span class="text-sm font-medium">Bảo mật thông tin</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
-                        <span class="material-symbols-outlined text-primary">schedule</span>
-                        <span class="text-sm font-medium">Đặt lịch 24/7</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
-                        <span class="material-symbols-outlined text-primary">thumb_up</span>
-                        <span class="text-sm font-medium">Dịch vụ hàng đầu</span>
+                    <div class="mt-auto pt-4">
+                        <!-- FORM BACKEND -->
+                        <form id="form-individual" asp-controller="Booking" asp-action="SetBookingType"
+                            method="post" class="w-full">
+                            <input type="hidden" name="type" value="individual" />
+                            <button type="submit" onclick="event.stopPropagation()"
+                                class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-primary text-white text-base font-bold leading-normal shadow-lg shadow-primary/30 hover:bg-opacity-90 transition-all group-hover:translate-y-[-2px]">
+                                <span>Đặt ngay</span>
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </main>
-        <!-- Footer -->
-        <footer class="bg-white dark:bg-[#2f1b25] border-t border-[#f4f0f2] dark:border-[#3f2a34]">
-            <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6 px-5 py-10 text-center">
-                <div class="flex flex-wrap items-center justify-center gap-6 text-sm md:text-base">
-                    <a class="text-text-secondary dark:text-gray-400 font-normal hover:text-primary transition-colors min-w-40"
-                        href="#">Chính sách bảo mật</a>
-                    <a class="text-text-secondary dark:text-gray-400 font-normal hover:text-primary transition-colors min-w-40"
-                        href="#">Điều khoản sử dụng</a>
-                    <a class="text-text-secondary dark:text-gray-400 font-normal hover:text-primary transition-colors min-w-40"
-                        href="#">Trợ giúp</a>
+
+            <!-- Card 2: Group -->
+            <div class="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-white dark:bg-[#2f1b25] shadow-sm hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 border border-transparent hover:border-primary/30 cursor-pointer"
+                onclick="document.getElementById('form-group').submit()">
+                <div class="relative h-64 w-full overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+                    <div class="w-full h-full bg-center bg-cover transition-transform duration-700 group-hover:scale-105"
+                        data-alt="three friends laughing and relaxing in spa robes"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDLnf0K2HpYFdosrpQqfCODNnUtR_WMd1CmcYT6OBPMJOUNbxem4jOkwcn3BZxsBbdXXwS7vFpNoJ3YiU2oc_D6vO7HmFhD8BUC65R4edfjy9LbUmi9uokJcFHjEvusOsYH3N0ZmEB_ZNhHYLuMrdZLQJw3OFdMjxpromoMKcfrOoTIyQfK9L-d_DFk0tuwpZOvVgIns6CuNet1fGFCxHayfDNMksk4LQVddT08FxB7sFwXq7hn0llYL3popWUh0urBr6qskOMIiz0");'>
+                    </div>
+                    <div class="absolute top-4 left-4 z-20 bg-white/90 dark:bg-black/60 p-2 rounded-full backdrop-blur-sm text-primary">
+                        <span class="material-symbols-outlined">groups</span>
+                    </div>
                 </div>
-                <div class="flex flex-wrap justify-center gap-6">
-                    <a class="text-text-secondary dark:text-gray-400 hover:text-[#1877F2] transition-colors group"
-                        href="#">
-                        <span
-                            class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">social_leaderboard</span>
-                    </a>
-                    <a class="text-text-secondary dark:text-gray-400 hover:text-[#E4405F] transition-colors group"
-                        href="#">
-                        <!-- Using camera_alt as instagram substitute from material symbols -->
-                        <span
-                            class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">photo_camera</span>
-                    </a>
-                    <a class="text-text-secondary dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors group"
-                        href="#">
-                        <!-- Using music_note as tiktok substitute -->
-                        <span
-                            class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">music_note</span>
-                    </a>
+                <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
+                    <div class="flex-1 space-y-2">
+                        <h3 class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
+                            Đặt lịch nhóm
+                        </h3>
+                        <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
+                            Đi cùng bạn bè hoặc người thân. Nhận ưu đãi đặc biệt giảm giá 15% khi đặt combo cho
+                            nhóm từ 2 người trở lên. Trải nghiệm tuyệt vời hơn khi cùng nhau.
+                        </p>
+                    </div>
+                    <div class="mt-auto pt-4">
+                        <!-- FORM BACKEND -->
+                        <form id="form-group" asp-controller="Booking" asp-action="SetBookingType" method="post"
+                            class="w-full">
+                            <input type="hidden" name="type" value="group" />
+                            <button type="submit" onclick="event.stopPropagation()"
+                                class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-white dark:bg-white/10 text-primary dark:text-white border-2 border-primary/20 hover:border-primary text-base font-bold leading-normal hover:bg-primary hover:text-white transition-all group-hover:translate-y-[-2px]">
+                                <span>Đặt cho nhóm</span>
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <p class="text-text-secondary dark:text-gray-500 text-sm font-normal leading-normal">© 2023 Salon &amp;
-                    Spa. All rights reserved.</p>
             </div>
-        </footer>
+        </div>
+        <!-- Helper Text / Trust Badges -->
+        <div class="flex flex-wrap items-center justify-center gap-6 md:gap-12 mt-8 opacity-80">
+            <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
+                <span class="material-symbols-outlined text-primary">verified_user</span>
+                <span class="text-sm font-medium">Bảo mật thông tin</span>
+            </div>
+            <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
+                <span class="material-symbols-outlined text-primary">schedule</span>
+                <span class="text-sm font-medium">Đặt lịch 24/7</span>
+            </div>
+            <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
+                <span class="material-symbols-outlined text-primary">thumb_up</span>
+                <span class="text-sm font-medium">Dịch vụ hàng đầu</span>
+            </div>
+        </div>
     </div>
-</body>
-
-</html>
+</div>

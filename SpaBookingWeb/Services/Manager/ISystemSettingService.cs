@@ -21,5 +21,8 @@ namespace SpaBookingWeb.Services.Manager
         // 4. Quản lý Quy tắc đặt cọc (Deposit Rules)
         Task AddDepositRuleAsync(SystemSettingViewModel model); 
         Task DeleteDepositRuleAsync(int id);
+
+        // 5. Nâng quyền Khách hàng -> Nhân viên
+        Task PromoteCustomerAsync(int customerId);
     }
 }

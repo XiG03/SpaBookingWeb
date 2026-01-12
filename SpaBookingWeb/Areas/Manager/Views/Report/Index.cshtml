@@ -7,10 +7,45 @@
 
     <!-- Tiêu đề và nút Xuất Excel -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Báo Cáo Doanh Thu Tháng @DateTime.Now.Month</h1>
-        <a asp-action="ExportRevenueReport" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
-            <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Xuất Báo Cáo Excel
+        <h1 class="h3 mb-0 text-gray-800">Báo Cáo Doanh Thu Tháng @(Model.FilterFromDate.HasValue ? Model.FilterFromDate.Value.Month : DateTime.Now.Month)</h1>
+        <a href="@Url.Action("ExportRevenueReport", new { fromDate = Model.FilterFromDate, toDate = Model.FilterToDate })" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
+            <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Xuất Báo Cáo Excel (Toàn bộ)
         </a>
+    </div>
+
+    <!-- Filter & Chart Section -->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Biểu Đồ Doanh Thu Tổng Quan</h6>
+                    <form asp-action="Index" method="get" class="form-inline">
+                        <select name="filterType" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
+                            @if(Model.FilterType == "Date"){<option value="Date" selected>Theo Ngày/Ca</option>}else{<option value="Date">Theo Ngày/Ca</option>}
+                            @if(Model.FilterType == "Service"){<option value="Service" selected>Theo Dịch Vụ</option>}else{<option value="Service">Theo Dịch Vụ</option>}
+                            @if(Model.FilterType == "Employee"){<option value="Employee" selected>Theo Nhân Viên</option>}else{<option value="Employee">Theo Nhân Viên</option>}
+                            @if(Model.FilterType == "Customer"){<option value="Customer" selected>Theo Khách Hàng</option>}else{<option value="Customer">Theo Khách Hàng</option>}
+                        </select>
+                        <input type="date" id="fromDate" name="fromDate" value="@(Model.FilterFromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm mr-2" />
+                        <span class="mr-2">-</span>
+                        <input type="date" id="toDate" name="toDate" value="@(Model.FilterToDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm mr-2" />
+                        
+                        <div class="btn-group mr-2" role="group">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('today')">Hôm nay</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('week')">Tuần này</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('month')">Tháng này</button>
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 400px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Hàng thống kê tổng quan -->
@@ -125,3 +160,205 @@
             </div>
         </div>
     </div>
+    </div>
+
+    <!-- Báo Cáo Voucher -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Báo Cáo Hiệu Quả Voucher</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Mã Voucher</th>
+                                    <th>Tên Chương Trình</th>
+                                    <th class="text-center">Số lượt dùng</th>
+                                    <th class="text-right">Doanh thu gốc</th>
+                                    <th class="text-right">Giảm giá</th>
+                                    <th class="text-right">Thực thu</th>
+                                    <th class="text-right">% Giảm thực tế</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.VoucherStats.Any())
+                                {
+                                    @foreach (var v in Model.VoucherStats)
+                                    {
+                                        <tr>
+                                            <td class="font-weight-bold text-primary">@v.VoucherCode</td>
+                                            <td>@v.VoucherName</td>
+                                            <td class="text-center">@v.UsageCount</td>
+                                            <td class="text-right">@v.TotalOriginalAmount.ToString("#,##0")</td>
+                                            <td class="text-right text-danger">-@v.TotalDiscountAmount.ToString("#,##0")</td>
+                                            <td class="text-right font-weight-bold text-success">@v.TotalFinalAmount.ToString("#,##0")</td>
+                                            <td class="text-right">
+                                                @{
+                                                    var percent = v.TotalOriginalAmount > 0 ? (v.TotalDiscountAmount / v.TotalOriginalAmount) * 100 : 0;
+                                                }
+                                                @percent.ToString("0.0")%
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Không có dữ liệu voucher trong khoảng thời gian này.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- Báo Cáo Chi Phí Tip -->
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Báo Cáo Chi Phí Tip</h6>
+                    <span class="font-weight-bold text-danger">Tổng Tip: @Model.TotalTipAmount.ToString("#,##0") VNĐ</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Mô tả</th>
+                                    <th class="text-right">Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.TipStats.Any())
+                                {
+                                    @foreach (var t in Model.TipStats)
+                                    {
+                                        <tr>
+                                            <td>@t.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@t.Description</td>
+                                            <td class="text-right font-weight-bold">@t.Amount.ToString("#,##0")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">Không có dữ liệu Tip trong khoảng thời gian này.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function setFilter(type) {
+            var today = new Date();
+            var fromDate, toDate;
+            
+            if (type === 'today') {
+                fromDate = today;
+                toDate = today;
+            } else if (type === 'week') {
+                // First day of week (Monday)
+                var day = today.getDay() || 7; // Get current day number, converting Sun 0 to 7
+                if(day !== 1) today.setHours(-24 * (day - 1)); 
+                fromDate = today;
+                toDate = new Date(today);
+                toDate.setDate(today.getDate() + 6);
+            } else if (type === 'month') {
+                fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of month
+            }
+
+            // Format YYYY-MM-DD
+            document.getElementById('fromDate').value = fromDate.toISOString().split('T')[0];
+            document.getElementById('toDate').value = toDate.toISOString().split('T')[0];
+        }
+
+        var ctx = document.getElementById("revenueChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: '@(Model.FilterType == "Date" ? "line" : "bar")',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: @Html.Raw(Json.Serialize(Model.ChartData)),
+                    backgroundColor: 'rgba(78, 115, 223, 0.5)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 1,
+                    fill: @(Model.FilterType == "Date" ? "true" : "false")
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 20
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+                            }
+                        },
+                        grid: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                var label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

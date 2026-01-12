@@ -1,610 +1,564 @@
 ﻿@using SpaBookingWeb.ViewModels.Client
 @model Step2ViewModel
 @{
-    Layout = null;
-    // Serialize dữ liệu Services ra JSON để JS xử lý nhanh (hiển thị tên, giá ở sidebar)
+    Layout = "_Layout";
+    ViewData["Title"] = "Chọn Dịch vụ";
+    // Serialize dữ liệu Services ra JSON (bao gồm cả Consumables mới thêm)
     var allServices = Model.ServiceCategories.SelectMany(c => c.Services).ToList();
     var servicesJson = Newtonsoft.Json.JsonConvert.SerializeObject(allServices);
 
-    // Lấy danh sách ID đã chọn của tất cả members để init checkbox
-    var currentMemberIndex = 1; // Mặc định hiển thị khách 1
+    var currentMemberIndex = 1;
 }
 
-<!DOCTYPE html>
-<html class="light" lang="vi">
+<style>
+    /* Khi checkbox input được check */
+    .service-checkbox:checked+div {
+        border-color: #ec4899;
+        background-color: #fdf2f8;
+    }
+    .service-checkbox:checked+div .check-icon { opacity: 1; }
+    .service-checkbox:checked+div .check-box-container {
+        background-color: #ec4899;
+        border-color: #ec4899;
+    }
+    .member-tab.active {
+        background-color: #ec4899;
+        color: white;
+        border-color: #ec4899;
+    }
+    .category-section.hidden { display: none; }
+    .service-item.hidden-by-search { display: none !important; }
+    
+    /* Modal Styles */
+    #serviceDetailModal {
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    #serviceDetailModal.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    #serviceDetailModal:not(.hidden) {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+</style>
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Chọn Dịch vụ (Bước 2) - Lotus Spa</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ec4899", "primary-dark": "#be185d", "background-light": "#fdf2f8", "background-dark": "#181012",
-                        "text-main": "#1f2937", "text-muted": "#6b7280",
-                    },
-                    fontFamily: { "display": ["Inter", "sans-serif"], "sans": ["Inter", "sans-serif"] },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Khi checkbox input được check, div liền kề (thẻ chứa dịch vụ) sẽ đổi màu viền và nền */
-        .service-checkbox:checked+div {
-            border-color: #ec4899;
-            background-color: #fdf2f8;
-        }
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        /* Khi checkbox input được check, tìm thẻ span icon check bên trong và hiện nó lên */
-        .service-checkbox:checked+div .check-icon {
-            opacity: 1;
-        }
-
-        /* Khi checkbox input được check, đổi màu nền của ô vuông chứa icon */
-        .service-checkbox:checked+div .check-box-container {
-            background-color: #ec4899;
-            border-color: #ec4899;
-        }
-
-        .member-tab.active {
-            background-color: #ec4899;
-            color: white;
-            border-color: #ec4899;
-        }
-
-        /* Ẩn hiện section khi lọc */
-        .category-section.hidden {
-            display: none;
-        }
-
-        /* Ẩn item khi tìm kiếm không khớp */
-        .service-item.hidden-by-search {
-            display: none !important;
-        }
-
-        /* Hiệu ứng nút xóa đẹp hơn */
-        .delete-btn-wrapper {
-            opacity: 0.6;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .member-card:hover .delete-btn-wrapper {
-            opacity: 1;
-        }
-
-        .delete-btn-wrapper:hover {
-            transform: scale(1.1);
-        }
-    </style>
-</head>
-
-<body
-    class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased min-h-screen flex flex-col">
-
-    <!-- HEADER (Đã khôi phục từ HTML gốc và tích hợp Search) -->
-    <header class="bg-white dark:bg-[#29151b] border-b border-pink-100 dark:border-[#4a2630] sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-primary/20 p-2 rounded-lg text-primary-dark">
-                            <span class="material-symbols-outlined">spa</span>
-                        </div>
-                        <h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Lotus Spa</h1>
-                    </div>
-                    <!-- SEARCH BAR -->
-                    <div class="hidden md:flex relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-text-muted text-[20px]">search</span>
-                        </div>
-                        <input id="service-search-input" onkeyup="searchServices()"
-                            class="block w-64 pl-10 pr-3 py-2 border-none rounded-xl bg-background-light dark:bg-[#361c23] text-sm text-text-main dark:text-white placeholder-text-muted focus:ring-2 focus:ring-primary"
-                            placeholder="Tìm kiếm dịch vụ..." type="text" />
-                    </div>
+    <!-- STEP INDICATOR -->
+    <div class="mb-12">
+         <div class="flex items-center justify-between w-full max-w-3xl mx-auto relative">
+            <!-- Progress Track -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1.5 bg-gray-100 rounded-full -z-10"></div>
+            <!-- Progress Fill -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[30%] h-1.5 bg-gradient-to-r from-pink-400 to-primary rounded-full -z-10 transition-all duration-500"></div>
+            
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Index" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Dịch vụ</span>
+            </div>
+            
+            <!-- Step 2 (Active) -->
+            <div class="flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-primary text-white flex items-center justify-center font-bold text-lg shadow-xl shadow-pink-300 ring-4 ring-white">
+                    2
                 </div>
-                <div class="flex items-center gap-6">
-                    <nav class="hidden md:flex gap-6 text-sm font-medium text-text-main dark:text-gray-300">
-                        <a class="hover:text-primary transition-colors" href="#">Trang chủ</a>
-                        <a class="hover:text-primary transition-colors" href="#">Lịch hẹn</a>
-                        <a class="hover:text-primary transition-colors" href="#">Đối tác</a>
-                    </nav>
-                    <button
-                        class="bg-primary hover:bg-primary-dark transition-colors text-white font-bold py-2 px-5 rounded-xl text-sm shadow-md shadow-pink-200 dark:shadow-none">
-                        Đăng nhập
-                    </button>
+                <span class="text-sm font-bold text-primary">Gói & Combo</span>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center gap-2 opacity-40">
+                <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm">
+                    3
                 </div>
+                <span class="text-xs font-semibold text-gray-400">Kỹ thuật viên</span>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="flex flex-col items-center gap-2 opacity-40">
+                <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm">
+                    4
+                </div>
+                <span class="text-xs font-semibold text-gray-400">Thời gian</span>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8 items-start relative">
 
-        <!-- STEP INDICATOR (Giữ nguyên) -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between w-full relative">
-                <div
-                    class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full -z-10">
-                </div>
-                <div
-                    class="absolute left-0 top-1/2 -translate-y-1/2 w-[35%] h-1 bg-primary rounded-full -z-10 transition-all duration-300">
-                </div>
-                <!-- Steps HTML giữ nguyên... -->
-                <div class="flex flex-col items-center gap-2">
-                    <div
-                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg">
-                        1</div>
-                    <span class="text-xs font-bold text-primary">Loại</span>
-                </div>
-                <div class="flex flex-col items-center gap-2">
-                    <div
-                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg">
-                        2</div>
-                    <span class="text-xs font-bold text-primary">Dịch vụ</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 opacity-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-text-muted flex items-center justify-center font-bold text-sm">
-                        3</div>
-                    <span class="text-xs font-medium text-text-muted">KTV</span>
-                </div>
-                <div class="flex flex-col items-center gap-2 opacity-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-text-muted flex items-center justify-center font-bold text-sm">
-                        4</div>
-                    <span class="text-xs font-medium text-text-muted">Giờ</span>
-                </div>
-            </div>
-        </div>
+        <!-- LEFT COLUMN: SERVICES -->
+        <div class="flex-1 w-full min-w-0 flex flex-col gap-6">
 
-        <div class="flex flex-col lg:flex-row gap-8 items-start relative">
-
-            <!-- LEFT COLUMN: SERVICES -->
-            <div class="flex-1 w-full min-w-0 flex flex-col gap-6">
-
-                <!-- 1. MEMBER TABS (QUAN TRỌNG CHO GROUP) -->
-                @if (Model.IsGroup)
-                {
-                    <div
-                        class="bg-white dark:bg-[#29151b] rounded-2xl p-4 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <h3 class="text-sm font-bold text-text-muted uppercase mb-3">Đang chọn dịch vụ cho:</h3>
-                        <div class="flex gap-3 flex-wrap items-center" id="member-tabs-container">
-                            @foreach (var member in Model.CurrentSession.Members)
-                            {
-                                // Sửa lại thiết kế tab thành viên
-                                <div class="member-card relative group inline-block">
-                                    <button onclick="switchMember(@member.MemberIndex)" id="btn-member-@member.MemberIndex"
-                                        class="member-tab px-5 py-2.5 rounded-xl border border-pink-100 text-sm font-bold transition-all hover:border-primary @(member.MemberIndex == 1 ? "active" : "bg-white text-text-main hover:text-primary")">
-                                        <span class="flex items-center gap-2">
-                                            <span class="material-symbols-outlined text-[20px]">person</span>
-                                            @member.Name
-                                        </span>
-                                    </button>
-
-                                    <!-- Nút xóa thành viên (Chỉ hiện cho thành viên thứ 2 trở đi) - Thiết kế lại dạng Badge -->
-                                    @if (member.MemberIndex > 1)
-                                    {
-                                        <form asp-action="RemoveMember" method="post"
-                                            class="absolute -top-2 -right-2 z-10 delete-btn-wrapper">
-                                            <input type="hidden" name="index" value="@member.MemberIndex" />
-                                            <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa @member.Name?');"
-                                                class="w-6 h-6 rounded-full bg-white text-gray-400 border border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all shadow-sm"
-                                                title="Xóa khách này">
-                                                <span class="material-symbols-outlined text-[14px] font-bold">close</span>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            }
-                            <!-- Nút thêm người trong chế độ nhóm -->
-                            <form asp-action="AddNewMember" method="post" class="inline ml-1">
-                                <button type="submit"
-                                    class="w-10 h-10 flex items-center justify-center rounded-xl border border-dashed border-primary text-primary hover:bg-pink-50 transition-all shadow-sm group"
-                                    title="Thêm khách mới">
-                                    <span
-                                        class="material-symbols-outlined group-hover:scale-110 transition-transform">add</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                }
-
-                <!-- 2. CATEGORY FILTER (Updated with Razor) -->
-                <div
-                    class="sticky top-16 z-40 bg-background-light dark:bg-background-dark py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                        <button onclick="filterCategory('all')"
-                            class="category-btn active px-5 py-2.5 rounded-full bg-primary text-white text-sm font-bold whitespace-nowrap shadow-md">
-                            Tất cả
-                        </button>
-                        @foreach (var cat in Model.ServiceCategories)
+            <!-- MEMBER TABS (Cho nhóm) -->
+            @if (Model.IsGroup)
+            {
+                <div class="bg-white dark:bg-[#29151b] rounded-2xl p-4 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                    <h3 class="text-sm font-bold text-text-muted uppercase mb-3">Đang chọn dịch vụ cho:</h3>
+                    <div class="flex gap-3 flex-wrap items-center" id="member-tabs-container">
+                        @foreach (var member in Model.CurrentSession.Members)
                         {
-                            <button onclick="filterCategory('@cat.CategoryName')"
-                                class="category-btn px-5 py-2.5 rounded-full bg-white border border-pink-100 text-text-main text-sm font-medium whitespace-nowrap hover:border-primary hover:text-primary transition-all">
-                                @cat.CategoryName
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <!-- 3. SERVICE LIST (Loop Razor) -->
-                <section
-                    class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                    @foreach (var cat in Model.ServiceCategories)
-                    {
-                        <div class="category-section mb-8" data-category="@cat.CategoryName">
-                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-primary">spa</span>
-                                @cat.CategoryName
-                            </h3>
-                            <div class="space-y-4">
-                                @foreach (var service in cat.Services)
+                            <div class="member-card relative group inline-block">
+                                <button onclick="switchMember(@member.MemberIndex)" id="btn-member-@member.MemberIndex"
+                                    class="member-tab px-5 py-2.5 rounded-xl border border-pink-100 text-sm font-bold transition-all hover:border-primary @(member.MemberIndex == 1 ? "active" : "bg-white text-text-main hover:text-primary")">
+                                    <span class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[20px]">person</span>
+                                        @member.Name
+                                    </span>
+                                </button>
+                                @if (member.MemberIndex > 1)
                                 {
-                                    <!-- Thêm class 'service-item' và data-name để phục vụ tìm kiếm -->
-                                    <label class="group relative block cursor-pointer service-item"
-                                        data-name="@service.Name.ToLower()">
-                                        <!-- Checkbox ẩn, quản lý trạng thái bằng JS -->
-                                        <input type="checkbox" class="peer sr-only service-checkbox" value="@service.Id"
-                                            data-price="@service.Price" data-duration="@service.DurationMinutes"
-                                            onchange="toggleService(this, @service.Id)" id="chk-service-@service.Id">
-
-                                        <div
-                                            class="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-[#4a2630] hover:border-primary/50 transition-all bg-white dark:bg-[#29151b] group-hover:shadow-md">
-                                            <div class="flex items-start gap-4">
-                                                <div class="flex-1">
-                                                    <p
-                                                        class="font-bold text-text-main dark:text-white text-base group-hover:text-primary-dark transition-colors service-name">
-                                                        @service.Name</p>
-                                                    <p class="text-sm text-text-muted mt-1">@service.Description</p>
-                                                    <p class="text-sm text-text-muted mt-2 flex items-center gap-1">
-                                                        <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                                        @service.DurationMinutes phút
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="flex flex-col items-end gap-3">
-                                                <span
-                                                    class="font-bold text-text-main dark:text-white text-lg">@service.Price.ToString("N0")
-                                                    đ</span>
-                                                <!-- Đã thêm class check-box-container để CSS target -->
-                                                <div
-                                                    class="check-box-container w-6 h-6 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-colors">
-                                                    <!-- Đã thêm class check-icon để CSS target -->
-                                                    <span
-                                                        class="check-icon material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </label>
+                                    <form asp-action="RemoveMember" method="post" class="absolute -top-2 -right-2 z-10 delete-btn-wrapper">
+                                        <input type="hidden" name="index" value="@member.MemberIndex" />
+                                        <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa @member.Name?');"
+                                            class="w-6 h-6 rounded-full bg-white text-gray-400 border border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all shadow-sm">
+                                            <span class="material-symbols-outlined text-[14px] font-bold">close</span>
+                                        </button>
+                                    </form>
                                 }
                             </div>
-                        </div>
-                    }
-                    <div id="no-result-message" class="hidden text-center py-8 text-text-muted">
-                        <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
-                        <p>Không tìm thấy dịch vụ nào phù hợp.</p>
-                    </div>
-                </section>
-
-                <!-- 4. BOTTOM ACTION FOR SINGLE USER -->
-                @if (!Model.IsGroup)
-                {
-                    <div
-                        class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-100 flex items-center justify-between">
-                        <div>
-                            <h4 class="font-bold text-text-main text-lg">Đi cùng bạn bè?</h4>
-                            <p class="text-sm text-text-muted">Thêm người để đặt lịch cùng nhau và nhận ưu đãi nhóm.</p>
-                        </div>
-                        <form asp-action="AddNewMember" method="post">
+                        }
+                        <form asp-action="AddNewMember" method="post" class="inline ml-1">
                             <button type="submit"
-                                class="bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm">
-                                + Thêm người
+                                class="w-10 h-10 flex items-center justify-center rounded-xl border border-dashed border-primary text-primary hover:bg-pink-50 transition-all shadow-sm group">
+                                <span class="material-symbols-outlined group-hover:scale-110 transition-transform">add</span>
                             </button>
                         </form>
                     </div>
-                }
+                </div>
+            }
+
+            <!-- CATEGORY FILTER & SEARCH -->
+            <div class="sticky top-16 z-40 bg-background-light dark:bg-background-dark py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div class="relative flex-1 group">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-text-muted text-[20px]">search</span>
+                        </span>
+                        <input id="service-search-input" onkeyup="searchServices()"
+                            class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-white dark:bg-[#29151b] border border-pink-100 dark:border-[#4a2630] text-sm text-text-main dark:text-white placeholder-text-muted focus:ring-2 focus:ring-primary shadow-sm"
+                            placeholder="Tìm kiếm dịch vụ..." type="text" />
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                    <button onclick="filterCategory('all')"
+                        class="category-btn active px-5 py-2.5 rounded-full bg-primary text-white text-sm font-bold whitespace-nowrap shadow-md">
+                        Tất cả
+                    </button>
+                    @foreach (var cat in Model.ServiceCategories)
+                    {
+                        <button onclick="filterCategory('@cat.CategoryName')"
+                            class="category-btn px-5 py-2.5 rounded-full bg-white border border-pink-100 text-text-main text-sm font-medium whitespace-nowrap hover:border-primary hover:text-primary transition-all">
+                            @cat.CategoryName
+                        </button>
+                    }
+                </div>
             </div>
 
-            <!-- RIGHT COLUMN: SIDEBAR -->
-            <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
-                <div
-                    class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl shadow-pink-100/50 dark:shadow-none border border-pink-100 dark:border-[#4a2630]">
-                    <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
-                        Chi tiết đặt lịch
-                    </h3>
+            <!-- SERVICE LIST -->
+            <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                @foreach (var cat in Model.ServiceCategories)
+                {
+                    <div class="category-section mb-8" data-category="@cat.CategoryName">
+                        <h3 class="text-xl font-bold text-text-main dark:text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">spa</span>
+                            @cat.CategoryName
+                        </h3>
+                        <div class="space-y-4">
+                            @foreach (var service in cat.Services)
+                            {
+                                <label class="group relative block cursor-pointer service-item" data-name="@service.Name.ToLower()">
+                                    <input type="checkbox" class="peer sr-only service-checkbox" value="@service.Id"
+                                        data-price="@service.Price" data-duration="@service.DurationMinutes"
+                                        onchange="toggleService(this, @service.Id)" id="chk-service-@service.Id">
 
-                    <!-- Cart Items Container -->
-                    <div id="cart-items-container" class="space-y-4 mb-6 relative min-h-[100px]">
-                        <!-- Items will be injected here by JS -->
-                    </div>
-
-                    <div class="border-t border-dashed border-gray-200 dark:border-[#4a2630] my-4"></div>
-
-                    <!-- Totals -->
-                    <div class="space-y-2 mb-6">
-                        <div class="flex justify-between items-end pt-2">
-                            <div>
-                                <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
-                                <span class="text-base font-semibold text-text-main dark:text-white"
-                                    id="total-duration">0 phút</span>
-                            </div>
-                            <div class="text-right">
-                                <span class="block text-sm text-text-muted mb-1">Tổng tiền tạm tính</span>
-                                <span class="text-2xl font-black text-primary-dark" id="total-price">0 đ</span>
-                            </div>
+                                    <div class="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-[#4a2630] hover:border-primary/50 transition-all bg-white dark:bg-[#29151b] group-hover:shadow-md">
+                                        <div class="flex items-start gap-4 flex-1">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2">
+                                                    <p class="font-bold text-text-main dark:text-white text-base group-hover:text-primary-dark transition-colors service-name">
+                                                        @service.Name
+                                                    </p>
+                                                    
+                                                    <!-- [MỚI] NÚT CHI TIẾT -->
+                                                    <button type="button" onclick="event.stopPropagation(); openServiceDetail(@service.Id)" 
+                                                            class="text-gray-400 hover:text-primary hover:bg-pink-50 p-1 rounded-full transition-colors" 
+                                                            title="Xem chi tiết">
+                                                        <span class="material-symbols-outlined text-[18px]">info</span>
+                                                    </button>
+                                                </div>
+                                                
+                                                <p class="text-sm text-text-muted mt-1 line-clamp-1">@service.Description</p>
+                                                <p class="text-sm text-text-muted mt-2 flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                                    @service.DurationMinutes phút
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-3 shrink-0 ml-4">
+                                            <span class="font-bold text-text-main dark:text-white text-lg">@service.Price.ToString("N0") đ</span>
+                                            <div class="check-box-container w-6 h-6 rounded-md border-2 border-gray-300 flex items-center justify-center text-white transition-colors">
+                                                <span class="check-icon material-symbols-outlined text-[18px] opacity-0 transition-opacity">check</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            }
                         </div>
                     </div>
+                }
+                <div id="no-result-message" class="hidden text-center py-8 text-text-muted">
+                    <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+                    <p>Không tìm thấy dịch vụ nào phù hợp.</p>
+                </div>
+            </section>
 
-                    <!-- Continue Button -->
-                    <form asp-action="CompleteStep2" method="post">
+            <!-- Bottom Action -->
+            @if (!Model.IsGroup)
+            {
+                <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-100 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-text-main text-lg">Đi cùng bạn bè?</h4>
+                        <p class="text-sm text-text-muted">Thêm người để đặt lịch cùng nhau.</p>
+                    </div>
+                    <form asp-action="AddNewMember" method="post">
                         <button type="submit"
-                            class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2">
-                            Tiếp tục <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            class="bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm">
+                            + Thêm người
                         </button>
                     </form>
-                    <p class="text-center text-xs text-text-muted">
-                        Chưa cần thanh toán ngay. Bước tiếp theo: Chọn chuyên gia.
-                    </p>
                 </div>
-            </aside>
+            }
         </div>
-    </main>
 
-    <!-- SCRIPTS -->
-    <script>
-        // 1. Dữ liệu khởi tạo từ Server
-        const allServices = @Html.Raw(servicesJson);
-        const membersData = {};
-        let activeMemberIndex = 1;
-        const isGroup = @Model.IsGroup.ToString().ToLower();
+        <!-- RIGHT SIDEBAR (Giữ nguyên) -->
+        <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
+            <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl border border-pink-100 dark:border-[#4a2630]">
+                <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                    Chi tiết đặt lịch
+                </h3>
+                <div id="cart-items-container" class="space-y-4 mb-6 relative min-h-[100px]"></div>
+                <div class="border-t border-dashed border-gray-200 dark:border-[#4a2630] my-4"></div>
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between items-end pt-2">
+                        <div>
+                            <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
+                            <span class="text-base font-semibold text-text-main dark:text-white" id="total-duration">0 phút</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-sm text-text-muted mb-1">Tổng tiền tạm tính</span>
+                            <span class="text-2xl font-black text-primary-dark" id="total-price">0 đ</span>
+                        </div>
+                    </div>
+                </div>
+                <form id="next-step-form" asp-action="CompleteStep2" method="post" onsubmit="return validateForm()">
+                    <button id="btn-next-step" type="submit"
+                        class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Tiếp tục <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+</div>
 
-        // Init data structure for members
-        @foreach (var m in Model.CurrentSession.Members)
-        {
-                <text>
-                    membersData[@m.MemberIndex] = {
-                        name: "@Html.Raw(m.Name)",
-                    selectedIds: [@string.Join(",", m.SelectedServiceIds)]
-                };
-                </text>
+<!-- [MỚI] SERVICE DETAIL MODAL -->
+<div id="serviceDetailModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden" onclick="closeServiceDetail(event)">
+    <div class="bg-white dark:bg-[#2a0a12] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden m-4 transform transition-all scale-100" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="bg-primary/10 px-6 py-4 border-b border-primary/10 flex items-start justify-between">
+            <div>
+                <h3 class="text-xl font-bold text-primary dark:text-white" id="modal-service-name">Tên Dịch Vụ</h3>
+                <p class="text-sm text-text-muted mt-1" id="modal-service-price">0 đ</p>
+            </div>
+            <button onclick="closeServiceDetail()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+        
+        <!-- Body -->
+        <div class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            <!-- Mô tả -->
+            <div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">description</span> Mô tả
+                </h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed" id="modal-service-desc">...</p>
+            </div>
+
+            <!-- Thời gian -->
+            <div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">schedule</span> Thời gian thực hiện
+                </h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300" id="modal-service-duration">... phút</p>
+            </div>
+
+            <!-- Sản phẩm sử dụng -->
+            <div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">inventory_2</span> Sản phẩm sử dụng
+                </h4>
+                <ul class="space-y-2" id="modal-service-consumables">
+                    <!-- List items will be injected here -->
+                </ul>
+                <p id="modal-no-consumables" class="text-xs text-gray-400 italic hidden">Không có thông tin sản phẩm.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-end">
+            <button onclick="closeServiceDetail()" class="px-5 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
+                Đóng
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Dữ liệu từ Server
+    const allServices = @Html.Raw(servicesJson);
+    const membersData = {};
+    let activeMemberIndex = 1;
+    const isGroup = @Model.IsGroup.ToString().ToLower();
+
+    @foreach (var m in Model.CurrentSession.Members)
+    {
+        <text>
+            membersData[@m.MemberIndex] = {
+                name: "@Html.Raw(m.Name)",
+                selectedIds: [@string.Join(",", m.SelectedServiceIds)]
+            };
+        </text>
+    }
+
+    // --- LOGIC MODAL CHI TIẾT ---
+    function openServiceDetail(serviceId) {
+        const service = allServices.find(s => s.Id === serviceId);
+        if (!service) return;
+
+        // Populate data
+        document.getElementById('modal-service-name').textContent = service.Name;
+        document.getElementById('modal-service-price').textContent = service.Price.toLocaleString() + ' đ';
+        document.getElementById('modal-service-desc').textContent = service.Description || "Chưa có mô tả chi tiết.";
+        document.getElementById('modal-service-duration').textContent = service.DurationMinutes + ' phút';
+
+        const consumablesList = document.getElementById('modal-service-consumables');
+        const noConsumablesMsg = document.getElementById('modal-no-consumables');
+        consumablesList.innerHTML = '';
+
+        if (service.Consumables && service.Consumables.length > 0) {
+            noConsumablesMsg.classList.add('hidden');
+            service.Consumables.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300";
+                li.innerHTML = `<span class="material-symbols-outlined text-green-500 text-[16px] mt-0.5">check_circle</span> <span>${item}</span>`;
+                consumablesList.appendChild(li);
+            });
+        } else {
+            noConsumablesMsg.classList.remove('hidden');
         }
 
-            // 2. Chức năng Filter Category
-            function filterCategory(catName) {
-                // Xóa text tìm kiếm khi chuyển danh mục để tránh nhầm lẫn
-                document.getElementById('service-search-input').value = '';
+        // Show modal
+        const modal = document.getElementById('serviceDetailModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
 
-                // Update UI buttons
-                document.querySelectorAll('.category-btn').forEach(btn => {
-                    if (btn.textContent.trim() === catName || (catName === 'all' && btn.textContent.trim() === 'Tất cả')) {
-                        btn.classList.add('bg-primary', 'text-white');
-                        btn.classList.remove('bg-white', 'text-text-main');
-                    } else {
-                        btn.classList.remove('bg-primary', 'text-white');
-                        btn.classList.add('bg-white', 'text-text-main');
-                    }
-                });
+    function closeServiceDetail(event) {
+        // Close if click on overlay or button
+        const modal = document.getElementById('serviceDetailModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
 
-                // Show/Hide sections
-                document.querySelectorAll('.category-section').forEach(sec => {
-                    if (catName === 'all' || sec.dataset.category === catName) {
-                        sec.classList.remove('hidden');
-                        // Reset trạng thái ẩn do tìm kiếm khi đổi danh mục
-                        sec.querySelectorAll('.service-item').forEach(item => item.classList.remove('hidden-by-search'));
-                    } else {
-                        sec.classList.add('hidden');
-                    }
-                });
+    // --- CÁC HÀM CŨ (Filter, Search, Toggle, RenderSidebar...) ---
+    // (Giữ nguyên các hàm JS đã có từ phiên bản trước)
+    
+    function filterCategory(catName) {
+        const searchInput = document.getElementById('service-search-input');
+        if(searchInput) searchInput.value = '';
 
-                // Ẩn thông báo không tìm thấy
-                document.getElementById('no-result-message').classList.add('hidden');
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            if (btn.textContent.trim() === catName || (catName === 'all' && btn.textContent.trim() === 'Tất cả')) {
+                btn.classList.add('bg-primary', 'text-white');
+                btn.classList.remove('bg-white', 'text-text-main');
+            } else {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-white', 'text-text-main');
             }
+        });
 
-        // 2b. Chức năng Tìm kiếm Dịch vụ
-        function searchServices() {
-            const input = document.getElementById('service-search-input');
-            const filter = input.value.toLowerCase().trim();
-            const sections = document.querySelectorAll('.category-section');
-            let hasGlobalResult = false;
-
-            // Nếu ô tìm kiếm trống, hiển thị lại tất cả theo category đang chọn (mặc định là All hoặc category hiện tại)
-            if (filter === "") {
-                // Tìm nút category đang active để lọc lại
-                const activeBtn = document.querySelector('.category-btn.bg-primary');
-                const activeCatName = activeBtn ? activeBtn.textContent.trim() : 'Tất cả';
-                filterCategory(activeBtn && activeCatName !== 'Tất cả' ? activeCatName : 'all');
-                return;
+        document.querySelectorAll('.category-section').forEach(sec => {
+            if (catName === 'all' || sec.dataset.category === catName) {
+                sec.classList.remove('hidden');
+                sec.querySelectorAll('.service-item').forEach(item => item.classList.remove('hidden-by-search'));
+            } else {
+                sec.classList.add('hidden');
             }
+        });
+        
+        const noResult = document.getElementById('no-result-message');
+        if(noResult) noResult.classList.add('hidden');
+    }
 
-            sections.forEach(section => {
-                // Mặc định ẩn section đi, nếu tìm thấy item bên trong mới hiện
-                let hasVisibleItemInSection = false;
-                const items = section.querySelectorAll('.service-item');
+    function searchServices() {
+        const input = document.getElementById('service-search-input');
+        const filter = input.value.toLowerCase().trim();
+        const sections = document.querySelectorAll('.category-section');
+        let hasGlobalResult = false;
 
-                items.forEach(item => {
-                    const name = item.getAttribute('data-name');
-                    if (name.includes(filter)) {
-                        item.classList.remove('hidden-by-search');
-                        hasVisibleItemInSection = true;
-                        hasGlobalResult = true;
-                    } else {
-                        item.classList.add('hidden-by-search');
-                    }
-                });
+        if (filter === "") {
+            const activeBtn = document.querySelector('.category-btn.bg-primary');
+            const activeCatName = activeBtn ? activeBtn.textContent.trim() : 'Tất cả';
+            filterCategory(activeBtn && activeCatName !== 'Tất cả' ? activeCatName : 'all');
+            return;
+        }
 
-                // Nếu trong section có item phù hợp thì hiện section đó lên
-                if (hasVisibleItemInSection) {
-                    section.classList.remove('hidden');
+        sections.forEach(section => {
+            let hasVisibleItemInSection = false;
+            const items = section.querySelectorAll('.service-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(filter)) {
+                    item.classList.remove('hidden-by-search');
+                    hasVisibleItemInSection = true;
+                    hasGlobalResult = true;
                 } else {
-                    section.classList.add('hidden');
+                    item.classList.add('hidden-by-search');
                 }
             });
+            if (hasVisibleItemInSection) section.classList.remove('hidden');
+            else section.classList.add('hidden');
+        });
 
-            // Hiển thị thông báo nếu không tìm thấy gì
-            const noResultMsg = document.getElementById('no-result-message');
-            if (!hasGlobalResult) {
-                noResultMsg.classList.remove('hidden');
-            } else {
-                noResultMsg.classList.add('hidden');
-            }
+        const noResultMsg = document.getElementById('no-result-message');
+        if(noResultMsg) {
+            if (!hasGlobalResult) noResultMsg.classList.remove('hidden');
+            else noResultMsg.classList.add('hidden');
         }
+    }
 
-        // 3. Chuyển đổi thành viên (Tab switching)
-        function switchMember(index) {
-            activeMemberIndex = index;
-
-            // Update Tab UI
-            document.querySelectorAll('.member-tab').forEach(t => t.classList.remove('active'));
-            // Remove active classes from other non-active buttons too to restore hover state
-            document.querySelectorAll('.member-tab:not(.active)').forEach(t => {
-                t.classList.add('bg-white', 'text-text-main', 'hover:text-primary');
-            });
-
-
-            const btn = document.getElementById(`btn-member-${index}`);
-            if (btn) {
-                btn.classList.add('active');
-                btn.classList.remove('bg-white', 'text-text-main', 'hover:text-primary');
-            }
-
-            // Reset checkboxes UI theo member mới
-            updateCheckboxUI();
-
-            // Scroll to top of list smoothly
-            window.scrollTo({ top: 100, behavior: 'smooth' });
+    function switchMember(index) {
+        activeMemberIndex = index;
+        document.querySelectorAll('.member-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.member-tab:not(.active)').forEach(t => {
+            t.classList.add('bg-white', 'text-text-main', 'hover:text-primary');
+        });
+        const btn = document.getElementById(`btn-member-${index}`);
+        if (btn) {
+            btn.classList.add('active');
+            btn.classList.remove('bg-white', 'text-text-main', 'hover:text-primary');
         }
-
-        function updateCheckboxUI() {
-            // Uncheck all first
-            document.querySelectorAll('.service-checkbox').forEach(cb => {
-                cb.checked = false;
-                // Reset visual parent styling if needed (Tailwind peer handled this via CSS but manual check ensures sync)
-            });
-
-            // Check ones for active member
-            const currentIds = membersData[activeMemberIndex]?.selectedIds || [];
-            currentIds.forEach(id => {
-                const cb = document.getElementById(`chk-service-${id}`);
-                if (cb) cb.checked = true;
-            });
-        }
-
-        // 4. Logic Chọn/Bỏ chọn dịch vụ
-        function toggleService(checkbox, serviceId) {
-            if (!membersData[activeMemberIndex]) return;
-
-            const currentIds = membersData[activeMemberIndex].selectedIds;
-
-            if (checkbox.checked) {
-                if (!currentIds.includes(serviceId)) currentIds.push(serviceId);
-            } else {
-                const idx = currentIds.indexOf(serviceId);
-                if (idx > -1) currentIds.splice(idx, 1);
-            }
-
-            renderSidebar();
-            syncToServer(activeMemberIndex, currentIds);
-        }
-
-        function removeService(memberIndex, serviceId) {
-            if (!membersData[memberIndex]) return;
-
-            // Remove from data
-            const idx = membersData[memberIndex].selectedIds.indexOf(serviceId);
-            if (idx > -1) membersData[memberIndex].selectedIds.splice(idx, 1);
-
-            // If removing from currently active member, uncheck the box
-            if (memberIndex === activeMemberIndex) {
-                const cb = document.getElementById(`chk-service-${serviceId}`);
-                if (cb) cb.checked = false;
-            }
-
-            renderSidebar();
-            syncToServer(memberIndex, membersData[memberIndex].selectedIds);
-        }
-
-        // 5. Render Sidebar & Calculate Totals (ĐÃ SỬA LỖI)
-        function renderSidebar() {
-            const container = document.getElementById('cart-items-container');
-
-            // Khởi tạo HTML với thanh trang trí
-            let htmlContent = '<div class="absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100 dark:bg-[#4a2630]"></div>';
-
-            let hasItems = false;
-            let totalPrice = 0;
-            let totalDuration = 0;
-
-            // Loop through all members to show full cart
-            for (const [mIdx, data] of Object.entries(membersData)) {
-
-                data.selectedIds.forEach(sId => {
-                    const service = allServices.find(s => s.Id === sId);
-                    if (!service) return;
-
-                    // Chỉ đánh dấu là có item nếu tìm thấy service hợp lệ
-                    hasItems = true;
-
-                    totalPrice += service.Price;
-                    totalDuration += service.DurationMinutes;
-
-                    htmlContent += `
-                        <div class="relative pl-6 mb-4 group">
-                            <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 ${parseInt(mIdx) === activeMemberIndex ? 'border-primary bg-primary' : 'border-gray-300 bg-white'} z-10"></div>
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <p class="text-sm font-semibold text-text-main dark:text-white">${service.Name}</p>
-                                        ${isGroup ? `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-500">${data.name}</span>` : ''}
-                                    </div>
-                                    <p class="text-xs text-text-muted mt-0.5">${service.DurationMinutes} phút</p>
-                                </div>
-                                <span class="text-sm font-medium text-text-main dark:text-white">${service.Price.toLocaleString()}</span>
-                            </div>
-                            <button onclick="removeService(${mIdx}, ${sId})" class="text-xs text-red-500 hover:text-red-700 mt-1 font-medium hover:underline">Xóa</button>
-                        </div>
-                    `;
-                });
-            }
-
-            if (!hasItems) {
-                htmlContent += `<p id="empty-cart-msg" class="text-sm text-text-muted italic pl-6">Chưa có dịch vụ nào được chọn.</p>`;
-            }
-
-            // Gán HTML mới vào container
-            container.innerHTML = htmlContent;
-
-            // Update Totals (Bây giờ an toàn để chạy vì không phụ thuộc vào DOM cũ)
-            document.getElementById('total-price').textContent = totalPrice.toLocaleString() + ' đ';
-            document.getElementById('total-duration').textContent = totalDuration + ' phút';
-        }
-
-        // 6. Sync with Backend
-        function syncToServer(memberIndex, serviceIds) {
-            const formData = new FormData();
-            formData.append('memberIndex', memberIndex);
-            serviceIds.forEach(id => formData.append('serviceIds', id));
-
-            fetch('/Booking/AddMemberService', {
-                method: 'POST',
-                body: formData
-            }).then(res => {
-                if (!res.ok) console.error('Sync failed');
-            });
-        }
-
-        // Init on load
         updateCheckboxUI();
+    }
+
+    function updateCheckboxUI() {
+        document.querySelectorAll('.service-checkbox').forEach(cb => { cb.checked = false; });
+        const currentIds = membersData[activeMemberIndex]?.selectedIds || [];
+        currentIds.forEach(id => {
+            const cb = document.getElementById(`chk-service-${id}`);
+            if (cb) cb.checked = true;
+        });
+    }
+
+    function toggleService(checkbox, serviceId) {
+        if (!membersData[activeMemberIndex]) return;
+        const currentIds = membersData[activeMemberIndex].selectedIds;
+        if (checkbox.checked) {
+            if (!currentIds.includes(serviceId)) currentIds.push(serviceId);
+        } else {
+            const idx = currentIds.indexOf(serviceId);
+            if (idx > -1) currentIds.splice(idx, 1);
+        }
         renderSidebar();
+        syncToServer(activeMemberIndex, currentIds);
+    }
 
-    </script>
-</body>
+    function removeService(memberIndex, serviceId) {
+        if (!membersData[memberIndex]) return;
+        const idx = membersData[memberIndex].selectedIds.indexOf(serviceId);
+        if (idx > -1) membersData[memberIndex].selectedIds.splice(idx, 1);
+        if (memberIndex === activeMemberIndex) {
+            const cb = document.getElementById(`chk-service-${serviceId}`);
+            if (cb) cb.checked = false;
+        }
+        renderSidebar();
+        syncToServer(memberIndex, membersData[memberIndex].selectedIds);
+    }
 
-</html>
+    function renderSidebar() {
+        const container = document.getElementById('cart-items-container');
+        let htmlContent = '<div class="absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100 dark:bg-[#4a2630]"></div>';
+        let hasItems = false;
+        let totalPrice = 0;
+        let totalDuration = 0;
+
+        for (const [mIdx, data] of Object.entries(membersData)) {
+            data.selectedIds.forEach(sId => {
+                const service = allServices.find(s => s.Id === sId);
+                if (!service) return;
+                hasItems = true;
+                totalPrice += service.Price;
+                totalDuration += service.DurationMinutes;
+                htmlContent += `
+                    <div class="relative pl-6 mb-4 group">
+                        <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 ${parseInt(mIdx) === activeMemberIndex ? 'border-primary bg-primary' : 'border-gray-300 bg-white'} z-10"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-semibold text-text-main dark:text-white">${service.Name}</p>
+                                    ${isGroup ? `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-500">${data.name}</span>` : ''}
+                                </div>
+                                <p class="text-xs text-text-muted mt-0.5">${service.DurationMinutes} phút</p>
+                            </div>
+                            <span class="text-sm font-medium text-text-main dark:text-white">${service.Price.toLocaleString()}</span>
+                        </div>
+                        <button onclick="removeService(${mIdx}, ${sId})" class="text-xs text-red-500 hover:text-red-700 mt-1 font-medium hover:underline">Xóa</button>
+                    </div>
+                `;
+            });
+        }
+
+        if (!hasItems) {
+            htmlContent += `<p id="empty-cart-msg" class="text-sm text-text-muted italic pl-6">Chưa có dịch vụ nào được chọn.</p>`;
+        }
+
+        container.innerHTML = htmlContent;
+        document.getElementById('total-price').textContent = totalPrice.toLocaleString() + ' đ';
+        document.getElementById('total-duration').textContent = totalDuration + ' phút';
+
+        const btnNext = document.getElementById('btn-next-step');
+        if (btnNext) {
+            if (hasItems) {
+                btnNext.removeAttribute('disabled');
+                btnNext.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnNext.setAttribute('disabled', 'disabled');
+                btnNext.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+    }
+
+    function syncToServer(memberIndex, serviceIds) {
+        const formData = new FormData();
+        formData.append('memberIndex', memberIndex);
+        serviceIds.forEach(id => formData.append('serviceIds', id));
+        fetch('/Booking/AddMemberService', { method: 'POST', body: formData }).then(res => { if (!res.ok) console.error('Sync failed'); });
+    }
+
+    function validateForm() {
+        let totalServices = 0;
+        for (const [mIdx, data] of Object.entries(membersData)) { totalServices += data.selectedIds.length; }
+        if (totalServices === 0) { alert("Vui lòng chọn ít nhất một dịch vụ để tiếp tục."); return false; }
+        return true;
+    }
+
+    updateCheckboxUI();
+    renderSidebar();
+</script>

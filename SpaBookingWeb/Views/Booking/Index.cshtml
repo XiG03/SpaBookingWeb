@@ -1,315 +1,234 @@
 ﻿@model SpaBookingWeb.ViewModels.Client.BookingPageViewModel
-
 @{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = "Trang đặt lịch";
 }
 
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Trang đặt lịch</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#ec4899",
-                        "primary-dark": "#be185d",
-                        "background-light": "#fdf2f8",
-                        "background-dark": "#181012",
-                        "text-main": "#1f2937",
-                        "text-muted": "#6b7280",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"],
-                        "sans": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
-</head>
-
-<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased min-h-screen flex flex-col">
-    <!-- Header (Giữ nguyên) -->
-    <header class="bg-white dark:bg-[#29151b] border-b border-pink-100 dark:border-[#4a2630] sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-4 text-text-main dark:text-white cursor-pointer hover:opacity-80 transition-opacity">
-                            <span class="material-symbols-outlined text-primary text-3xl">spa</span>
-                            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">SpaBookingWeb</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-6">
-                    <a asp-area="" asp-controller="Home" asp-action="HomeClient" class="text-sm font-medium text-text-main hover:text-primary transition-colors">Trang chủ</a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form id="bookingForm" method="post" action="/Booking/Index">
-            <div class="flex flex-col lg:flex-row gap-8 items-start relative">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <form id="bookingForm" method="post" action="/Booking/Index">
+        <div class="flex flex-col lg:flex-row gap-8 items-start relative">
+            
+            <div class="flex-1 w-full min-w-0 flex flex-col gap-8">
                 
-                <!-- CỘT TRÁI: CHỌN DỊCH VỤ, NHÂN VIÊN, THỜI GIAN, THÔNG TIN -->
-                <div class="flex-1 w-full min-w-0 flex flex-col gap-8">
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">1</div>
+                        <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Dịch Vụ</h3>
+                    </div>
                     
-                    <!-- 1. CHỌN DỊCH VỤ -->
-                    <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">1</div>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Dịch Vụ</h3>
-                        </div>
-                        
-                        @foreach (var category in Model.ServiceCategories)
-                        {
-                            <div class="mb-6">
-                                <h4 class="text-lg font-semibold text-text-main dark:text-white mb-4">@category.CategoryName</h4>
-                                <div class="space-y-3">
-                                    @foreach (var service in category.Services)
-                                    {
-                                        <label class="group relative flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-[#4a2630] hover:border-primary/50 cursor-pointer transition-all bg-white dark:bg-[#29151b] hover:shadow-md hover:shadow-pink-100">
-                                            <div class="flex items-start gap-4">
-                                                <div class="flex-1">
-                                                    <p class="font-bold text-text-main dark:text-white text-base group-hover:text-primary-dark transition-colors">
-                                                        @service.Name
-                                                    </p>
-                                                    <p class="text-sm text-text-muted mt-1">@service.Description</p>
-                                                    <p class="text-sm text-text-muted mt-2">@service.DurationMinutes phút</p>
-                                                </div>
+                    @foreach (var category in Model.ServiceCategories)
+                    {
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold text-text-main dark:text-white mb-4">@category.CategoryName</h4>
+                            <div class="space-y-3">
+                                @foreach (var service in category.Services)
+                                {
+                                    <label class="group relative flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-[#4a2630] hover:border-primary/50 cursor-pointer transition-all bg-white dark:bg-[#29151b] hover:shadow-md hover:shadow-pink-100">
+                                        <div class="flex items-start gap-4">
+                                            <div class="flex-1">
+                                                <p class="font-bold text-text-main dark:text-white text-base group-hover:text-primary-dark transition-colors">
+                                                    @service.Name
+                                                </p>
+                                                <p class="text-sm text-text-muted mt-1">@service.Description</p>
+                                                <p class="text-sm text-text-muted mt-2">@service.DurationMinutes phút</p>
                                             </div>
-                                            <div class="flex flex-col items-end gap-3">
-                                                <span class="font-bold text-text-main dark:text-white text-lg">@service.Price.ToString("N0")đ</span>
-                                                <div class="relative flex items-center">
-                                                    <!-- Checkbox Dịch vụ -->
-                                                    <input type="checkbox" name="Submission.SelectedServiceIds" value="@service.Id"
-                                                           data-name="@service.Name" data-price="@service.Price" data-duration="@service.DurationMinutes"
-                                                           class="service-checkbox peer h-6 w-6 rounded-md border-gray-300 text-primary focus:ring-primary cursor-pointer" />
-                                                </div>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-3">
+                                            <span class="font-bold text-text-main dark:text-white text-lg">@service.Price.ToString("N0")đ</span>
+                                            <div class="relative flex items-center">
+                                                <input type="checkbox" name="Submission.SelectedServiceIds" value="@service.Id"
+                                                       data-name="@service.Name" data-price="@service.Price" data-duration="@service.DurationMinutes"
+                                                       class="service-checkbox peer h-6 w-6 rounded-md border-gray-300 text-primary focus:ring-primary cursor-pointer" />
                                             </div>
-                                        </label>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </section>
-
-                    <!-- 2. CHỌN NHÂN VIÊN -->
-                    <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">2</div>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Kỹ Thuật Viên</h3>
-                        </div>
-                        <div class="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 snap-x">
-                            
-                            <!-- Tùy chọn "Bất kỳ ai" -->
-                            <div class="flex-shrink-0 snap-start">
-                                <input checked class="peer sr-only" id="staff-any" name="Submission.SelectedStaffId" type="radio" value="" />
-                                <label class="flex flex-col items-center gap-3 min-w-[120px] p-4 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-pink-50 cursor-pointer transition-all" for="staff-any">
-                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-pink-400 flex items-center justify-center text-white shadow-inner">
-                                        <span class="material-symbols-outlined text-3xl">groups</span>
-                                    </div>
-                                    <span class="text-sm font-semibold text-text-main dark:text-white">Bất kỳ ai</span>
-                                </label>
-                            </div>
-
-                            <!-- Danh sách nhân viên -->
-                            @foreach (var staff in Model.Staffs)
-                            {
-                                <div class="flex-shrink-0 snap-start">
-                                    <input class="peer sr-only" id="staff-@staff.Id" name="Submission.SelectedStaffId" type="radio" value="@staff.Id" />
-                                    <label class="flex flex-col items-center gap-3 min-w-[120px] p-4 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-pink-50 cursor-pointer transition-all" for="staff-@staff.Id">
-                                        <img alt="@staff.Name" class="w-16 h-16 rounded-full object-cover shadow-sm" src="@staff.Avatar" />
-                                        <div class="text-center">
-                                            <span class="block text-sm font-semibold text-text-main dark:text-white">@staff.Name</span>
-                                            <span class="block text-xs text-text-muted">@staff.Role</span>
                                         </div>
                                     </label>
-                                </div>
-                            }
-                        </div>
-                    </section>
-
-                    <!-- 3. CHỌN THỜI GIAN -->
-                    <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">3</div>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Thời Gian</h3>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-8">
-                            <div>
-                                <label class="block text-sm font-medium text-text-muted mb-2">Ngày hẹn</label>
-                                <input type="date" name="Submission.SelectedDate" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-text-muted mb-2">Giờ hẹn</label>
-                                <div class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-                                    <!-- Các khung giờ sẽ được generate bằng JS hoặc render server-side -->
-                                    <!-- Demo static slots -->
-                                    @for (int h = 9; h <= 20; h++)
-                                    {
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="Submission.SelectedTime" value="@h:00:00" class="peer sr-only" />
-                                            <span class="block w-full py-2 text-center rounded-lg border border-gray-200 text-sm font-medium peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary transition-colors">@h:00</span>
-                                        </label>
-                                        <label class="cursor-pointer">
-                                            <input type="radio" name="Submission.SelectedTime" value="@h:30:00" class="peer sr-only" />
-                                            <span class="block w-full py-2 text-center rounded-lg border border-gray-200 text-sm font-medium peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary transition-colors">@h:30</span>
-                                        </label>
-                                    }
-                                </div>
+                                }
                             </div>
                         </div>
-                    </section>
-
-                    <!-- 4. THÔNG TIN CÁ NHÂN -->
-                    <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">4</div>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white">Thông Tin Của Bạn</h3>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="space-y-1">
-                                <label class="text-sm font-medium text-text-main">Họ và tên</label>
-                                <input name="Submission.CustomerName" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="Ví dụ: Nguyễn Văn A" type="text" required />
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-sm font-medium text-text-main">Số điện thoại</label>
-                                <input name="Submission.CustomerPhone" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="Ví dụ: 0912345678" type="tel" required />
-                            </div>
-                            <div class="space-y-1 md:col-span-2">
-                                <label class="text-sm font-medium text-text-main">Email (Tùy chọn)</label>
-                                <input name="Submission.CustomerEmail" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="email@example.com" type="email" />
-                            </div>
-                            <div class="space-y-1 md:col-span-2">
-                                <label class="text-sm font-medium text-text-main">Ghi chú (Tùy chọn)</label>
-                                <textarea name="Submission.Note" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary resize-none" placeholder="Yêu cầu đặc biệt..." rows="2"></textarea>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- CỘT PHẢI: BOOKING SUMMARY (Sticky) -->
-                <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
-                    <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl shadow-pink-100/50 border border-pink-100 dark:border-[#4a2630]">
-                        <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
-                            Tóm Tắt Đặt Lịch
-                        </h3>
-                        
-                        <!-- Dynamic Selected Services List -->
-                        <div id="selected-services-container" class="space-y-4 mb-6 relative min-h-[50px]">
-                            <p class="text-sm text-gray-400 italic text-center py-4" id="empty-cart-msg">Vui lòng chọn dịch vụ...</p>
-                            <!-- JS sẽ append dịch vụ vào đây -->
-                        </div>
-
-                        <div class="border-t border-dashed border-gray-200 my-4"></div>
-                        
-                        <div class="space-y-2 mb-6">
-                            <div class="flex justify-between items-end pt-2">
-                                <div>
-                                    <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
-                                    <span class="text-base font-semibold text-text-main dark:text-white" id="total-duration">0 phút</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="block text-sm text-text-muted mb-1">Tổng tiền</span>
-                                    <span class="text-2xl font-black text-primary-dark" id="total-price">0đ</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3">
-                            Xác Nhận Đặt Lịch
-                        </button>
-                        <p class="text-center text-xs text-text-muted">
-                            Thanh toán tại spa sau khi sử dụng dịch vụ.
-                        </p>
-                    </div>
-                </aside>
-            </div>
-        </form>
-    </main>
-
-    <!-- Footer (Giữ nguyên) -->
-    <footer class="mt-auto border-t border-pink-100 dark:border-[#4a2630] bg-white dark:bg-[#29151b] py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm text-text-muted">© 2024 SpaBookingWeb. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- JAVASCRIPT XỬ LÝ CART -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.querySelectorAll('.service-checkbox');
-            const container = document.getElementById('selected-services-container');
-            const emptyMsg = document.getElementById('empty-cart-msg');
-            const totalDurationEl = document.getElementById('total-duration');
-            const totalPriceEl = document.getElementById('total-price');
-
-            function updateCart() {
-                let totalDuration = 0;
-                let totalPrice = 0;
-                let hasItems = false;
-
-                // Clear current list (giữ lại empty msg nhưng ẩn đi)
-                container.innerHTML = ''; 
-                
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
-                        hasItems = true;
-                        const name = cb.getAttribute('data-name');
-                        const price = parseFloat(cb.getAttribute('data-price'));
-                        const duration = parseInt(cb.getAttribute('data-duration'));
-
-                        totalPrice += price;
-                        totalDuration += duration;
-
-                        // Tạo HTML cho item
-                        const itemHtml = `
-                            <div class="relative pl-6">
-                                <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-white"></div>
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="text-sm font-semibold text-text-main">${name}</p>
-                                        <p class="text-xs text-text-muted mt-0.5">${duration} phút</p>
-                                    </div>
-                                    <span class="text-sm font-medium text-text-main">${price.toLocaleString('vi-VN')}đ</span>
-                                </div>
-                            </div>
-                        `;
-                        container.insertAdjacentHTML('beforeend', itemHtml);
                     }
-                });
+                </section>
 
-                // Update UI Summary
-                if (hasItems) {
-                    // Vẽ đường nối (line) nếu có items
-                    const line = document.createElement('div');
-                    line.className = 'absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100';
-                    container.prepend(line);
-                } else {
-                    container.appendChild(emptyMsg);
-                    emptyMsg.style.display = 'block';
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">2</div>
+                        <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Kỹ Thuật Viên</h3>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 snap-x">
+                        
+                        <div class="flex-shrink-0 snap-start">
+                            <input checked class="peer sr-only" id="staff-any" name="Submission.SelectedStaffId" type="radio" value="" />
+                            <label class="flex flex-col items-center gap-3 min-w-[120px] p-4 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-pink-50 cursor-pointer transition-all" for="staff-any">
+                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-pink-400 flex items-center justify-center text-white shadow-inner">
+                                    <span class="material-symbols-outlined text-3xl">groups</span>
+                                </div>
+                                <span class="text-sm font-semibold text-text-main dark:text-white">Bất kỳ ai</span>
+                            </label>
+                        </div>
+
+                        @foreach (var staff in Model.Staffs)
+                        {
+                            <div class="flex-shrink-0 snap-start">
+                                <input class="peer sr-only" id="staff-@staff.Id" name="Submission.SelectedStaffId" type="radio" value="@staff.Id" />
+                                <label class="flex flex-col items-center gap-3 min-w-[120px] p-4 rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-pink-50 cursor-pointer transition-all" for="staff-@staff.Id">
+                                    <img alt="@staff.Name" class="w-16 h-16 rounded-full object-cover shadow-sm" src="@staff.Avatar" />
+                                    <div class="text-center">
+                                        <span class="block text-sm font-semibold text-text-main dark:text-white">@staff.Name</span>
+                                        <span class="block text-xs text-text-muted">@staff.Role</span>
+                                    </div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">3</div>
+                        <h3 class="text-xl font-bold text-text-main dark:text-white">Chọn Thời Gian</h3>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-sm font-medium text-text-muted mb-2">Ngày hẹn</label>
+                            <input type="date" name="Submission.SelectedDate" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-muted mb-2">Giờ hẹn</label>
+                            <div class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                @for (int h = 9; h <= 20; h++)
+                                {
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="Submission.SelectedTime" value="@h:00:00" class="peer sr-only" />
+                                        <span class="block w-full py-2 text-center rounded-lg border border-gray-200 text-sm font-medium peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary transition-colors">@h:00</span>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="Submission.SelectedTime" value="@h:30:00" class="peer sr-only" />
+                                        <span class="block w-full py-2 text-center rounded-lg border border-gray-200 text-sm font-medium peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary hover:border-primary transition-colors">@h:30</span>
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-[#4a2630]">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-sm">4</div>
+                        <h3 class="text-xl font-bold text-text-main dark:text-white">Thông Tin Của Bạn</h3>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-text-main">Họ và tên</label>
+                            <input name="Submission.CustomerName" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="Ví dụ: Nguyễn Văn A" type="text" required />
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-text-main">Số điện thoại</label>
+                            <input name="Submission.CustomerPhone" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="Ví dụ: 0912345678" type="tel" required />
+                        </div>
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-sm font-medium text-text-main">Email (Tùy chọn)</label>
+                            <input name="Submission.CustomerEmail" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary" placeholder="email@example.com" type="email" />
+                        </div>
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-sm font-medium text-text-main">Ghi chú (Tùy chọn)</label>
+                            <textarea name="Submission.Note" class="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary resize-none" placeholder="Yêu cầu đặc biệt..." rows="2"></textarea>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
+                <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl shadow-pink-100/50 border border-pink-100 dark:border-[#4a2630]">
+                    <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
+                        Tóm Tắt Đặt Lịch
+                    </h3>
+                    
+                    <div id="selected-services-container" class="space-y-4 mb-6 relative min-h-[50px]">
+                        <p class="text-sm text-gray-400 italic text-center py-4" id="empty-cart-msg">Vui lòng chọn dịch vụ...</p>
+                    </div>
+
+                    <div class="border-t border-dashed border-gray-200 my-4"></div>
+                    
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between items-end pt-2">
+                            <div>
+                                <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
+                                <span class="text-base font-semibold text-text-main dark:text-white" id="total-duration">0 phút</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-sm text-text-muted mb-1">Tổng tiền</span>
+                                <span class="text-2xl font-black text-primary-dark" id="total-price">0đ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3">
+                        Xác Nhận Đặt Lịch
+                    </button>
+                    <p class="text-center text-xs text-text-muted">
+                        Thanh toán tại spa sau khi sử dụng dịch vụ.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.service-checkbox');
+        const container = document.getElementById('selected-services-container');
+        const emptyMsg = document.getElementById('empty-cart-msg');
+        const totalDurationEl = document.getElementById('total-duration');
+        const totalPriceEl = document.getElementById('total-price');
+
+        function updateCart() {
+            let totalDuration = 0;
+            let totalPrice = 0;
+            let hasItems = false;
+
+            container.innerHTML = ''; 
+            
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    hasItems = true;
+                    const name = cb.getAttribute('data-name');
+                    const price = parseFloat(cb.getAttribute('data-price'));
+                    const duration = parseInt(cb.getAttribute('data-duration'));
+
+                    totalPrice += price;
+                    totalDuration += duration;
+
+                    const itemHtml = `
+                        <div class="relative pl-6">
+                            <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-white"></div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-semibold text-text-main">${name}</p>
+                                    <p class="text-xs text-text-muted mt-0.5">${duration} phút</p>
+                                </div>
+                                <span class="text-sm font-medium text-text-main">${price.toLocaleString('vi-VN')}đ</span>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', itemHtml);
                 }
+            });
 
-                totalDurationEl.textContent = totalDuration + ' phút';
-                totalPriceEl.textContent = totalPrice.toLocaleString('vi-VN') + 'đ';
+            if (hasItems) {
+                const line = document.createElement('div');
+                line.className = 'absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100';
+                container.prepend(line);
+            } else {
+                container.appendChild(emptyMsg);
+                emptyMsg.style.display = 'block';
             }
 
-            // Attach events
-            checkboxes.forEach(cb => {
-                cb.addEventListener('change', updateCart);
-            });
+            totalDurationEl.textContent = totalDuration + ' phút';
+            totalPriceEl.textContent = totalPrice.toLocaleString('vi-VN') + 'đ';
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateCart);
         });
-    </script>
-</body>
-</html>
+    });
+</script>
