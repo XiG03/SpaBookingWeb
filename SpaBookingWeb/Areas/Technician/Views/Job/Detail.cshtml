@@ -1,0 +1,748 @@
+﻿@model SpaBookingWeb.ViewModels.Technician.JobDetailVM
+@{
+    ViewData["Title"] = "Chi tiết công việc";
+    Layout = "~/Areas/Technician/Views/Shared/_Layout.cshtml";
+}
+
+@* <div class="max-w-3xl mx-auto p-4 md:p-6 space-y-6">
+    <a href="/Technician/Home/Index" class="inline-flex items-center text-sm text-gray-500 hover:text-primary mb-4">
+        <span class="material-symbols-outlined text-lg mr-1">arrow_back</span> Quay lại Lịch
+    </a>
+
+    <div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Mã công việc #@Model.AppointmentDetailId</p>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">@Model.ServiceName</h2>
+            </div>
+            @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Chờ thực hiện</span>
+            }
+            else if (Model.Status == "InProgress")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 animate-pulse">Đang thực hiện</span>
+            }
+            else if (Model.Status == "Completed")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Đã hoàn thành</span>
+            }
+            else
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Đã hủy</span>
+            }
+        </div>
+
+        <div class="p-6 grid gap-6 md:grid-cols-2">
+            <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">person</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Khách hàng</p>
+                        <p class="font-semibold text-gray-900 dark:text-white text-lg">@Model.CustomerName</p>
+                        <a href="tel:@Model.CustomerPhone" class="text-sm text-primary hover:underline flex items-center gap-1 mt-1">
+                            <span class="material-symbols-outlined text-sm">call</span> @Model.CustomerPhone
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600">
+                        <span class="material-symbols-outlined">schedule</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Thời gian dự kiến</p>
+                        <p class="font-semibold text-gray-900 dark:text-white">
+                            @Model.StartTime.ToString("HH:mm") - @(Model.EndTime?.ToString("HH:mm") ?? "...")
+                        </p>
+                        <p class="text-sm text-gray-500">@Model.StartTime.ToString("dd/MM/yyyy") (@Model.DurationMinutes phút)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Status == "InProgress" || Model.Status == "Completed")
+    {
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600">science</span>
+                    Vật tư tiêu hao
+                </h3>
+
+                @if (Model.Status == "InProgress")
+                {
+                    <button type="button" onclick="addNewRow()" class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">add</span> Thêm vật tư
+                    </button>
+                }
+            </div>
+
+            <div class="p-4 overflow-x-auto">
+                <table class="w-full text-sm text-left" id="consumableTable">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-3 py-2">Sản phẩm</th>
+                            <th class="px-3 py-2 w-20 text-center">Định mức</th>
+                            <th class="px-3 py-2 w-24 text-center">Thực dùng</th>
+                            <th class="px-3 py-2 w-1/3">Lý do chênh lệch</th>
+                            <th class="px-3 py-2 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+
+                <div id="emptyState" class="hidden py-4 text-center text-gray-400 text-sm">
+                    Chưa có vật tư nào được ghi nhận.
+                </div>
+            </div>
+
+            @if (Model.Status == "InProgress")
+            {
+                <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-white/5 flex justify-end">
+                    <button type="button" id="btnSaveConsumables" onclick="saveConsumables()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 shadow-sm">
+                        <span class="material-symbols-outlined text-sm">save</span>
+                        Lưu tiêu hao
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.Status != "Completed" && Model.Status != "Cancelled")
+    {
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6">
+            <h3 class="font-bold text-gray-800 dark:text-white mb-4">Thao tác</h3>
+
+            <form method="post" action="/Technician/Job/UpdateStatus" class="flex flex-col sm:flex-row gap-3">
+                <input type="hidden" name="id" value="@Model.AppointmentDetailId" />
+
+                @Html.AntiForgeryToken()
+
+                @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+                {
+                    <div class="flex gap-3 w-full">
+                        <button type="submit" name="actionType" value="CheckIn"
+                                class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            BẮT ĐẦU (CHECK-IN)
+                        </button>
+
+                        <button type="submit" name="actionType" value="Cancel" onclick="return confirm('Bạn chắc chắn muốn hủy dịch vụ này vì khách bỏ/không làm?')"
+                                class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all border border-red-200" title="Khách bỏ dịch vụ">
+                            <span class="material-symbols-outlined">cancel</span>
+                            HỦY
+                        </button>
+                    </div>  
+                }
+                else if (Model.Status == "InProgress")
+                {
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <label class="block text-xs font-bold text-yellow-700 dark:text-yellow-500 mb-1 uppercase tracking-wide">
+                            Tiền Tip nhận được (VNĐ)
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-yellow-600 font-bold">₫</span>
+                            </div>
+                            <input type="number" name="tipAmount" value="" placeholder="Ví dụ: 50000" step="1000" min="0"
+                                   class="block w-full pl-8 pr-3 py-2 border-yellow-300 rounded-md leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm font-semibold text-gray-700 shadow-sm" />
+                        </div>
+                        <p class="text-[10px] text-yellow-600 mt-1 italic">* Nhập số tiền khách đưa thêm (nếu có) trước khi hoàn thành.</p>
+                    </div>
+                    <button type="submit" name="actionType" value="CheckOut" onclick="return confirm('Xác nhận hoàn thành dịch vụ?')"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-lg animate-pulse-slow">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        HOÀN THÀNH (CHECK-OUT)
+                    </button>
+                }
+            </form>
+        </div>
+    }
+    else if (Model.Status == "Completed")
+    {
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-4 text-center">
+            <p class="text-green-700 dark:text-green-300 font-semibold flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">task_alt</span>
+                Công việc này đã hoàn thành.
+            </p>
+        </div>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <script>
+        // Thông báo đơn giản (Bạn có thể dùng SweetAlert đẹp hơn nếu muốn)
+        alert('@Html.Raw(TempData["SuccessMessage"])');
+    </script>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        alert('@Html.Raw(TempData["ErrorMessage"])');
+    </script>
+}
+
+<script>
+    const JOB_ID = @Model.AppointmentDetailId;
+    let allProducts = []; // Chứa danh sách sản phẩm để chọn
+
+    // 1. Khi trang load -> Gọi API lấy dữ liệu
+    document.addEventListener('DOMContentLoaded', () => {
+
+        if ('@Model.Status' === 'InProgress' || '@Model.Status' === 'Completed') {
+            loadProductList();
+            loadConsumables();
+        }
+
+        // Mặc định disable nút Check-out nếu đang làm
+        const btnCheckout = document.querySelector('button[value="CheckOut"]');
+        if (btnCheckout) {
+            btnCheckout.disabled = true;
+            btnCheckout.classList.add('opacity-50', 'cursor-not-allowed');
+            btnCheckout.title = "Vui lòng Lưu tiêu hao trước khi hoàn thành!";
+        }
+    });
+
+    // 2. Tải danh sách sản phẩm (Dropdown)
+    async function loadProductList() {
+        const res = await fetch('/Technician/Job/GetProductList');
+        allProducts = await res.json();
+    }
+
+    // 3. Tải dữ liệu bảng
+    async function loadConsumables() {
+        const res = await fetch(`/Technician/Job/GetConsumables?id=${JOB_ID}`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            // document.getElementById('emptyState').classList.remove('hidden');
+            // Tự động thêm 1 dòng trống nếu không có gì
+            if('@Model.Status' === 'InProgress') addNewRow();
+        } else {
+            data.forEach(item => renderRow(item));
+
+            // Nếu đã có dữ liệu load lên -> Cho phép Check-out luôn
+            unlockCheckout();
+        }
+    }
+
+    // 4. Vẽ 1 dòng vào bảng
+    function renderRow(item = null) {
+        document.getElementById('emptyState').classList.add('hidden');
+        const tbody = document.getElementById('tableBody');
+        const isEdit = '@Model.Status' === 'InProgress';
+
+        const row = document.createElement('tr');
+        row.className = "border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition";
+
+        // Dropdown Sản phẩm
+        let productSelectHtml = `<select class="w-full bg-transparent border-none text-sm font-medium focus:ring-0 p-0 product-select" ${!isEdit ? 'disabled' : ''}>`;
+        if(!item) productSelectHtml += `<option value="">-- Chọn vật tư --</option>`;
+
+        allProducts.forEach(p => {
+            const selected = (item && item.productId === p.id) ? 'selected' : '';
+            productSelectHtml += `<option value="${p.id}" ${selected}>${p.name} (${p.unit})</option>`;
+        });
+        productSelectHtml += `</select>`;
+
+        // Input số lượng & Lý do
+        const stdQty = item ? item.standardQuantity : 0;
+        const actQty = item ? item.actualQuantity : 1;
+        const reason = item ? item.reason : '';
+
+        row.innerHTML = `
+            <td class="px-3 py-2">${productSelectHtml}</td>
+            <td class="px-3 py-2 text-center text-gray-500">${stdQty}</td>
+            <td class="px-3 py-2">
+                <input type="number" class="w-20 text-center bg-gray-50 border border-gray-300 rounded p-1 text-sm actual-qty" value="${actQty}" min="0" ${!isEdit ? 'disabled' : ''}>
+            </td>
+            <td class="px-3 py-2">
+                <input type="text" class="w-full bg-transparent border-b border-gray-200 focus:border-primary focus:outline-none text-sm reason" placeholder="Nhập lý do..." value="${reason}" ${!isEdit ? 'disabled' : ''}>
+            </td>
+            <td class="px-3 py-2 text-center">
+                ${isEdit ? `<button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700"><span class="material-symbols-outlined text-lg">delete</span></button>` : ''}
+            </td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    // 5. Thêm dòng mới
+    function addNewRow() {
+        renderRow();
+    }
+
+    // 6. Lưu dữ liệu
+    async function saveConsumables() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        const data = [];
+
+        rows.forEach(row => {
+            const productId = row.querySelector('.product-select').value;
+            const actualQty = row.querySelector('.actual-qty').value;
+            const reason = row.querySelector('.reason').value;
+
+            // Lấy định mức (text)
+            const stdQty = row.children[1].innerText;
+
+            if (productId) {
+                data.push({
+                    productId: parseInt(productId),
+                    actualQuantity: parseInt(actualQty),
+                    standardQuantity: parseInt(stdQty),
+                    reason: reason
+                });
+            }
+        });
+
+        // Gửi lên Server
+        const btnSave = document.getElementById('btnSaveConsumables');
+        btnSave.innerText = "Đang lưu...";
+        btnSave.disabled = true;
+
+        try {
+            const res = await fetch(`/Technician/Job/SaveConsumables?id=${JOB_ID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Quan trọng: Thêm Token chống CSRF nếu project bật bảo mật kỹ
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                alert('Đã lưu tiêu hao thành công!');
+                unlockCheckout(); // Mở khóa nút Check-out
+            } else {
+                alert('Lỗi: ' + result.message);
+            }
+        } catch (err) {
+            alert('Lỗi kết nối server!');
+        } finally {
+            btnSave.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> Lưu tiêu hao';
+            btnSave.disabled = false;
+        }
+    }
+
+    function unlockCheckout() {
+        const btnCheckout = document.querySelector('button[value="CheckOut"]');
+        if (btnCheckout) {
+            btnCheckout.disabled = false;
+            btnCheckout.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnCheckout.classList.add('animate-pulse-slow'); // Thêm hiệu ứng nhắc nhở
+            btnCheckout.title = "";
+        }
+    }
+</script> *@
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/@@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div class="max-w-3xl mx-auto p-4 md:p-6 space-y-6 h-[calc(100vh-80px)] overflow-y-auto">
+    <a href="/Technician/Home/Index" class="inline-flex items-center text-sm text-gray-500 hover:text-blue-600 mb-4 transition">
+        <span class="material-symbols-outlined text-lg mr-1">arrow_back</span> Quay lại Lịch
+    </a>
+
+    <div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Mã công việc #@Model.AppointmentDetailId</p>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 leading-tight">@Model.ServiceName</h2>
+            </div>
+            @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200 shadow-sm">Chờ thực hiện</span>
+            }
+            else if (Model.Status == "InProgress")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200 shadow-sm flex items-center gap-1 animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> Đang thực hiện
+                </span>
+            }
+            else if (Model.Status == "Completed")
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 shadow-sm flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">check</span> Đã hoàn thành
+                </span>
+            }
+            else
+            {
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 shadow-sm">Đã hủy</span>
+            }
+        </div>
+
+        <div class="p-6 grid gap-6 md:grid-cols-2">
+            <div class="space-y-4">
+                <div class="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 shadow-sm">
+                        <span class="material-symbols-outlined text-2xl">person</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Khách hàng</p>
+                        <p class="font-bold text-gray-900 dark:text-white text-lg">@Model.CustomerName</p>
+                        <a href="tel:@Model.CustomerPhone" class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 mt-1 font-medium">
+                            <span class="material-symbols-outlined text-sm">call</span> @Model.CustomerPhone
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition">
+                    <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 shadow-sm">
+                        <span class="material-symbols-outlined text-2xl">schedule</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-gray-400 uppercase">Thời gian dự kiến</p>
+                        <p class="font-bold text-gray-900 dark:text-white text-lg font-mono">
+                            @Model.StartTime.ToString("HH:mm") - @(Model.EndTime?.ToString("HH:mm") ?? "...")
+                        </p>
+                        <p class="text-sm text-gray-500 font-medium">@Model.StartTime.ToString("dd/MM/yyyy") (@Model.DurationMinutes phút)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Status == "InProgress" || Model.Status == "Completed")
+    {
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50">
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600">science</span>
+                    Vật tư tiêu hao
+                </h3>
+
+                @if (Model.Status == "InProgress")
+                {
+                    <button type="button" onclick="addNewRow()" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+                        <span class="material-symbols-outlined text-sm">add</span> Thêm vật tư
+                    </button>
+                }
+            </div>
+
+            <div class="p-4 overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse" id="consumableTable">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-800 font-bold border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 rounded-tl-lg">Sản phẩm</th>
+                            <th class="px-4 py-3 text-center">Định mức</th>
+                            <th class="px-4 py-3 text-center">Thực dùng</th>
+                            <th class="px-4 py-3 w-1/3">Lý do chênh lệch</th>
+                            <th class="px-4 py-3 w-10 rounded-tr-lg"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+
+                <div id="emptyState" class="hidden py-8 text-center text-gray-400 text-sm italic bg-gray-50/30 rounded-b-lg">
+                    Chưa có vật tư nào được ghi nhận.
+                </div>
+            </div>
+
+            @if (Model.Status == "InProgress")
+            {
+                <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-white/5 flex justify-end">
+                    <button type="button" id="btnSaveConsumables" onclick="saveConsumables()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg flex items-center gap-2 shadow-md transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-lg">save</span>
+                        Lưu tiêu hao
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.Status != "Completed" && Model.Status != "Cancelled")
+    {
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 sticky bottom-4 md:static z-10">
+            <h3 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-orange-500">touch_app</span> Thao tác
+            </h3>
+
+            <form id="actionForm" method="post" action="/Technician/Job/UpdateStatus" class="flex flex-col sm:flex-row gap-3">
+                <input type="hidden" name="id" value="@Model.AppointmentDetailId" />
+                <input type="hidden" name="actionType" id="actionTypeInput" /> @Html.AntiForgeryToken()
+
+                @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+                {
+                    <div class="flex gap-3 w-full">
+                        <button type="button" onclick="submitAction('CheckIn')"
+                                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5">
+                            <span class="material-symbols-outlined">play_circle</span>
+                            BẮT ĐẦU (CHECK-IN)
+                        </button>
+
+                        <button type="button" onclick="confirmCancel()"
+                                class="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all border border-red-200 shadow-sm" title="Khách bỏ dịch vụ">
+                            <span class="material-symbols-outlined">cancel</span>
+                            HỦY
+                        </button>
+                    </div>
+                }
+                else if (Model.Status == "InProgress")
+                {
+                    <div class="w-full">
+                        <div class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 rounded-xl p-4 mb-4 shadow-inner">
+                            <label class="block text-xs font-bold text-yellow-800 dark:text-yellow-500 mb-2 uppercase tracking-wide flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">payments</span> Tiền Tip nhận được (VNĐ)
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-yellow-600 font-bold text-lg">₫</span>
+                                </div>
+                                <input type="number" name="tipAmount" value="" placeholder="Nhập số tiền (VD: 50000)" step="1000" min="0"
+                                       class="block w-full pl-8 pr-4 py-3 border-yellow-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-lg font-bold text-gray-700 shadow-sm transition" />
+                            </div>
+                            <p class="text-[11px] text-yellow-700 mt-2 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">info</span> Nhập số tiền khách đưa thêm (nếu có) trước khi hoàn thành.
+                            </p>
+                        </div>
+
+                        <button type="button" id="btnCheckout" onclick="confirmCheckout()" value="CheckOut"
+                                class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-green-500/30 text-lg">
+                            <span class="material-symbols-outlined text-2xl">check_circle</span>
+                            HOÀN THÀNH (CHECK-OUT)
+                        </button>
+                    </div>
+                }
+            </form>
+        </div>
+    }
+    else if (Model.Status == "Completed")
+    {
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 rounded-xl p-6 text-center shadow-sm">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600">
+                <span class="material-symbols-outlined text-4xl">task_alt</span>
+            </div>
+            <p class="text-green-800 dark:text-green-300 font-bold text-lg">Công việc đã hoàn thành</p>
+            <p class="text-green-600 text-sm">Cảm ơn bạn đã làm việc chăm chỉ!</p>
+        </div>
+    }
+</div>
+
+<script>
+    const JOB_ID = @Model.AppointmentDetailId;
+    let allProducts = [];
+
+    // --- [1] CẤU HÌNH THÔNG BÁO TỰ ĐỘNG ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Hiện thông báo từ Server (nếu có)
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>
+                Swal.fire({
+                    icon: 'success', title: 'Thành công', text: '@Html.Raw(TempData["SuccessMessage"])',
+                    timer: 2000, showConfirmButton: false
+                });
+                </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <text>
+                Swal.fire({
+                    icon: 'error', title: 'Lỗi', text: '@Html.Raw(TempData["ErrorMessage"])'
+                });
+                </text>
+        }
+
+        // Load dữ liệu
+        if ('@Model.Status' === 'InProgress' || '@Model.Status' === 'Completed') {
+            loadProductList();
+            loadConsumables();
+        }
+
+        // Khóa nút Check-out ban đầu
+        const btnCheckout = document.getElementById('btnCheckout');
+        if (btnCheckout) {
+            btnCheckout.disabled = true;
+            btnCheckout.classList.add('opacity-50', 'cursor-not-allowed');
+            btnCheckout.title = "Vui lòng Lưu tiêu hao trước khi hoàn thành!";
+        }
+    });
+
+    // --- [2] CÁC HÀM XỬ LÝ SỰ KIỆN NÚT BẤM (SweetAlert) ---
+
+    // A. Xử lý Check-in (Không cần hỏi, bấm là chạy)
+    function submitAction(type) {
+        document.getElementById('actionTypeInput').value = type;
+        document.getElementById('actionForm').submit();
+    }
+
+    // B. Xử lý Hủy (Cần xác nhận kỹ)
+    function confirmCancel() {
+        Swal.fire({
+            title: 'Hủy dịch vụ?',
+            text: "Xác nhận khách không làm/bỏ về? Hành động này không thể hoàn tác!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Đúng, Hủy ngay',
+            cancelButtonText: 'Không'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitAction('Cancel');
+            }
+        });
+    }
+
+    // C. Xử lý Hoàn thành (Check-out)
+    function confirmCheckout() {
+        // Kiểm tra xem đã lưu tiêu hao chưa (nếu cần logic chặn chặt hơn ở đây)
+        Swal.fire({
+            title: 'Hoàn thành công việc?',
+            text: "Xác nhận bạn đã làm xong dịch vụ này?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a', // Green
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '✅ Xác nhận',
+            cancelButtonText: 'Chưa xong'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitAction('CheckOut');
+            }
+        });
+    }
+
+    // --- [3] LOGIC VẬT TƯ TIÊU HAO (Giữ nguyên logic, chỉ sửa UI Alert) ---
+
+    async function loadProductList() {
+        const res = await fetch('/Technician/Job/GetProductList');
+        allProducts = await res.json();
+    }
+
+    async function loadConsumables() {
+        const res = await fetch(`/Technician/Job/GetConsumables?id=${JOB_ID}`);
+        const data = await res.json();
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            if('@Model.Status' === 'InProgress') addNewRow();
+        } else {
+            data.forEach(item => renderRow(item));
+            unlockCheckout();
+        }
+    }
+
+    function renderRow(item = null) {
+        document.getElementById('emptyState').classList.add('hidden');
+        const tbody = document.getElementById('tableBody');
+        const isEdit = '@Model.Status' === 'InProgress';
+        const row = document.createElement('tr');
+        row.className = "hover:bg-gray-50 dark:hover:bg-white/5 transition group";
+
+        let productSelectHtml = `<select class="w-full bg-transparent border-none text-sm font-medium focus:ring-0 p-2 product-select rounded cursor-pointer" ${!isEdit ? 'disabled' : ''}>`;
+        if(!item) productSelectHtml += `<option value="">-- Chọn vật tư --</option>`;
+        allProducts.forEach(p => {
+            const selected = (item && item.productId === p.id) ? 'selected' : '';
+            productSelectHtml += `<option value="${p.id}" ${selected}>${p.name} (${p.unit})</option>`;
+        });
+        productSelectHtml += `</select>`;
+
+        const stdQty = item ? item.standardQuantity : 0;
+        const actQty = item ? item.actualQuantity : 1;
+        const reason = item ? item.reason : '';
+
+        row.innerHTML = `
+            <td class="px-2 py-2">${productSelectHtml}</td>
+            <td class="px-2 py-2 text-center text-gray-500 font-mono">${stdQty}</td>
+            <td class="px-2 py-2 text-center">
+                <input type="number" class="w-16 text-center bg-white border border-gray-300 rounded-md p-1.5 text-sm font-bold text-blue-600 focus:ring-2 focus:ring-blue-500 outline-none actual-qty" value="${actQty}" min="0" ${!isEdit ? 'disabled' : ''}>
+            </td>
+            <td class="px-2 py-2">
+                <input type="text" class="w-full bg-transparent border-b border-gray-200 focus:border-blue-500 focus:outline-none text-sm py-1 reason transition-colors" placeholder="Nhập lý do..." value="${reason}" ${!isEdit ? 'disabled' : ''}>
+            </td>
+            <td class="px-2 py-2 text-center">
+                ${isEdit ? `<button onclick="this.closest('tr').remove()" class="text-gray-400 hover:text-red-500 transition p-1 rounded-full hover:bg-red-50"><span class="material-symbols-outlined text-lg">delete</span></button>` : ''}
+            </td>
+        `;
+        tbody.appendChild(row);
+    }
+
+    function addNewRow() {
+        renderRow();
+    }
+
+    async function saveConsumables() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        const data = [];
+        rows.forEach(row => {
+            const productId = row.querySelector('.product-select').value;
+            const actualQty = row.querySelector('.actual-qty').value;
+            const reason = row.querySelector('.reason').value;
+            const stdQty = row.children[1].innerText;
+            if (productId) {
+                data.push({
+                    productId: parseInt(productId),
+                    actualQuantity: parseInt(actualQty),
+                    standardQuantity: parseInt(stdQty),
+                    reason: reason
+                });
+            }
+        });
+
+        const btnSave = document.getElementById('btnSaveConsumables');
+        const oldText = btnSave.innerHTML;
+        btnSave.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> Đang lưu...';
+        btnSave.disabled = true;
+
+        try {
+            const res = await fetch(`/Technician/Job/SaveConsumables?id=${JOB_ID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                // [SWEETALERT] Thay alert thường
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã lưu!',
+                    text: 'Dữ liệu tiêu hao đã được cập nhật.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                unlockCheckout();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Lỗi kết nối', text: 'Không thể kết nối đến server.' });
+        } finally {
+            btnSave.innerHTML = oldText;
+            btnSave.disabled = false;
+        }
+    }
+
+    function unlockCheckout() {
+        const btnCheckout = document.getElementById('btnCheckout');
+        if (btnCheckout) {
+            btnCheckout.disabled = false;
+            btnCheckout.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnCheckout.classList.add('animate-pulse-slow');
+            btnCheckout.title = "";
+        }
+    }
+</script>

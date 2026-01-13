@@ -1,0 +1,231 @@
+﻿@model List<SpaBookingWeb.ViewModels.Receptionist.TechPayoutSummaryVM>
+@{
+    ViewData["Title"] = "Sổ Quyết Toán Tip";
+    Layout = "~/Areas/Receptionist/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-6 bg-gray-50 min-h-screen">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600">payments</span>
+                Sổ Quyết Toán Tip
+            </h1>
+            <p class="text-sm text-gray-500 mt-1">Danh sách các khoản Tip Lễ tân đang giữ hộ KTV (IsDirectTip = False)</p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded shadow text-sm">
+            <span class="text-gray-500">Tổng quỹ Tip đang giữ:</span>
+            <span class="font-bold text-green-600 text-lg ml-2">@Model.Sum(x => x.TotalUnpaidTip).ToString("N0") đ</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @if (Model.Count == 0)
+        {
+            <div class="col-span-3 text-center py-10 text-gray-400">
+                <span class="material-symbols-outlined text-4xl block mb-2">check_circle</span>
+                Không có khoản Tip nào cần thanh toán lúc này.
+            </div>
+        }
+
+        @foreach (var item in Model)
+        {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition">
+                <div class="flex items-center gap-4">
+                    <img src="@item.Avatar" class="w-16 h-16 rounded-full object-cover border-2 border-green-100" onerror="this.src='https://via.placeholder.com/60'">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg text-gray-800">@item.TechnicianName</h3>
+                        <div class="text-xs text-gray-500">ID: #@item.TechnicianId</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-green-600">@item.TotalUnpaidTip.ToString("N0")</div>
+                        <div class="text-xs text-gray-500 font-bold bg-gray-100 rounded px-2 py-0.5 inline-block">@item.TotalTransactionCount đơn</div>
+                    </div>
+                </div>
+
+                <hr class="my-4 border-gray-100">
+
+                <button onclick="openPayoutModal(@item.TechnicianId, '@item.TechnicianName', @item.TotalUnpaidTip)"
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">price_check</span> XEM & THANH TOÁN
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<div id="payoutModal" class="fixed inset-0 z-50 hidden" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm" onclick="closePayoutModal()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-down">
+
+            <div class="bg-green-600 px-6 py-4 flex justify-between items-center text-white">
+                <div>
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined">account_balance_wallet</span> Quyết toán cho: <span id="modalTechName">...</span>
+                    </h3>
+                </div>
+                <button onclick="closePayoutModal()" class="hover:text-green-200"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <div class="p-6">
+                <div class="flex justify-between items-end mb-4 border-b pb-2">
+                    <span class="text-sm font-bold text-gray-500 uppercase">Chi tiết các đơn chưa trả</span>
+                    <div class="text-right">
+                        <span class="text-sm text-gray-600 mr-2">Tổng cộng:</span>
+                        <span class="text-2xl font-bold text-green-600" id="modalTotalAmount">0 đ</span>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto max-h-[300px] border rounded-lg bg-gray-50">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-200 text-gray-700 font-bold sticky top-0">
+                            <tr>
+                                <th class="p-3">Ngày giờ</th>
+                                <th class="p-3">Khách hàng</th>
+                                <th class="p-3">Dịch vụ</th>
+                                <th class="p-3 text-right">Tiền Tip</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payoutTableBody" class="divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 bg-yellow-50 p-3 rounded border border-yellow-100 text-sm text-yellow-800 flex items-start gap-2">
+                    <span class="material-symbols-outlined text-sm mt-0.5">info</span>
+                    <div>
+                        <strong>Lưu ý:</strong> Hành động này sẽ đánh dấu <b>TẤT CẢ</b> các khoản trên là "Đã trả" ngày hôm nay (@DateTime.Now.ToString("dd/MM/yyyy")). <br>
+                        Vui lòng giao tiền mặt hoặc chuyển khoản cho KTV trước khi bấm xác nhận.
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                <button onclick="closePayoutModal()" class="px-4 py-2 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-white">Để sau</button>
+                <button onclick="submitPayout()" id="btnConfirmPayout" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-lg flex items-center gap-2">
+                    <span class="material-symbols-outlined">check</span> XÁC NHẬN ĐÃ TRẢ TIỀN
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let currentTechId = 0;
+
+    // --- [CONFIG] SweetAlert2 Toast ---
+    const Toast = Swal.mixin({
+        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    async function openPayoutModal(techId, techName, totalAmount) {
+        currentTechId = techId;
+        document.getElementById('modalTechName').innerText = techName;
+        document.getElementById('modalTotalAmount').innerText = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(totalAmount);
+
+        const tbody = document.getElementById('payoutTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Đang tải dữ liệu...</td></tr>';
+
+        document.getElementById('payoutModal').classList.remove('hidden');
+
+        try {
+            const res = await fetch(`/Receptionist/Payout/GetPayoutDetails?techId=${techId}`);
+            const data = await res.json();
+
+            if (data.success) {
+                tbody.innerHTML = '';
+                const fmtMoney = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'});
+
+                data.data.forEach(item => {
+                    // Format ngày giờ: 10/01 14:30
+                    const dateObj = new Date(item.date);
+                    const dateStr = `${dateObj.getDate().toString().padStart(2,'0')}/${(dateObj.getMonth()+1).toString().padStart(2,'0')} ${dateObj.getHours().toString().padStart(2,'0')}:${dateObj.getMinutes().toString().padStart(2,'0')}`;
+
+                    const row = `
+                        <tr class="bg-white">
+                            <td class="p-3 text-gray-600">${dateStr}</td>
+                            <td class="p-3 font-medium">${item.customerName}</td>
+                            <td class="p-3 text-gray-500 truncate max-w-[150px]" title="${item.serviceName}">${item.serviceName}</td>
+                            <td class="p-3 text-right font-bold text-green-600">+${fmtMoney.format(item.tipAmount)}</td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Lỗi tải dữ liệu</td></tr>';
+            }
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Lỗi kết nối</td></tr>';
+        }
+    }
+
+    async function submitPayout() {
+        // [THAY ĐỔI 1] Dùng SweetAlert Confirm thay vì confirm() mặc định
+        const confirmResult = await Swal.fire({
+            title: 'Xác nhận thanh toán?',
+            text: "Bạn xác nhận đã giao đủ tiền mặt cho KTV này?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a', // Green-600
+            cancelButtonColor: '#6b7280', // Gray-500
+            confirmButtonText: '✅ Đúng, tôi đã trả',
+            cancelButtonText: 'Hủy bỏ'
+        });
+
+        // Nếu người dùng bấm "Hủy" -> Dừng lại ngay
+        if (!confirmResult.isConfirmed) return;
+
+        const btn = document.getElementById('btnConfirmPayout');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Đang xử lý...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/Receptionist/Payout/ConfirmPayout?techId=${currentTechId}`, { method: 'POST' });
+            const data = await res.json();
+
+            if (data.success) {
+                // [THAY ĐỔI 2] Hiện thông báo thành công đẹp
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: data.message,
+                    confirmButtonColor: '#16a34a',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                window.location.reload(); // Tải lại trang để cập nhật danh sách
+            } else {
+                // [THAY ĐỔI 3] Hiện thông báo lỗi đẹp
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Thất bại',
+                    text: data.message,
+                    confirmButtonColor: '#dc2626'
+                });
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        } catch (e) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Lỗi kết nối',
+                text: 'Không thể kết nối đến server. Vui lòng thử lại.',
+                confirmButtonColor: '#dc2626'
+            });
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+
+    function closePayoutModal() {
+        document.getElementById('payoutModal').classList.add('hidden');
+    }
+</script>

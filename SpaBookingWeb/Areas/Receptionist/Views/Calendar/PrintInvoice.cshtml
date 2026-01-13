@@ -1,0 +1,231 @@
+﻿@model dynamic
+@{
+    Layout = null; 
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>In Hóa Đơn #@Model.InvoiceId</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: #000;
+            margin: 0;
+            padding: 10px;
+            background: #fff;
+            width: 300px;
+            margin: 0 auto;
+        }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .uppercase { text-transform: uppercase; }
+        
+        .dashed-line {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        td, th { padding: 4px 0; vertical-align: top; }
+        
+        @@media print {
+            body { 
+                width: 100%;
+                margin: 0; 
+                padding: 0;
+            }
+            .no-print { display: none; }
+            
+            @@page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-center">
+        <h2 class="uppercase" style="margin: 5px 0;">SPA BOOKING</h2>
+        <div>ĐC: 123 Đường ABC, Quận 1, TP.HCM</div>
+        <div>Hotline: 0909.123.456</div>
+    </div>
+
+    <div class="dashed-line"></div>
+
+    <div>
+        <div>Hóa đơn: <strong>#@Model.InvoiceId</strong></div>
+        <div>Ngày: @Model.CreatedDate</div>
+        <div>Khách: @Model.CustomerName</div>
+        @if(!string.IsNullOrEmpty(Model.CustomerPhone))
+        {
+            <div>SĐT: @Model.CustomerPhone</div>
+        }
+    </div>
+
+    <div class="dashed-line"></div>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align:left; border-bottom: 1px dashed #000;">
+                <th style="padding: 5px 0; width:45%">Dịch vụ</th>
+                <th style="padding: 5px 0; width:30%">KTV/Tip</th>
+                <th style="padding: 5px 0; width:25%" class="text-right">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                // Logic kiểm tra loại Item (Header, Child, Normal)
+                bool isHeader = false;
+                bool isChild = false;
+
+                // Dùng try-catch để tránh lỗi nếu Model cũ chưa cập nhật Property
+                try { isHeader = item.IsHeader; } catch { }
+                try { isChild = item.IsChild; } catch { }
+
+                if (isHeader)
+                {
+                    // === TRƯỜNG HỢP 1: TÊN COMBO (HIỆN GIÁ TỔNG) ===
+                    <tr style="border-bottom: 1px dotted #ccc;">
+                        <td colspan="2" style="padding: 5px 0; vertical-align: top;">
+                            <div class="font-bold uppercase">@item.Name</div>
+                        </td>
+                        <td class="text-right" style="padding: 5px 0; vertical-align: top;">
+                            <div class="font-bold">@string.Format("{0:N0}", item.Price)</div>
+                        </td>
+                    </tr>
+                }
+                else if (isChild)
+                {
+                    // === TRƯỜNG HỢP 2: DỊCH VỤ TRONG COMBO (ẨN GIÁ) ===
+                    <tr style="border-bottom: 1px dotted #eee;">
+                        <td style="padding: 5px 0; padding-left: 15px; vertical-align: top;">
+                            <div>- @item.Name</div>
+                        </td>
+                        <td style="padding: 5px 0; font-size:11px; vertical-align: top;">
+                            <div>@item.Tech</div>
+                            @if (item.Tip > 0) // Vẫn hiện Tip của KTV làm dịch vụ này
+                            {
+                                <div style="font-style:italic; margin-top:2px;">
+                                    + Tip: @string.Format("{0:N0}", item.Tip)
+                                </div>
+                            }
+                        </td>
+                        <td class="text-right" style="padding: 5px 0; vertical-align: top;">
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    // === TRƯỜNG HỢP 3: DỊCH VỤ LẺ BÌNH THƯỜNG (CODE CŨ) ===
+                    <tr style="border-bottom: 1px dotted #ccc;">
+                        <td style="padding: 5px 0; vertical-align: top;">
+                            <div class="font-bold">@item.Name</div>
+                        </td>
+                        <td style="padding: 5px 0; font-size:11px; vertical-align: top;">
+                            <div style="font-weight:bold;">@item.Tech</div>
+
+                            @if (item.Tip > 0)
+                            {
+                                <div style="font-style:italic; margin-top:2px;">
+                                    + Tip: @string.Format("{0:N0}", item.Tip)
+                                </div>
+                            }
+                        </td>
+                        <td class="text-right" style="padding: 5px 0; vertical-align: top;">
+                            <div>@string.Format("{0:N0}", item.Price)</div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="dashed-line"></div>
+
+    <table style="width: 100%; margin-top: 5px;">
+        <tr>
+            <td>Tổng dịch vụ:</td>
+            <td class="text-right">@string.Format("{0:N0}", Model.SubTotal)</td>
+        </tr>
+
+        @if (Model.TotalTip > 0)
+        {
+            <tr>
+                <td>Tổng tiền Tip:</td>
+                <td class="text-right">@string.Format("{0:N0}", Model.TotalTip)</td>
+            </tr>
+        }
+
+        @if (Model.MemberDiscount > 0)
+        {
+            <tr>
+                <td>
+                    Giảm TV (@Model.MemberLevel):
+                </td>
+                <td class="text-right">
+                    -@string.Format("{0:N0}", Model.MemberDiscount)
+                </td>
+            </tr>
+        }
+
+        @if (Model.VoucherDiscount > 0)
+        {
+            <tr>
+                <td>
+                    Voucher (@Model.VoucherCode):
+                </td>
+                <td class="text-right">
+                    -@string.Format("{0:N0}", Model.VoucherDiscount)
+                </td>
+            </tr>
+        }
+        @if (Model.Deposit > 0)
+        {
+            <tr>
+                <td>Trừ cọc:</td>
+                <td class="text-right">-@string.Format("{0:N0}", Model.Deposit)</td>
+            </tr>
+        }
+
+        <tr style="font-size: 14px; border-top: 1px solid #000;">
+            <td class="font-bold" style="padding-top: 5px;">THANH TOÁN:</td>
+            <td class="text-right font-bold" style="padding-top: 5px; font-size: 16px;">
+                @string.Format("{0:N0}", Model.TotalAmount)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="text-right" style="font-style:italic; font-size:10px;">
+                (PTTT: @Model.PaymentMethod)
+            </td>
+        </tr>
+    </table>
+
+    <div class="dashed-line"></div>
+
+    <div class="text-center" style="margin-top: 20px;">
+        <div class="font-bold">CẢM ƠN QUÝ KHÁCH!</div>
+        <div style="font-size: 10px; margin-top:5px">Hẹn gặp lại</div>
+        <div style="font-size: 10px;">Pass Wifi: spa123456</div>
+    </div>
+
+    <div class="text-center no-print" style="margin-top: 30px; padding-bottom: 30px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-weight:bold; cursor:pointer; background: #000; color: #fff; border: none;">
+            🖨️ IN HÓA ĐƠN
+        </button>
+        <div style="margin-top:10px; color:red; font-size:11px">
+            *Chọn "Save as PDF" trong hộp thoại in để lưu file
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function(){
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>
