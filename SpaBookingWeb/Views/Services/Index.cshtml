@@ -2,7 +2,7 @@
 
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Danh sách Dịch vụ";
+    ViewData["Title"] = "Service List";
 }
 
 <style>
@@ -23,10 +23,10 @@
         style='background-image: linear-gradient(rgba(50, 10, 20, 0.6) 0%, rgba(50, 10, 20, 0.7) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAazVwZuNGafGMOKPoFnfwFFwn2hyN6_hNS07O55sKrrOT6wRNqTVfrKyMkTV8eeUWWNgzdsizvzbjGim15V83w7ZyKlbV1PrZByHZKiZmsUY7FQoPL4eJ0nXkAft7gRrHMDtgypnQEeIHfay7QSR9C99BoV8LQ2G8Kw6voV8RexbFRS95PzQCyESr0RN3fYYyOD1fvhZPWQ9YaUg2nr5i1XK1iDTLDB7ylqyoOA88cgVJBlzBwRS_bJXXLme3BmAxP8Xs5P6dyzpg");'>
         <div class="flex flex-col gap-3 text-center max-w-2xl z-10">
             <h1 class="text-white text-4xl font-black leading-tight tracking-tight sm:text-5xl">
-                Thư giãn &amp; Tái tạo năng lượng
+                Relax &amp; Rejuvenate
             </h1>
             <h2 class="text-pink-100 text-base font-normal sm:text-lg">
-                Khám phá hơn 50+ liệu trình chăm sóc chuyên sâu và combo ưu đãi độc quyền
+                Explore over 50+ intensive treatments and exclusive combo offers
             </h2>
         </div>
         
@@ -38,11 +38,11 @@
                 </div>
                 <input name="search" value="@Model.CurrentSearch"
                     class="flex w-full min-w-0 flex-1 resize-none outline-none text-gray-900 bg-white h-full placeholder:text-[#96757f] px-2 text-base"
-                    placeholder="Tìm kiếm dịch vụ, combo..." />
+                    placeholder="Search services, combos..." />
                 <div class="flex items-center justify-center bg-white pr-2">
                     <button type="submit"
                         class="flex cursor-pointer items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold hover:bg-opacity-90 transition-colors">
-                        Tìm kiếm
+                        Search
                     </button>
                 </div>
             </div>
@@ -56,7 +56,7 @@
         <div class="flex flex-col gap-4">
             <h3 class="text-gray-900 dark:text-white text-lg font-bold flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">category</span>
-                Danh mục
+                Category
             </h3>
             <div class="flex flex-col gap-2">
                 <a href="/Services?sortOrder=@Model.SortOrder" 
@@ -64,7 +64,7 @@
                     <input @(!Model.CurrentCategoryId.HasValue ? "checked" : "")
                         class="w-4 h-4 text-primary bg-pink-50 border-pink-200 focus:ring-primary focus:ring-2"
                         type="radio" readonly />
-                    <span class="text-sm font-medium text-gray-900 dark:text-gray-300 group-hover:text-primary transition-colors">Tất cả dịch vụ</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-300 group-hover:text-primary transition-colors">All Services</span>
                 </a>
                 
                 @foreach(var cat in Model.Categories)
@@ -88,22 +88,22 @@
         <div class="flex flex-col gap-4">
             <h3 class="text-gray-900 dark:text-white text-lg font-bold flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary">sort</span>
-                Sắp xếp
+                Sort
             </h3>
             <div class="flex flex-col gap-2">
                 <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=popular"
                     class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Phổ biến nhất</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Most Popular</span>
                     <input @(Model.SortOrder != "price_asc" && Model.SortOrder != "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
                 </a>
                 <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_asc"
                     class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Giá thấp đến cao</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Price: Low to High</span>
                     <input @(Model.SortOrder == "price_asc" ? "checked" : "") class="accent-primary" type="radio" readonly />
                 </a>
                 <a href="/Services?categoryId=@Model.CurrentCategoryId&sortOrder=price_desc"
                     class="flex items-center justify-between p-3 rounded-lg border border-[#f0d5de] bg-white hover:bg-pink-50 cursor-pointer dark:bg-[#33161f] dark:border-[#45222c]">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Giá cao đến thấp</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Price: High to Low</span>
                     <input @(Model.SortOrder == "price_desc" ? "checked" : "") class="accent-primary" type="radio" readonly />
                 </a>
             </div>
@@ -117,11 +117,11 @@
         <div class="flex flex-col gap-4">
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    @(Model.CurrentCategoryId.HasValue ? Model.Categories.FirstOrDefault(c => c.Id == Model.CurrentCategoryId)?.Name : "Tất cả dịch vụ") 
+                    @(Model.CurrentCategoryId.HasValue ? Model.Categories.FirstOrDefault(c => c.Id == Model.CurrentCategoryId)?.Name : "All Services") 
                     (@Model.TotalItems)
                 </h2>
                 <button class="lg:hidden flex items-center gap-2 text-sm font-medium text-primary">
-                    <span class="material-symbols-outlined">tune</span> Bộ lọc
+                    <span class="material-symbols-outlined">tune</span> Filter
                 </button>
             </div>
             
@@ -129,7 +129,7 @@
                 <a href="/Services" 
                     class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-bold shadow-md transition-colors 
                     @(!Model.CurrentCategoryId.HasValue ? "bg-primary text-white shadow-primary/20" : "bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary dark:bg-[#33161f] dark:border-[#45222c] dark:text-gray-300")">
-                    Tất cả
+                    All
                 </a>
                 
                 @foreach(var cat in Model.Categories)
@@ -154,7 +154,7 @@
                     <div class="group flex flex-col rounded-xl border border-[#f0d5de] bg-white p-3 dark:bg-[#33161f] dark:border-[#45222c] hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
                         <div class="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-gray-100">
                             <div class="absolute top-2 right-2 z-10 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
-                                Combo Hot
+                                Hot Combo
                             </div>
                             <img alt="@combo.Name"
                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -176,11 +176,11 @@
                                     }
                                     <div class="flex items-baseline gap-1">
                                         <span class="text-lg font-black text-primary">@combo.Price.ToString("N0")đ</span>
-                                        <span class="text-xs font-medium text-gray-500">/ @combo.DurationMinutes phút</span>
+                                        <span class="text-xs font-medium text-gray-500">/ @combo.DurationMinutes mins</span>
                                     </div>
                                 </div>
                                 <!-- [CẬP NHẬT] Link đến Action BookCombo -->
-                                <a href="/Booking/BookCombo?id=@combo.Id" class="flex size-9 items-center justify-center rounded-full bg-primary text-white hover:bg-[#e64e7b] transition-colors shadow-sm" title="Đặt ngay">
+                                <a href="/Booking/BookCombo?id=@combo.Id" class="flex size-9 items-center justify-center rounded-full bg-primary text-white hover:bg-[#e64e7b] transition-colors shadow-sm" title="Book Now">
                                     <span class="material-symbols-outlined text-[20px]">add</span>
                                 </a>
                             </div>
@@ -209,11 +209,11 @@
                             <div class="flex flex-col">
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-lg font-black text-gray-900 dark:text-white">@svc.Price.ToString("N0")đ</span>
-                                    <span class="text-xs font-medium text-gray-500">/ @svc.DurationMinutes phút</span>
+                                    <span class="text-xs font-medium text-gray-500">/ @svc.DurationMinutes mins</span>
                                 </div>
                             </div>
                             <!-- [CẬP NHẬT] Link đến Action BookService -->
-                            <a href="/Booking/BookService?id=@svc.Id" class="flex size-9 items-center justify-center rounded-full bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary hover:bg-primary hover:text-white transition-colors shadow-sm dark:bg-[#45222c] dark:border-[#45222c] dark:text-white dark:hover:border-primary" title="Đặt ngay">
+                            <a href="/Booking/BookService?id=@svc.Id" class="flex size-9 items-center justify-center rounded-full bg-white border border-[#f0d5de] text-gray-900 hover:border-primary hover:text-primary hover:bg-primary hover:text-white transition-colors shadow-sm dark:bg-[#45222c] dark:border-[#45222c] dark:text-white dark:hover:border-primary" title="Book Now">
                                 <span class="material-symbols-outlined text-[20px]">add</span>
                             </a>
                         </div>

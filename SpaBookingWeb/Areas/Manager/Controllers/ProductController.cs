@@ -36,10 +36,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _productService.CreateProductAsync(model);
-                TempData["SuccessMessage"] = "Thêm sản phẩm thành công!";
+                TempData["SuccessMessage"] = "Product added successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            // Load lại dropdown nếu lỗi
+            // Reload dropdown if error
             var defaultModel = await _productService.GetProductForCreateAsync();
             model.Categories = defaultModel.Categories;
             model.Units = defaultModel.Units;
@@ -61,7 +61,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _productService.UpdateProductAsync(model);
-                TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công!";
+                TempData["SuccessMessage"] = "Product updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
             var defaultModel = await _productService.GetProductForCreateAsync(); // Reuse loading logic
@@ -83,7 +83,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _productService.DeleteProductAsync(id);
-            TempData["SuccessMessage"] = "Xóa sản phẩm thành công!";
+            TempData["SuccessMessage"] = "Product deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
     }

@@ -21,7 +21,7 @@ namespace SpaBookingWeb.Services.Client
         {
             var model = new ClientHomeViewModel();
 
-            // 1. Lấy danh mục dịch vụ
+            // 1. Get service categories
             var categories = await _context.Categories
                 .Where(c => c.Type == "Service" && c.Services.Any(s => s.IsActive && !s.IsDeleted))
                 .Select(c => new ServiceCategoryViewModel
@@ -34,7 +34,7 @@ namespace SpaBookingWeb.Services.Client
                 .ToListAsync();
             model.Categories = categories;
 
-            // 2. Lấy Combo nổi bật
+            // 2. Get featured combos
             var combos = await _context.Combos
                 .Include(c => c.ComboDetails).ThenInclude(cd => cd.Service)
                 .Where(c => !c.IsDeleted)
@@ -51,10 +51,10 @@ namespace SpaBookingWeb.Services.Client
                 OriginalPrice = c.ComboDetails.Sum(cd => cd.Service.Price),
                 DurationMinutes = c.ComboDetails.Sum(cd => cd.Service.DurationMinutes),
                 IsBestSeller = true,
-                StatusText = "Đặt ngay hôm nay"
+                StatusText = "Book today"
             }).ToList();
 
-            // 3. Lấy Dịch vụ nổi bật
+            // 3. Get featured services
             var services = await _context.Services
                 .Include(s => s.Category)
                 .Where(s => s.IsActive && !s.IsDeleted)
@@ -66,13 +66,13 @@ namespace SpaBookingWeb.Services.Client
             {
                 ServiceId = s.ServiceId,
                 ServiceName = s.ServiceName,
-                CategoryName = s.Category?.CategoryName ?? "Dịch vụ",
+                CategoryName = s.Category?.CategoryName ?? "Service",
                 Price = s.Price,
                 ImageUrl = string.IsNullOrEmpty(s.Image) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBRPqf-JGVzjlnQDY50Mknpw_BGK0hLt7hkBomlBoy2VVMjekMF1MVs4olKseiEfAVCJWp7z-5t2EZbHPBCRJurE4IUgUhiSsVcKiyuQU_VUwtLORxfStzA7JQf8c0i9Xjw6mJLVGbH9dD5iD1Np_Y4_gn6lYKViFtoKkrUkVB7A6Zj4QBBBnlbmaUWKMafzBLCZu2es8JcnjYTEVt1UWZRG9K30EyxQ9cM2vA2E_SoSmpQr0kUgBwStX2iRnuIs09ujjgwNa4fvls" : s.Image,
                 Rating = 5.0
             }).ToList();
 
-            // 4. Ưu đãi
+            // 4. Promotions
             var activeVoucher = await _context.Vouchers
                 .Where(v => v.IsActive && !v.IsDeleted && v.StartDate <= DateTime.Now && v.EndDate >= DateTime.Now)
                 .OrderByDescending(v => v.DiscountValue)
@@ -87,7 +87,7 @@ namespace SpaBookingWeb.Services.Client
                 model.CurrentPromotion = new PromotionViewModel
                 {
                     Title = activeVoucher.Name,
-                    Description = $"Giảm ngay {discountText} {activeVoucher.Description ?? "cho dịch vụ của bạn."}",
+                    Description = $"Get {discountText} off {activeVoucher.Description ?? "for your services."}",
                     PromoCode = activeVoucher.Code,
                     BackgroundImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuBpHMYwS4e9oCrd_jAN7pXZzMAepjREtJHjK2qFEnoAiJvgFziruiMQq0jGdDKjlXtUmb4i5Qe7nsP2t46nT30jL2hRYctmxxcGR3bZutDZx7JGqf83aRRxB_NYh6-jkNqZPZi-LutywXPcuAsKQZh8h5gM6BvyZPE1TNEofy04BDfF1ag1se1iXL0lUEZM_Rrft_Rsb1TcxmpK59BcSof8eFb1iXEn26jMOa1-43UusrSFL08STbtIXP2CWCF6Bvle2Zb1V8u_0Rw"
                 };
@@ -96,14 +96,14 @@ namespace SpaBookingWeb.Services.Client
             {
                 model.CurrentPromotion = new PromotionViewModel
                 {
-                    Title = "Rạng rỡ đón hè cùng MySalon",
-                    Description = "Đặt lịch ngay để trải nghiệm dịch vụ tốt nhất.",
+                    Title = "Shine this summer with MySalon",
+                    Description = "Book now to experience our premium services.",
                     PromoCode = "",
                     BackgroundImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuBpHMYwS4e9oCrd_jAN7pXZzMAepjREtJHjK2qFEnoAiJvgFziruiMQq0jGdDKjlXtUmb4i5Qe7nsP2t46nT30jL2hRYctmxxcGR3bZutDZx7JGqf83aRRxB_NYh6-jkNqZPZi-LutywXPcuAsKQZh8h5gM6BvyZPE1TNEofy04BDfF1ag1se1iXL0lUEZM_Rrft_Rsb1TcxmpK59BcSof8eFb1iXEn26jMOa1-43UusrSFL08STbtIXP2CWCF6Bvle2Zb1V8u_0Rw"
                 };
             }
 
-            // 5. [MỚI] Lấy Bài viết mới nhất
+            // 5. [NEW] Get latest posts
             var posts = await _context.Posts
                 .Where(p => !p.IsDeleted && p.IsPublished)
                 .OrderByDescending(p => p.PublishedDate ?? p.CreatedDate)
@@ -119,11 +119,11 @@ namespace SpaBookingWeb.Services.Client
                 .ToListAsync();
             model.LatestPosts = posts;
 
-            // --- 6. Cấu hình hệ thống ---
+            // --- 6. System Configuration ---
             var settings = await _context.SystemSettings.ToListAsync();
             var dict = settings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
 
-            // Format giờ đẹp (cắt bỏ giây nếu có) - VD: 09:00:00 -> 09:00
+            // Format time nicely (remove seconds if present) - Ex: 09:00:00 -> 09:00
             string FormatTime(string timeStr)
             {
                 if (TimeSpan.TryParse(timeStr, out var ts))
@@ -131,7 +131,7 @@ namespace SpaBookingWeb.Services.Client
                 return timeStr;
             }
 
-            void ParseWorkingHours(string workingHours, out string openTime, out string closeTime) // chuyen doi workingour sang gio
+            void ParseWorkingHours(string workingHours, out string openTime, out string closeTime) // convert working hours to time
             {
                 openTime = "09:00";   // default
                 closeTime = "20:00";  // default
@@ -167,8 +167,8 @@ namespace SpaBookingWeb.Services.Client
             }
             model.FacebookUrl = dict.ContainsKey("FacebookUrl") ? dict["FacebookUrl"] : "#";
             model.SpaName = dict.ContainsKey("SpaName") ? dict["SpaName"] : "MySalon";
-            model.Address = dict.ContainsKey("Address") ? dict["Address"] : "Địa chỉ Spa";
-            model.Hotline = dict.ContainsKey("PhoneNumber") ? dict["PhoneNumber"] : "Hotline liên hệ";
+            model.Address = dict.ContainsKey("Address") ? dict["Address"] : "Spa Address";
+            model.Hotline = dict.ContainsKey("PhoneNumber") ? dict["PhoneNumber"] : "Contact Hotline";
             model.Email = dict.ContainsKey("Email") ? dict["Email"] : "Email";
 
             return model;

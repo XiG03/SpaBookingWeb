@@ -8,7 +8,7 @@ namespace SpaBookingWeb.Services.Manager
     {
         Task<ProductDashboardViewModel> GetAllProductsAsync();
         
-        // Hàm này chuẩn bị dữ liệu cho form Create (bao gồm load dropdown)
+        // This function prepares data for Create form (including loading dropdowns)
         Task<ProductViewModel> GetProductForCreateAsync();
         
         Task<ProductViewModel?> GetProductForEditAsync(int id);

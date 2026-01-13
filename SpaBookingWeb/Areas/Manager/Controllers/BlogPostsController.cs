@@ -19,7 +19,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             _blogService = blogService;
         }
 
-        // 1. Danh sách: Yêu cầu quyền VIEW
+        // 1. List: Requires VIEW permission
         [HttpGet]
 
         public async Task<IActionResult> Index()
@@ -28,7 +28,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return View(posts);
         }
 
-        // 2. Tạo mới: Yêu cầu quyền CREATE
+        // 2. Create: Requires CREATE permission
         [HttpGet]
 
         public IActionResult Create()
@@ -43,16 +43,16 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         {
             if (!ModelState.IsValid) return View(request);
 
-            // Lấy ID người đang đăng nhập để gán tác giả
+            // Get logged in user ID to assign author
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
             await _blogService.CreateAsync(request, userId);
             
-            TempData["Success"] = "Tạo bài viết thành công!";
+            TempData["Success"] = "Post created successfully!";
             return RedirectToAction(nameof(Index));
         }
 
-        // 3. Chỉnh sửa: Yêu cầu quyền EDIT
+        // 3. Update: Requires EDIT permission
         [HttpGet]
 
         public async Task<IActionResult> Edit(int id)
@@ -60,7 +60,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             var post = await _blogService.GetByIdAsync(id);
             if (post == null) return NotFound();
 
-            // Map từ ViewModel hiển thị sang ViewModel cập nhật
+            // Map from View ViewModel to Update ViewModel
             var updateRequest = new UpdateBlogPostRequest
             {
                 Id = post.Id,
@@ -83,24 +83,24 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             try 
             {
                 await _blogService.UpdateAsync(request);
-                TempData["Success"] = "Cập nhật thành công!";
+                TempData["Success"] = "Updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                TempData["Error"] = "Có lỗi xảy ra khi cập nhật.";
+                TempData["Error"] = "An error occurred while updating.";
                 return View(request);
             }
         }
 
-        // 4. Xóa: Yêu cầu quyền DELETE
+        // 4. Delete: Requires DELETE permission
         [HttpPost]
 
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             await _blogService.DeleteAsync(id);
-            TempData["Success"] = "Đã xóa bài viết.";
+            TempData["Success"] = "Post deleted.";
             return RedirectToAction(nameof(Index));
         }
     }

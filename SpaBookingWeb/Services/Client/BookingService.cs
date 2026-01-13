@@ -60,20 +60,20 @@ namespace SpaBookingWeb.Services.Client
         {
             var model = new BookingPageViewModel();
             
-            // 1. Lấy Dịch vụ
+            // 1. Get Services
             var services = await _context.Services
                 .Include(s => s.Category)
                 .Include(s => s.ServiceConsumables).ThenInclude(sc => sc.Product).ThenInclude(p => p.Unit)
                 .Where(s => s.IsActive && !s.IsDeleted)
                 .ToListAsync();
 
-            var serviceGroups = services.GroupBy(s => s.Category?.CategoryName ?? "Khác")
+            var serviceGroups = services.GroupBy(s => s.Category?.CategoryName ?? "Other")
                 .Select(g => new ServiceCategoryGroupViewModel 
                 { 
                     CategoryName = g.Key, 
                     Services = g.Select(s => new ServiceItemViewModel 
                     { 
-                        Id = s.ServiceId, // ID DƯƠNG
+                        Id = s.ServiceId, // POSITIVE ID
                         Name = s.ServiceName, 
                         Description = s.Description, 
                         Price = s.Price, 
@@ -83,7 +83,7 @@ namespace SpaBookingWeb.Services.Client
                     }).ToList() 
                 }).ToList();
 
-            // 2. Lấy Combo và biến đổi thành "ServiceItem" với ID Âm
+            // 2. Get Combo and transform to "ServiceItem" with Negative ID
             var combos = await _context.Combos
                 .Include(c => c.ComboDetails)
                     .ThenInclude(cd => cd.Service)
@@ -99,7 +99,7 @@ namespace SpaBookingWeb.Services.Client
                 {
                     var descriptionBuilder = new StringBuilder();
                     var allConsumables = new List<string>();
-                    // [MỚI] Danh sách dịch vụ con để hiển thị tách biệt ở Step 3
+                    // [NEW] List of child services to display separately in Step 3
                     var childServicesList = new List<ServiceItemViewModel>();
 
                     if (!string.IsNullOrEmpty(c.Description))
@@ -107,57 +107,57 @@ namespace SpaBookingWeb.Services.Client
                         descriptionBuilder.AppendLine(c.Description);
                     }
 
-                    descriptionBuilder.AppendLine("Gói bao gồm:");
+                    descriptionBuilder.AppendLine("Package includes:");
                     foreach (var cd in c.ComboDetails)
                     {
                         descriptionBuilder.AppendLine($"- {cd.Service.ServiceName} ({cd.Service.DurationMinutes}p)");
                         
-                        // Gom sản phẩm cho mô tả
+                        // Aggregate products for description
                         foreach(var sc in cd.Service.ServiceConsumables.Where(x => !x.IsDeleted))
                         {
-                            allConsumables.Add($"{sc.Product.ProductName} ({sc.Quantity} {sc.Product.Unit?.UnitName ?? ""}) - [Trong {cd.Service.ServiceName}]");
+                            allConsumables.Add($"{sc.Product.ProductName} ({sc.Quantity} {sc.Product.Unit?.UnitName ?? ""}) - [In {cd.Service.ServiceName}]");
                         }
 
-                        // [MỚI] Thêm vào danh sách ChildServices
+                        // [NEW] Add to ChildServices list
                         childServicesList.Add(new ServiceItemViewModel
                         {
-                            Id = cd.Service.ServiceId, // ID DƯƠNG của Service con
+                            Id = cd.Service.ServiceId, // POSITIVE ID of child Service
                             Name = cd.Service.ServiceName,
                             DurationMinutes = cd.Service.DurationMinutes,
-                            Price = 0, // Giá hiển thị là 0 vì đã tính trong gói Combo
+                            Price = 0, // Display price is 0 because included in Combo package
                             Type = "ServiceInCombo",
-                            Description = "Nằm trong gói combo"
+                            Description = "Included in combo"
                         });
                     }
 
                     return new ServiceItemViewModel
                     {
-                        Id = -c.ComboId, // ID ÂM để phân biệt
+                        Id = -c.ComboId, // NEGATIVE ID to distinguish
                         Name = $"[Combo] {c.ComboName}",
                         Description = descriptionBuilder.ToString(),
                         Price = c.Price, 
                         DurationMinutes = c.ComboDetails.Sum(cd => cd.Service.DurationMinutes),
                         Type = "Combo",
                         Consumables = allConsumables,
-                        // [QUAN TRỌNG] Gán danh sách con vào đây
+                        // [IMPORTANT] Assign child list here
                         ChildServices = childServicesList 
                     };
                 }).ToList();
 
                 serviceGroups.Insert(0, new ServiceCategoryGroupViewModel
                 {
-                    CategoryName = "Gói Combo Siêu Tiết Kiệm",
+                    CategoryName = "Super Saver Combos",
                     Services = comboItems
                 });
             }
 
             model.ServiceCategories = serviceGroups;
-            model.Staffs = await _context.Employees.Where(e => e.IsActive && !e.IsDeleted).Select(e => new StaffViewModel { Id = e.EmployeeId, Name = e.FullName, Role = "Kỹ thuật viên", Avatar = e.Avatar ?? "/img/default-avatar.png" }).ToListAsync();
+            model.Staffs = await _context.Employees.Where(e => e.IsActive && !e.IsDeleted).Select(e => new StaffViewModel { Id = e.EmployeeId, Name = e.FullName, Role = "Technician", Avatar = e.Avatar ?? "/img/default-avatar.png" }).ToListAsync();
             
             return model;
         }
 
-        // --- LOGIC TÌM GIỜ TRỐNG THÔNG MINH ---
+        // --- SMART AVAILABLE TIME SLOT LOGIC ---
         public async Task<List<string>> GetAvailableTimeSlotsAsync(DateTime date, BookingSessionModel session)
         {
             var settings = await _systemSettingService.GetCurrentSettingsAsync();
@@ -166,7 +166,7 @@ namespace SpaBookingWeb.Services.Client
             var currentTime = DateTime.Now;
             bool isToday = date.Date == currentTime.Date;
 
-            // [MỚI] Lấy danh sách khung giờ bận của KHÁCH HÀNG (Nếu đã đăng nhập)
+            // [NEW] Get CUSTOMER'S busy intervals (If logged in)
             var customerBusyIntervals = new List<(TimeSpan Start, TimeSpan End)>();
             if (_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
             {
@@ -175,8 +175,8 @@ namespace SpaBookingWeb.Services.Client
                 
                 if (customer != null)
                 {
-                    // Lấy các lịch hẹn khác của khách trong ngày (trừ chính nó nếu đang edit/repay - tuy nhiên ở đây session chưa có ID nếu tạo mới)
-                    // Ở đây giả sử tạo mới hoàn toàn hoặc rebook tạo mới
+                    // Get other appointments of the customer in the day (exclude itself if editing/repaying - however session doesn't have ID if creating new here)
+                    // Here assume creating completely new or rebook creating new
                     var existingApps = await _context.Appointments
                         .Where(a => a.CustomerId == customer.CustomerId 
                                     && a.StartTime.Date == date.Date 
@@ -193,19 +193,19 @@ namespace SpaBookingWeb.Services.Client
                 }
             }
             
-            // Logic tính tổng thời gian phiên (xử lý ID âm)
+            // Logic calculate session duration (handle negative ID)
             int sessionMaxDuration = 0;
             foreach (var member in session.Members)
             {
                 int memberDuration = 0;
                 foreach (var id in member.SelectedServiceIds)
                 {
-                    if (id > 0) // Dịch vụ
+                    if (id > 0) // Service
                     {
                         var d = await _context.Services.Where(s => s.ServiceId == id).Select(s => s.DurationMinutes).FirstOrDefaultAsync();
                         memberDuration += d;
                     }
-                    else // Combo (ID âm)
+                    else // Combo (Negative ID)
                     {
                         var comboId = -id;
                         var d = await _context.Combos.Where(c => c.ComboId == comboId)
@@ -217,7 +217,7 @@ namespace SpaBookingWeb.Services.Client
                 if (memberDuration > sessionMaxDuration) sessionMaxDuration = memberDuration;
             }
 
-            // [MỚI] Lấy dữ liệu Lịch làm việc & Lịch bận của NHÂN VIÊN
+            // [NEW] Get STAFF'S Work Schedule & Busy Schedule
             var workingStaffIds = await _context.WorkSchedules
                 .Where(ws => ws.WorkDate.Date == date.Date && !ws.IsDeleted)
                 .Select(ws => ws.EmployeeId)
@@ -231,7 +231,7 @@ namespace SpaBookingWeb.Services.Client
                 .Where(a => a.StartTime.Date == date.Date && a.Status != "Cancelled" && !a.IsDeleted)
                 .ToListAsync();
 
-            // Build bản đồ bận của nhân viên
+            // Build staff busy map
             foreach (var appt in staffAppointments)
             {
                 var currentStart = appt.StartTime.TimeOfDay;
@@ -259,14 +259,14 @@ namespace SpaBookingWeb.Services.Client
                 }
             }
 
-            // Kỹ năng nhân viên (để biết ai làm được dịch vụ nào)
-            // Lưu ý: Combo thì cần check kỹ năng cho từng service con, ở đây simplified check service lẻ
+            // Staff skills (to know who can do which service)
+            // Note: Combo needs check skill for each child service, here simplified check odd service
             var technicianSkills = await _context.TechnicianServices
                 .Where(ts => !ts.IsDeleted)
                 .Select(ts => new { ts.EmployeeId, ts.ServiceId })
                 .ToListAsync();
 
-            // Logic tìm giờ trống 
+            // Logic find available slots 
             var availableSlots = new List<string>();
             var slotDuration = TimeSpan.FromMinutes(15);
             for (var time = openTime; time < closeTime; time = time.Add(slotDuration))
@@ -275,15 +275,15 @@ namespace SpaBookingWeb.Services.Client
                 
                 var estimatedEndTime = time.Add(TimeSpan.FromMinutes(sessionMaxDuration));
 
-                // Check 1: Khách bận?
+                // Check 1: Customer busy?
                 if (IsOverlapping(time, estimatedEndTime, customerBusyIntervals)) continue;
 
-                // Check 2: Quá giờ đóng cửa?
+                // Check 2: Past closing time?
                 if (estimatedEndTime > closeTime) continue;
 
-                // Check 3: Staff rảnh? (Sử dụng hàm helper đã có ở phiên bản trước, cập nhật cho ID âm)
-                // Để đơn giản hóa trong context file này mà vẫn giữ logic cũ, ta giả định check staff ở đây
-                // Nếu muốn tích hợp logic check staff chi tiết, cần cập nhật IsSessionFitAsync để handle ID âm
+                // Check 3: Staff free? (Use existing helper method, updated for negative IDs)
+                // To simplify in this context file while keeping old logic, assume check staff here
+                // If want to integrate detailed staff check logic, need update IsSessionFitAsync to handle negative IDs
                 if (await IsSessionFitAsync(time, session, staffBusyIntervals, technicianSkills, closeTime))
                 {
                     availableSlots.Add(time.ToString(@"hh\:mm"));
@@ -298,7 +298,7 @@ namespace SpaBookingWeb.Services.Client
             Dictionary<int, List<(TimeSpan Start, TimeSpan End)>> staffBusyMap,
             dynamic technicianSkills)
         {
-            // Copy map để mô phỏng (tránh sửa dữ liệu gốc)
+            // Copy map to simulate (avoid modifying original data)
             var tempBusyMap = new Dictionary<int, List<(TimeSpan Start, TimeSpan End)>>();
             foreach(var kvp in staffBusyMap) tempBusyMap[kvp.Key] = new List<(TimeSpan, TimeSpan)>(kvp.Value);
 
@@ -318,7 +318,7 @@ namespace SpaBookingWeb.Services.Client
                     }
 
                     bool foundStaff = false;
-                    if (requiredStaffId.HasValue) // Chọn đích danh
+                    if (requiredStaffId.HasValue) // Specific pick
                     {
                         if (IsStaffAvailable(requiredStaffId.Value, memberCurrentTime, serviceEndTime, tempBusyMap))
                         {
@@ -326,10 +326,10 @@ namespace SpaBookingWeb.Services.Client
                             foundStaff = true;
                         }
                     }
-                    else // Chọn ngẫu nhiên (tìm người rảnh có kỹ năng)
+                    else // Random pick (find free staff with skill)
                     {
                         var skilledStaffIds = new List<int>();
-                        // Lọc nhân viên có kỹ năng (chuyển đổi dynamic)
+                        // Filter staff with skill (dynamic convert)
                         var skillsList = (IEnumerable<dynamic>)technicianSkills;
                         foreach(var item in skillsList)
                         {
@@ -347,7 +347,7 @@ namespace SpaBookingWeb.Services.Client
                         }
                     }
 
-                    if (!foundStaff) return false; // Không có nhân viên -> Slot fail
+                    if (!foundStaff) return false; // No staff -> Slot fail
                     memberCurrentTime = serviceEndTime;
                 }
             }
@@ -358,7 +358,7 @@ namespace SpaBookingWeb.Services.Client
         {
             foreach (var interval in busyIntervals)
             {
-                // Giao nhau khi: (StartA < EndB) và (EndA > StartB)
+                // Overlap when: (StartA < EndB) and (EndA > StartB)
                 if (start < interval.End && end > interval.Start)
                 {
                     return true;
@@ -367,7 +367,7 @@ namespace SpaBookingWeb.Services.Client
             return false;
         }
 
-        // Helper: Kiểm tra xem toàn bộ Session có thể bắt đầu tại thời điểm 'startTime' không
+        // Helper: Check if entire Session can start at 'startTime'
        private async Task<bool> IsSessionFitAsync(
             TimeSpan startTime, 
             BookingSessionModel session, 
@@ -398,9 +398,9 @@ namespace SpaBookingWeb.Services.Client
                     var serviceEndTime = memberCurrentTime.Add(TimeSpan.FromMinutes(duration));
                     if (serviceEndTime > shopCloseTime) return false;
 
-                    // Logic check nhân viên cho Combo hơi phức tạp vì combo gồm nhiều service con
-                    // Ở đây ta đơn giản hóa: Coi như 1 nhân viên làm hết combo hoặc skip check kỹ năng chi tiết cho combo
-                    // Nếu id > 0 (Dịch vụ lẻ), check bình thường
+                    // Logic check staff for Combo is a bit complex because combo includes many child services
+                    // Here we simplify: Assume 1 staff does entire combo or skip skill check for combo
+                    // If id > 0 (Odd Service), check normally
                     
                     if (id > 0)
                     {
@@ -417,7 +417,7 @@ namespace SpaBookingWeb.Services.Client
                         }
                         else
                         {
-                            // Tìm list nhân viên có kỹ năng
+                            // Find list of skilled staff
                             var skilledStaffIds = new List<int>();
                             var skillsList = (IEnumerable<dynamic>)technicianSkills;
                             foreach(var item in skillsList) { if(item.ServiceId == id) skilledStaffIds.Add(item.EmployeeId); }
@@ -436,8 +436,8 @@ namespace SpaBookingWeb.Services.Client
                     }
                     else 
                     {
-                        // Với Combo, tạm thời chỉ check xem có nhân viên nào rảnh trong khoảng thời gian đó không (bỏ qua skill check từng món)
-                        // Hoặc gán ngẫu nhiên 1 người rảnh
+                        // With Combo, temporarily only check if any staff is free during period (skip skill check for each item)
+                        // Or assign random free person
                         bool foundStaffForCombo = false;
                         foreach(var staffId in tempBusyMap.Keys)
                         {
@@ -459,20 +459,20 @@ namespace SpaBookingWeb.Services.Client
 
         private bool IsStaffAvailable(int staffId, TimeSpan start, TimeSpan end, Dictionary<int, List<(TimeSpan Start, TimeSpan End)>> busyMap)
         {
-            if (!busyMap.ContainsKey(staffId)) return false; // Nhân viên không đi làm hôm nay
+            if (!busyMap.ContainsKey(staffId)) return false; // Employee not working today
 
             foreach (var interval in busyMap[staffId])
             {
-                // Kiểm tra giao nhau (Overlap): (StartA < EndB) and (EndA > StartB)
+                // Check Overlap: (StartA < EndB) and (EndA > StartB)
                 if (start < interval.End && end > interval.Start)
                 {
-                    return false; // Bị trùng
+                    return false; // Overlap
                 }
             }
             return true;
         }
 
-        // --- CÁC PHƯƠNG THỨC KHÁC GIỮ NGUYÊN ---
+        // --- OTHER METHODS KEEP AS IS ---
         public async Task<int> SaveBookingAsync(BookingSessionModel session)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == session.CustomerInfo.Phone);
@@ -483,7 +483,7 @@ namespace SpaBookingWeb.Services.Client
                 await _context.SaveChangesAsync();
             }
 
-            // Tính lại EndTime
+            // Recalculate EndTime
             int maxDuration = 0;
             foreach (var member in session.Members)
             {
@@ -510,14 +510,14 @@ namespace SpaBookingWeb.Services.Client
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            // Lưu Chi tiết
+            // Save Detail
             foreach (var member in session.Members)
             {
                 var currentServiceStartTime = appointmentStartTime;
 
                 foreach (var id in member.SelectedServiceIds)
                 {
-                    if (id > 0) // Dịch vụ lẻ
+                    if (id > 0) // Odd Service
                     {
                         var service = await _context.Services.FindAsync(id);
                         if (service != null)
@@ -536,7 +536,7 @@ namespace SpaBookingWeb.Services.Client
                             currentServiceStartTime = currentServiceStartTime.AddMinutes(service.DurationMinutes);
                         }
                     }
-                    else // Combo (ID Âm)
+                    else // Combo (Negative ID)
                     {
                         var comboId = -id;
                         var combo = await _context.Combos
@@ -545,8 +545,8 @@ namespace SpaBookingWeb.Services.Client
 
                         if (combo != null && combo.ComboDetails.Any())
                         {
-                            // Tách Combo thành các dòng Service con nhưng vẫn link về ComboId
-                            // Tính toán giá phân bổ (để tổng giá con = giá combo)
+                            // Split Combo into child Service lines but still link to ComboId
+                            // Calculate distributed price (so child sum = combo price)
                             decimal totalOriginal = combo.ComboDetails.Sum(x => x.Service.Price);
                             decimal ratio = totalOriginal > 0 ? combo.Price / totalOriginal : 1;
                             decimal currentTotalSaved = 0;
@@ -559,17 +559,17 @@ namespace SpaBookingWeb.Services.Client
                                 {
                                     AppointmentId = appointment.AppointmentId,
                                     ServiceId = cd.ServiceId,
-                                    ComboId = combo.ComboId, // Đánh dấu thuộc Combo này
+                                    ComboId = combo.ComboId, // Mark as belonging to this Combo
                                     Status = "Pending"
                                 };
                                 
-                                // Phân bổ giá
+                                // Price distribution
                                 if (totalOriginal > 0)
                                 {
-                                    if (i == detailsList.Count - 1) // Item cuối chịu phần dư
+                                    if (i == detailsList.Count - 1) // Last item takes remainder
                                         subDetail.PriceAtBooking = combo.Price - currentTotalSaved;
                                     else
-                                        subDetail.PriceAtBooking = Math.Round(cd.Service.Price * ratio, 0); // Làm tròn 0 số lẻ cho đẹp tiền Việt
+                                        subDetail.PriceAtBooking = Math.Round(cd.Service.Price * ratio, 0); // Round 0 decimals for VND
                                 }
                                 else
                                 {
@@ -577,8 +577,8 @@ namespace SpaBookingWeb.Services.Client
                                 }
                                 currentTotalSaved += subDetail.PriceAtBooking;
 
-                                // Gán KTV: Tìm trong map với Key là ServiceId (của dịch vụ con)
-                                // Lưu ý: Ở Step 3 ta sẽ lưu staff cho các service con vào ServiceStaffMap
+                                // Assign Technician: Find in map with Key as ServiceId (of child service)
+                                // Note: In Step 3 we saved staff for child services into ServiceStaffMap
                                 int? staffId = null;
                                 if (member.ServiceStaffMap != null && member.ServiceStaffMap.ContainsKey(cd.ServiceId))
                                 {
@@ -644,15 +644,15 @@ namespace SpaBookingWeb.Services.Client
 
         public async Task UpdateDepositStatusAsync(int appointmentId, string transactionId)
         {
-            // 1. Lấy thông tin Appointment kèm Customer để gửi mail
+            // 1. Get Appointment info with Customer to send email
             var appointment = await _context.Appointments
                 .Include(a => a.Customer)
-                .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service) // Lấy chi tiết dịch vụ để hiển thị trong mail
+                .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service) // Get service details to display in mail
                 .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
 
             if (appointment != null)
             {
-                // Cập nhật trạng thái
+                // Update status
                 appointment.IsDepositPaid = true;
                 appointment.Status = "Confirmed";
                 
@@ -671,50 +671,50 @@ namespace SpaBookingWeb.Services.Client
                 }
                 await _context.SaveChangesAsync();
 
-                // 2. [MỚI] GỬI EMAIL XÁC NHẬN
+                // 2. [NEW] SEND CONFIRMATION EMAIL
                 if (!string.IsNullOrEmpty(appointment.Customer.Email))
                 {
                     try 
                     {
-                        string emailSubject = $"[SpaBookingWebsite] Xác nhận đặt lịch thành công #{appointment.AppointmentId}";
+                        string emailSubject = $"[SpaBookingWebsite] Booking Confirmation Success #{appointment.AppointmentId}";
                         string emailBody = BuildConfirmationEmailBody(appointment);
                         
                         await _emailService.SendEmailAsync(appointment.Customer.Email, emailSubject, emailBody);
                     } 
                     catch
                     {
-                        // Log lỗi gửi mail nhưng không throw exception để tránh rollback giao dịch thanh toán
-                        _logger.LogError("Gửi mail thất bại...");
+                        // Log mail error but do not throw exception to avoid rolling back payment transaction
+                        _logger.LogError("Email sending failed...");
                     }
                 }
             }
         }
 
-        // Helper: Tạo nội dung Email HTML đẹp
+        // Helper: Create HTML Email Body
         private string BuildConfirmationEmailBody(Appointment appointment)
         {
             var sb = new StringBuilder();
             sb.Append($@"
                 <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;'>
                     <div style='background-color: #ec4899; padding: 20px; text-align: center; color: white;'>
-                        <h2 style='margin: 0;'>Xác nhận đặt lịch thành công</h2>
+                        <h2 style='margin: 0;'>Booking Confirmation Successful</h2>
                     </div>
                     <div style='padding: 20px;'>
-                        <p>Xin chào <strong>{appointment.Customer.FullName}</strong>,</p>
-                        <p>Cảm ơn bạn đã lựa chọn dịch vụ tại <strong>SpaBookingWeb</strong>. Lịch hẹn của bạn đã được xác nhận.</p>
+                        <p>Hello <strong>{appointment.Customer.FullName}</strong>,</p>
+                        <p>Thank you for choosing <strong>SpaBookingWeb</strong>. Your appointment has been confirmed.</p>
                         
                         <div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>
-                            <p style='margin: 5px 0;'><strong>Mã lịch hẹn:</strong> #{appointment.AppointmentId}</p>
-                            <p style='margin: 5px 0;'><strong>Thời gian:</strong> {appointment.StartTime:HH:mm - dd/MM/yyyy}</p>
-                            <p style='margin: 5px 0;'><strong>Số tiền đã cọc:</strong> <span style='color: #ec4899; font-weight: bold;'>{appointment.DepositAmount:N0} đ</span> (Qua MoMo)</p>
+                            <p style='margin: 5px 0;'><strong>Appointment ID:</strong> #{appointment.AppointmentId}</p>
+                            <p style='margin: 5px 0;'><strong>Time:</strong> {appointment.StartTime:HH:mm - dd/MM/yyyy}</p>
+                            <p style='margin: 5px 0;'><strong>Deposit Paid:</strong> <span style='color: #ec4899; font-weight: bold;'>{appointment.DepositAmount:N0} đ</span> (Via MoMo)</p>
                         </div>
 
-                        <h3>Dịch vụ đã đặt:</h3>
+                        <h3>Booked Services:</h3>
                         <ul style='padding-left: 20px;'>");
 
             foreach (var detail in appointment.AppointmentDetails)
             {
-                var serviceName = detail.Service?.ServiceName ?? "Dịch vụ";
+                var serviceName = detail.Service?.ServiceName ?? "Service";
                 sb.Append($"<li>{serviceName} ({detail.PriceAtBooking:N0} đ)</li>");
             }
 
@@ -722,8 +722,8 @@ namespace SpaBookingWeb.Services.Client
                         </ul>
 
                         <p style='margin-top: 20px; font-size: 13px; color: #666;'>
-                            * Vui lòng đến trước 10 phút để được phục vụ tốt nhất.<br/>
-                            * Nếu cần thay đổi lịch, vui lòng liên hệ hotline: 1900-123-456.
+                            * Please arrive 10 minutes early for the best service.<br/>
+                            * If you need to reschedule, please contact hotline: 1900-123-456.
                         </p>
                     </div>
                     <div style='background-color: #f1f1f1; padding: 10px; text-align: center; font-size: 12px; color: #888;'>
@@ -755,7 +755,7 @@ namespace SpaBookingWeb.Services.Client
                 Services = app.AppointmentDetails.Select(ad => new ServiceSuccessItem
                 {
                     ServiceName = ad.Service?.ServiceName,
-                    StaffName = ad.Technician?.FullName ?? "Hệ thống tự chọn",
+                    StaffName = ad.Technician?.FullName ?? "System Selected",
                     Duration = ad.Service?.DurationMinutes ?? 0,
                     Price = ad.PriceAtBooking
                 }).ToList(),
@@ -767,20 +767,20 @@ namespace SpaBookingWeb.Services.Client
 
         public async Task<List<AppointmentHistoryViewModel>> GetBookingHistoryAsync(string userEmail)
         {
-            // 1. Tìm Customer theo Email
+            // 1. Find Customer by Email
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == userEmail);
             if (customer == null) return new List<AppointmentHistoryViewModel>();
 
-            // 2. Lấy danh sách Appointment
+            // 2. Get Appointment list
             var appointments = await _context.Appointments
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Technician)
                 .Include(a => a.Invoice)
                 .Where(a => a.CustomerId == customer.CustomerId)
-                .OrderByDescending(a => a.StartTime) // Mới nhất lên đầu
+                .OrderByDescending(a => a.StartTime) // Newest first
                 .ToListAsync();
 
-            // 3. Map sang ViewModel
+            // 3. Map to ViewModel
             var result = appointments.Select(a => new AppointmentHistoryViewModel
             {
                 AppointmentId = a.AppointmentId,
@@ -793,10 +793,10 @@ namespace SpaBookingWeb.Services.Client
                 // Map services
                 Services = a.AppointmentDetails.Select(ad => new ServiceDetailViewModel
                 {
-                    ServiceName = ad.Service?.ServiceName ?? "Dịch vụ",
+                    ServiceName = ad.Service?.ServiceName ?? "Service",
                     Duration = ad.Service?.DurationMinutes ?? 0,
                     Price = ad.PriceAtBooking,
-                    StaffName = ad.Technician?.FullName ?? "Chưa phân công",
+                    StaffName = ad.Technician?.FullName ?? "Unassigned",
                     StaffAvatar = ad.Technician?.Avatar ?? "/img/default-avatar.png"
                 }).ToList()
             }).ToList();
@@ -825,16 +825,16 @@ namespace SpaBookingWeb.Services.Client
                 DepositAmount = appointment.DepositAmount,
                 Services = appointment.AppointmentDetails.Select(ad => new ServiceDetailViewModel
                 {
-                    ServiceName = ad.Service?.ServiceName ?? "Dịch vụ",
+                    ServiceName = ad.Service?.ServiceName ?? "Service",
                     Duration = ad.Service?.DurationMinutes ?? 0,
                     Price = ad.PriceAtBooking,
-                    StaffName = ad.Technician?.FullName ?? "Chưa phân công",
+                    StaffName = ad.Technician?.FullName ?? "Unassigned",
                     StaffAvatar = ad.Technician?.Avatar ?? "/img/default-avatar.png"
                 }).ToList()
             };
         }
 
-        // [MỚI] Lấy lịch sử Đã xong/Hủy
+        // [NEW] Get Completed/Cancelled history
         public async Task<List<AppointmentHistoryViewModel>> GetBookingHistoryArchiveAsync(string userEmail)
         {
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == userEmail);
@@ -845,7 +845,7 @@ namespace SpaBookingWeb.Services.Client
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Technician)
                 .Include(a => a.Invoice)
                 .Where(a => a.CustomerId == customer.CustomerId
-                            && (a.Status == "Completed" || a.Status == "Cancelled")) // Lọc trạng thái
+                            && (a.Status == "Completed" || a.Status == "Cancelled")) // Filter status
                 .OrderByDescending(a => a.StartTime)
                 .ToListAsync();
 
@@ -858,16 +858,16 @@ namespace SpaBookingWeb.Services.Client
                 TotalAmount = a.Invoice?.TotalAmount ?? 0,
                 Services = a.AppointmentDetails.Select(ad => new ServiceDetailViewModel
                 {
-                    ServiceName = ad.Service?.ServiceName ?? "Dịch vụ",
+                    ServiceName = ad.Service?.ServiceName ?? "Service",
                     Duration = ad.Service?.DurationMinutes ?? 0,
                     Price = ad.PriceAtBooking,
-                    StaffName = ad.Technician?.FullName ?? "Không xác định",
+                    StaffName = ad.Technician?.FullName ?? "Unknown",
                     StaffAvatar = ad.Technician?.Avatar
                 }).ToList()
             }).ToList();
         }
 
-        // [MỚI] Logic Đặt lại (Re-book)
+        // [NEW] Re-book Logic
         public async Task<bool> RebookAsync(int appointmentId)
         {
             var oldAppt = await _context.Appointments
@@ -876,16 +876,16 @@ namespace SpaBookingWeb.Services.Client
 
             if (oldAppt == null) return false;
 
-            // Tạo session mới từ thông tin cũ
+            // Create new session from old info
             var session = new BookingSessionModel
             {
-                IsGroupBooking = false, // Mặc định về cá nhân
+                IsGroupBooking = false, // Default to individual
                 Members = new List<BookingMember>
                 {
                     new BookingMember
                     {
                         MemberIndex = 1,
-                        Name = "Tôi",
+                        Name = "Me",
                         SelectedServiceIds = oldAppt.AppointmentDetails
                                             .Where(d => d.ServiceId.HasValue)
                                             .Select(d => d.ServiceId.Value)
@@ -894,7 +894,7 @@ namespace SpaBookingWeb.Services.Client
                 }
             };
 
-            // Lưu session và sẵn sàng chuyển hướng sang Step 2
+            // Save session and ready to redirect to Step 2
             SaveSession(session);
             return true;
         }
@@ -902,49 +902,49 @@ namespace SpaBookingWeb.Services.Client
         {
             if (string.IsNullOrEmpty(code))
             {
-                return new VoucherCheckResult { IsValid = false, Message = "Vui lòng nhập mã giảm giá." };
+                return new VoucherCheckResult { IsValid = false, Message = "Please enter a voucher code." };
             }
 
             var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Code == code && !v.IsDeleted);
 
-            // 1. Kiểm tra tồn tại và Active
+            // 1. Check existence and Active
             if (voucher == null || !voucher.IsActive)
             {
-                return new VoucherCheckResult { IsValid = false, Message = "Mã giảm giá không tồn tại hoặc hết hạn." };
+                return new VoucherCheckResult { IsValid = false, Message = "Voucher code does not exist or has expired." };
             }
 
-            // 2. Kiểm tra thời gian
+            // 2. Check time
             var now = DateTime.Now;
             if (now < voucher.StartDate || now > voucher.EndDate)
             {
-                return new VoucherCheckResult { IsValid = false, Message = "Mã giảm giá chưa bắt đầu hoặc đã hết hạn." };
+                return new VoucherCheckResult { IsValid = false, Message = "Voucher code has not started or has expired." };
             }
 
-            // 3. Kiểm tra số lượng
+            // 3. Check quantity
             if (voucher.UsageLimit > 0 && voucher.UsageCount >= voucher.UsageLimit)
             {
-                return new VoucherCheckResult { IsValid = false, Message = "Mã giảm giá đã hết lượt sử dụng." };
+                return new VoucherCheckResult { IsValid = false, Message = "Voucher code usage limit reached." };
             }
 
-            // 4. Kiểm tra giá trị đơn hàng tối thiểu
+            // 4. Check minimum order value
             if (orderTotal < voucher.MinSpend)
             {
                 return new VoucherCheckResult
                 {
                     IsValid = false,
-                    Message = $"Đơn hàng cần tối thiểu {voucher.MinSpend.ToString("N0")}đ để sử dụng mã này."
+                    Message = $"Order needs minimum {voucher.MinSpend.ToString("N0")}đ to use this code."
                 };
             }
 
-            // Hợp lệ
+            // Valid
             string discountInfo = voucher.DiscountType == "Percent"
-                ? $"giảm {voucher.DiscountValue}%"
-                : $"giảm {voucher.DiscountValue.ToString("N0")}đ";
+                ? $"off {voucher.DiscountValue}%"
+                : $"off {voucher.DiscountValue.ToString("N0")}đ";
 
             return new VoucherCheckResult
             {
                 IsValid = true,
-                Message = $"Mã hợp lệ! Bạn sẽ được {discountInfo} cho tổng đơn hàng. Vui lòng cung cấp mã này cho nhân viên tại quầy khi hoàn tất thanh toán.",
+                Message = $"Code valid! You will get {discountInfo} for the total order. Please provide this code to the staff at the counter when completing payment.",
                 Voucher = voucher
             };
         }
@@ -954,14 +954,14 @@ namespace SpaBookingWeb.Services.Client
             var appt = await _context.Appointments
                 .Include(a => a.Customer)
                 .Include(a => a.AppointmentDetails)
-                .Include(a => a.Invoice) // Cần Invoice để lấy TotalAmount chính xác
+                .Include(a => a.Invoice) // Need Invoice to get accurate TotalAmount
                 .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
 
             if (appt == null) return false;
 
             var session = new BookingSessionModel
             {
-                // [QUAN TRỌNG] Gán ID cũ để Controller biết không tạo mới
+                // [IMPORTANT] Assign old ID so Controller knows not to create new
                 ExistingAppointmentId = appt.AppointmentId,
 
                 IsGroupBooking = false, 
@@ -977,14 +977,14 @@ namespace SpaBookingWeb.Services.Client
                 Members = new List<BookingMember>(),
                 TotalAmount = appt.Invoice?.TotalAmount ?? 0, 
                 DepositAmount = appt.DepositAmount,
-                // Giữ lại % cọc để hiển thị đúng
+                // Keep deposit % to display correctly
                 DepositPercentage = (appt.Invoice?.TotalAmount > 0) ? (int)((appt.DepositAmount / appt.Invoice.TotalAmount) * 100) : 20 
             };
 
             var member = new BookingMember 
             { 
                 MemberIndex = 1, 
-                Name = "Tôi", 
+                Name = "Me", 
                 SelectedServiceIds = new List<int>(),
                 ServiceStaffMap = new Dictionary<int, int?>()
             };

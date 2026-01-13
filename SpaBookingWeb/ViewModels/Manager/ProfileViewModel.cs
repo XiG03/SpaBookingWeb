@@ -7,22 +7,22 @@ namespace SpaBookingWeb.ViewModels.Manager
     {
         public string Id { get; set; } // Identity User Id
 
-        [Display(Name = "Họ và tên")]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; }
 
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Display(Name = "Số điện thoại")]
+        [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "Địa chỉ")]
+        [Display(Name = "Address")]
         public string Address { get; set; }
 
-        [Display(Name = "Vai trò")]
+        [Display(Name = "Role")]
         public string Role { get; set; }
 
-        [Display(Name = "Ngày tham gia")]
+        [Display(Name = "Join Date")]
         public DateTime JoinDate { get; set; }
         
         public string Avatar { get; set; }

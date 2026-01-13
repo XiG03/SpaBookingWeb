@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SpaBookingWeb.Controllers
 {
-    [Authorize] // Bắt buộc đăng nhập
+    [Authorize] // Requires login
     public class ProfileController : Controller
     {
         private readonly IBookingService _bookingService;
@@ -19,7 +19,7 @@ namespace SpaBookingWeb.Controllers
             _userManager = userManager;
         }
 
-        // Action hiển thị danh sách lịch hẹn (Trang mặc định của profile)
+        // Action to display appointment list (Default profile page)
         public async Task<IActionResult> Appointments()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -55,7 +55,7 @@ namespace SpaBookingWeb.Controllers
             return View(history);
         }
 
-        // [CŨ] Đặt lại từ đầu (Step 2)
+        // [OLD] Rebook from start (Step 2)
         [HttpPost]
         public async Task<IActionResult> Rebook(int id)
         {
@@ -67,18 +67,18 @@ namespace SpaBookingWeb.Controllers
             return RedirectToAction("History");
         }
 
-        // [MỚI] Tiếp tục thanh toán (Step 5) cho đơn Pending
+        // [NEW] Continue payment (Step 5) for Pending order
         [HttpPost]
         public async Task<IActionResult> ContinueBooking(int id)
         {
-            // Gọi hàm Resume để nạp dữ liệu cũ vào Session
+            // Call Resume function to load old data into Session
             var result = await _bookingService.ResumeBookingAsync(id);
             if (result)
             {
-                // Chuyển hướng thẳng đến bước xác nhận/thanh toán
+                // Redirect straight to confirmation/payment step
                 return RedirectToAction("Step5_Confirm", "Booking");
             }
-            // Nếu lỗi, quay lại trang danh sách
+            // If error, return to list page
             return RedirectToAction("Appointments");
         }
     }

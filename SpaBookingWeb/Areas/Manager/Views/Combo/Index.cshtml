@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ComboDashboardViewModel
 
 @{
-    ViewData["Title"] = "Quản lý Combo";
+    ViewData["Title"] = "Combo Management";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,9 +9,9 @@
 <div class="row justify-content-center">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="page-title">Danh sách Combo</h2>
+            <h2 class="page-title">Combo List</h2>
             <a asp-action="Create" class="btn btn-primary">
-                <i class="fe fe-plus-circle mr-2"></i>Thêm Combo
+                <i class="fe fe-plus-circle mr-2"></i>Add Combo
             </a>
         </div>
 
@@ -31,11 +31,11 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Hình ảnh</th>
-                            <th>Tên Combo</th>
-                            <th>Giá (VNĐ)</th>
-                            <th>Dịch vụ bao gồm</th>
-                            <th>Hành động</th>
+                            <th>Image</th>
+                            <th>Combo Name</th>
+                            <th>Price (VND)</th>
+                            <th>Included Services</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,21 +57,21 @@
                                 <td><strong>@item.ComboName</strong></td>
                                 <td class="text-success">@item.Price.ToString("N0") đ</td>
                                 <td>
-                                    <span class="badge badge-light">@item.ServiceCount dịch vụ</span><br />
+                                    <span class="badge badge-light">@item.ServiceCount services</span><br />
                                     <small class="text-muted">@item.ServiceNames</small>
                                 </td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-                                            <span class="text-muted sr-only">Thao tác</span>
+                                            <span class="text-muted sr-only">Action</span>
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right">
                                             <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.ComboId">
-                                                <i class="fe fe-edit-2 mr-2"></i>Sửa
+                                                <i class="fe fe-edit-2 mr-2"></i>Edit
                                             </a>
                                             <a class="dropdown-item text-danger" asp-action="Delete"
                                                 asp-route-id="@item.ComboId">
-                                                <i class="fe fe-trash mr-2"></i>Xóa
+                                                <i class="fe fe-trash mr-2"></i>Delete
                                             </a>
                                         </div>
                                     </div>

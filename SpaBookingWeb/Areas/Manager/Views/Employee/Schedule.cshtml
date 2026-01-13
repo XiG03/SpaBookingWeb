@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.DailyScheduleViewModel
 
 @{
-    ViewData["Title"] = "Lịch làm việc & Điểm danh";
+    ViewData["Title"] = "Schedule & Attendance";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
     var currentDate = Model.Date;
 }
@@ -29,13 +29,13 @@
 
     <!-- Header & Buttons -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Lịch làm việc</h1>
+        <h1 class="h3 mb-0 text-gray-800">Working Schedule</h1>
         <div>
              <button class="btn btn-primary shadow-sm ml-2" data-toggle="modal" data-target="#manageShiftsModal">
-                <i class="fas fa-cog"></i> Quản lý Ca
+                <i class="fas fa-cog"></i> Manage Shifts
             </button>
             <button class="btn btn-success shadow-sm ml-2" data-toggle="modal" data-target="#assignShiftModal">
-                <i class="fas fa-plus"></i> Xếp lịch
+                <i class="fas fa-plus"></i> Assign Shift
             </button>
         </div>
     </div>
@@ -70,15 +70,15 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                locale: 'vi',
+                locale: 'en',
                 slotMinTime: '06:00:00', // Giờ bắt đầu hiển thị (6h sáng)
                 slotMaxTime: '22:00:00', // Giờ kết thúc hiển thị (10h tối)
                 allDaySlot: false, // Ẩn dòng all-day nếu không cần thiết
                 buttonText: {
-                    today: 'Hôm nay',
-                    month: 'Tháng',
-                    week: 'Tuần',
-                    day: 'Ngày'
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day'
                 },
                 events: '/Manager/Employee/GetCalendarEvents', 
                 
@@ -145,13 +145,13 @@
                         breakTimeField.attr('min', minTime);
                         breakTimeField.attr('max', maxTime);
                         // Optional: Add helper text
-                        breakTimeField.attr('title', 'Giờ nghỉ phải từ ' + minTime + ' đến ' + maxTime);
+                        breakTimeField.attr('title', 'Break time must be from ' + minTime + ' to ' + maxTime);
                     }
 
                     noteField.val(props.note || ''); 
 
                     if (props.isOnBreak) {
-                        statusBadge.html('<span class="badge badge-warning">Đang nghỉ giữa ca</span>');
+                        statusBadge.html('<span class="badge badge-warning">On Break</span>');
                         $('#statusBreak').prop('checked', true);
                         breakGroup.show();
                         
@@ -162,15 +162,15 @@
                         }
                     } 
                     else if (props.isPresent) {
-                        statusBadge.html('<span class="badge badge-success">Đã đi làm</span>');
+                        statusBadge.html('<span class="badge badge-success">Present</span>');
                         $('#statusPresent').prop('checked', true);
                     } 
                     else {
                         if (props.note && props.note.trim() !== '') {
-                             statusBadge.html('<span class="badge badge-warning">Xin vắng/Nghỉ</span>');
+                             statusBadge.html('<span class="badge badge-warning">Absent/Leave</span>');
                              $('#statusAbsent').prop('checked', true);
                         } else {
-                             statusBadge.html('<span class="badge badge-secondary">Chưa điểm danh</span>');
+                             statusBadge.html('<span class="badge badge-secondary">Not Checked In</span>');
                              $('#statusNotCheckedIn').prop('checked', true);
                         }
                     }
@@ -222,16 +222,16 @@
                          var min = $(this).attr('min');
                          var max = $(this).attr('max');
                          if (val && (val < min || val > max)) {
-                             alert('Giờ nghỉ phải nằm trong ca làm việc (' + min + ' - ' + max + ')');
+                             alert('Break time must be within shift hours (' + min + ' - ' + max + ')');
                              $(this).val(''); // Reset invalid value
                          }
                     });
 
-                    // Set ID cho các form hidden input
+                    // Set ID for hidden form inputs
                     $('#attendanceScheduleId').val(eventObj.id);
                     $('#deleteScheduleId').val(eventObj.id);
 
-                    // Mở Modal
+                    // Open Modal
                     $('#eventDetailModal').modal('show');
                 }
             });
@@ -240,12 +240,12 @@
     </script>
 }
 
-<!-- Modal Xếp lịch -->
+<!-- Assign Shift Modal -->
 <div class="modal fade" id="assignShiftModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Thêm nhân viên vào ca</h5>
+                <h5 class="modal-title">Assign Employee to Shift</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -253,42 +253,42 @@
             <form asp-action="AssignShift" method="post">
                 <div class="modal-body">
                     <input type="hidden" name="date" value="@currentDate.ToString("yyyy-MM-dd")" />
-                    
+
                     <div class="form-group">
-                        <label>Chọn Nhân viên</label>
+                        <label>Select Employee</label>
                         <select name="employeeId" class="form-control" asp-items="ViewBag.Employees"></select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Chọn Ca làm việc</label>
+                        <label>Select Work Shift</label>
                         <select name="shiftId" class="form-control" asp-items="ViewBag.Shifts"></select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary">Lưu lịch</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Schedule</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Chi tiết Lịch làm việc (Điểm danh / Hủy) -->
+<!-- Work Schedule Detail Modal (Attendance / Cancel) -->
 <div class="modal fade" id="eventDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title font-weight-bold" id="eventTitle">Chi tiết ca làm</h5>
+                <h5 class="modal-title font-weight-bold" id="eventTitle">Shift Details</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <p><strong>Nhân viên: </strong> <span id="eventEmployeeName"></span></p>
-                <p><strong>Ngày: </strong> <span id="eventDate"></span></p>
-                <p><strong>Ca làm: </strong> <span id="eventShiftName"></span></p>
-                <p><strong>Thời gian: </strong> <span id="eventTimeRange"></span></p>
-                <p><strong>Trạng thái: </strong> <span id="eventStatusBadge"></span></p>
+                <p><strong>Employee: </strong> <span id="eventEmployeeName"></span></p>
+                <p><strong>Date: </strong> <span id="eventDate"></span></p>
+                <p><strong>Shift: </strong> <span id="eventShiftName"></span></p>
+                <p><strong>Time: </strong> <span id="eventTimeRange"></span></p>
+                <p><strong>Status: </strong> <span id="eventStatusBadge"></span></p>
                 
                 <hr/>
                 
@@ -300,21 +300,21 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="isPresent" id="statusNotCheckedIn" value="false">
                         <label class="form-check-label text-secondary font-weight-bold" for="statusNotCheckedIn">
-                            <i class="fas fa-history"></i> Chưa điểm danh / Reset
+                            <i class="fas fa-history"></i> Not Checked In / Reset
                         </label>
                     </div>
 
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="isPresent" id="statusPresent" value="true">
                         <label class="form-check-label text-success font-weight-bold" for="statusPresent">
-                            <i class="fas fa-check-circle"></i> Đã có mặt
+                            <i class="fas fa-check-circle"></i> Present
                         </label>
                     </div>
                     
                     <div class="form-check mb-2">
                          <input class="form-check-input" type="radio" name="isPresent" id="statusAbsent" value="false">
                         <label class="form-check-label text-danger font-weight-bold" for="statusAbsent">
-                            <i class="fas fa-times-circle"></i> Vắng mặt / Xin nghỉ
+                            <i class="fas fa-times-circle"></i> Absent / Leave
                         </label>
                     </div>
 
@@ -322,13 +322,13 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="isOnBreak" id="statusBreak" value="true">
                         <label class="form-check-label text-warning font-weight-bold" for="statusBreak">
-                            <i class="fas fa-coffee"></i> Nghỉ giữa ca
+                            <i class="fas fa-coffee"></i> On Break
                         </label>
                     </div>
 
                     <!-- Giờ bắt đầu nghỉ (ẩn mặc định) -->
                     <div class="form-group ml-4" id="breakTimeGroup" style="display:none;">
-                        <label class="small font-weight-bold">Giờ bắt đầu nghỉ:</label>
+                        <label class="small font-weight-bold">Break Start Time:</label>
                         <input type="time" class="form-control form-control-sm" name="breakStartTime" id="breakStartTime">
                     </div>
 
@@ -337,19 +337,19 @@
 
                     <!-- Lý do vắng / Ghi chú -->
                     <div class="form-group mt-2" id="attendanceNoteGroup">
-                        <label for="attendanceNote" class="small font-weight-bold">Lý do nghỉ / Ghi chú:</label>
-                        <textarea class="form-control form-control-sm" name="note" id="attendanceNote" rows="2" placeholder="Nhập lý do vắng hoặc ghi chú..."></textarea>
+                        <label for="attendanceNote" class="small font-weight-bold">Reason / Note:</label>
+                        <textarea class="form-control form-control-sm" name="note" id="attendanceNote" rows="2" placeholder="Enter reason or note..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block">Cập nhật trạng thái</button>
+                    <button type="submit" class="btn btn-primary btn-block">Update Status</button>
                 </form>
 
                 <!-- Option 2: Form Hủy Lịch -->
                 <form asp-action="DeleteSchedule" method="post" style="border-top: 1px dashed #ccc; padding-top: 15px;">
                     <input type="hidden" name="scheduleId" id="deleteScheduleId" />
                     <input type="hidden" name="returnDate" value="@currentDate.ToString("yyyy-MM-dd")" />
-                    <button type="submit" class="btn btn-outline-danger btn-sm float-right" onclick="return confirm('Bạn chắc chắn muốn hủy lịch làm việc này?');">
-                        <i class="fas fa-trash"></i> Hủy lịch làm việc
+                    <button type="submit" class="btn btn-outline-danger btn-sm float-right" onclick="return confirm('Are you sure you want to cancel this schedule?');">
+                        <i class="fas fa-trash"></i> Cancel Schedule
                     </button>
                 </form>
             </div>
@@ -362,33 +362,33 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Quản lý Ca làm việc</h5>
+                <h5 class="modal-title">Shift Management</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <!-- Form Tạo Ca Mới -->
-                <h6 class="font-weight-bold">Tạo ca mới</h6>
+                <h6 class="font-weight-bold">Create New Shift</h6>
                 <form asp-action="CreateShift" method="post" class="form-inline mb-4">
                     <input type="hidden" name="returnDate" value="@currentDate.ToString("yyyy-MM-dd")" />
-                    <input type="text" name="shiftName" class="form-control mr-2" placeholder="Tên ca (VD: Ca Sáng)" required />
+                    <input type="text" name="shiftName" class="form-control mr-2" placeholder="Shift Name (e.g., Morning)" required />
                     <input type="time" name="startTime" class="form-control mr-2" required />
                     <span class="mr-2">-</span>
                     <input type="time" name="endTime" class="form-control mr-2" required />
-                    <button type="submit" class="btn btn-success">Lưu mới</button>
+                    <button type="submit" class="btn btn-success">Save New</button>
                 </form>
 
                 <hr />
 
                 <!-- Danh sách ca hiện có (để xóa) -->
-                <h6 class="font-weight-bold">Danh sách ca hiện tại</h6>
+                <h6 class="font-weight-bold">Current Shifts</h6>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Tên Ca</th>
-                            <th>Giờ</th>
-                            <th>Thao tác</th>
+                            <th>Shift Name</th>
+                            <th>Time Range</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -398,20 +398,20 @@
                                 <td>@shift.ShiftName</td>
                                 <td>@shift.TimeRange</td>
                                 <td>
-                                    <form asp-action="DeleteShift" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ca này? (Chỉ xóa được nếu chưa có lịch làm việc)');">
+                                    <form asp-action="DeleteShift" method="post" onsubmit="return confirm('Are you sure you want to delete this shift? (Only possible if no schedule assigned)');">
                                         <input type="hidden" name="shiftId" value="@shift.ShiftId" />
                                         <input type="hidden" name="returnDate" value="@currentDate.ToString("yyyy-MM-dd")" />
-                                        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-                 <p class="small text-muted font-italic">* Lưu ý: Chỉ có thể xóa ca khi không có nhân viên nào được xếp vào ca đó (trong bất kỳ ngày nào).</p>
+                 <p class="small text-muted font-italic">* Note: You can only delete a shift if no employees are assigned to it (on any date).</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

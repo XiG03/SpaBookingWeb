@@ -6,19 +6,19 @@ namespace SpaBookingWeb.Services.Interfaces
 {
     public interface IBlogPostService
     {
-        // Lấy tất cả bài viết (có thể thêm phân trang sau này)
+        // Get all posts (pagination can be added later)
         Task<List<BlogPostViewModel>> GetAllAsync();
         
-        // Lấy chi tiết bài viết để xem hoặc sửa
+        // Get post detail to view or edit
         Task<BlogPostViewModel> GetByIdAsync(int id);
         
-        // Tạo bài viết mới (trả về ID bài vừa tạo)
+        // Create new post (return newly created ID)
         Task<int> CreateAsync(CreateBlogPostRequest request, string userId);
         
-        // Cập nhật bài viết
+        // Update post
         Task UpdateAsync(UpdateBlogPostRequest request);
         
-        // Xóa bài viết
+        // Delete post
         Task DeleteAsync(int id);
     }
 }

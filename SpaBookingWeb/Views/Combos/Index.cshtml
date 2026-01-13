@@ -2,7 +2,7 @@
 
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Danh sách Combo";
+    ViewData["Title"] = "Combo List";
     
     // Kiểm tra xem có đang lọc không
     bool hasFilter = Model.CurrentCategoryId.HasValue || !string.IsNullOrEmpty(Model.CurrentSearch);
@@ -32,12 +32,12 @@
             <div class="flex min-h-[320px] md:min-h-[400px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-8 text-center" 
                  style='background-image: linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcFza3h2cyamQGHdHNhShHZnbtimS1qV6GQfPU3fmL2jEcP9iYY6h2D7GeR9ZfD9Qg62bGTGXmOOePiKxMgVRPPUGsw6UHkkBR8JLnB_NRTDIQRR7Lm7SPB7TgaTq29zc_FcVAMgefUgU2dFGg0dZPw2dX2Tj54AVioEzqhlJkalMcPAYHkS2bpTcnINGgeWrmThBXuR53jVfq-m7Zv2b6Rn2Dij-iGPP4zFPlEY9W4w6jMiUoGy2HmCdlzAgq5g5Un-rBb_ABX_0");'>
                 <div class="flex flex-col gap-3 max-w-2xl animate-fade-in-up">
-                    <span class="text-white/90 text-sm font-bold tracking-widest uppercase bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full w-fit mx-auto border border-white/30">Ưu đãi mùa hè</span>
+                    <span class="text-white/90 text-sm font-bold tracking-widest uppercase bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full w-fit mx-auto border border-white/30">Summer Offer</span>
                     <h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-[-0.033em]">
-                        Gói Combo Siêu Tiết Kiệm
+                        Super Saver Combo Packages
                     </h1>
                     <h2 class="text-white/90 text-base md:text-lg font-medium leading-relaxed max-w-lg mx-auto">
-                        Trải nghiệm trọn vẹn dịch vụ thư giãn và làm đẹp với mức giá ưu đãi lên đến 30% khi đặt lịch ngay hôm nay.
+                        Experience complete relaxation and beauty services with discounts up to 30% when booking today.
                     </h2>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                 <!-- Nút Tất cả (Reset Filter) -->
                 <a href="/Combos" 
                    class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-6 transition-transform hover:scale-105 active:scale-95 @(!Model.CurrentCategoryId.HasValue ? "bg-primary text-white shadow-md" : "bg-white dark:bg-[#2e1a1f] border border-[#e6dbde] dark:border-[#3a2e32] hover:border-primary hover:text-primary text-[#181113] dark:text-gray-200")">
-                    <span class="text-sm font-medium leading-normal @(!Model.CurrentCategoryId.HasValue ? "font-bold" : "")">Tất cả</span>
+                    <span class="text-sm font-medium leading-normal @(!Model.CurrentCategoryId.HasValue ? "font-bold" : "")">All</span>
                 </a>
                 
                 @foreach (var cat in Model.Categories)
@@ -64,7 +64,7 @@
                 <!-- [MỚI] Nút Xóa bộ lọc (Chỉ hiện khi đang lọc) -->
                 @if (hasFilter)
                 {
-                    <a href="/Combos" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors ml-2" title="Xóa bộ lọc">
+                    <a href="/Combos" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-red-100 hover:text-red-500 transition-colors ml-2" title="Clear Filter">
                         <span class="material-symbols-outlined text-[20px]">close</span>
                     </a>
                 }
@@ -75,14 +75,14 @@
                 <input type="hidden" name="categoryId" value="@Model.CurrentCategoryId" />
                 <input type="hidden" name="search" value="@Model.CurrentSearch" />
                 
-                <span class="text-sm text-[#89616b] font-medium whitespace-nowrap hidden sm:block">Sắp xếp theo:</span>
+                <span class="text-sm text-[#89616b] font-medium whitespace-nowrap hidden sm:block">Sort by:</span>
                 <div class="relative flex-1 md:flex-none">
                     <select name="sortOrder" onchange="document.getElementById('sortForm').submit()"
                             class="appearance-none w-full md:w-48 bg-white dark:bg-[#2e1a1f] border border-[#e6dbde] dark:border-[#3a2e32] text-[#181113] dark:text-white text-sm rounded-full py-2.5 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer">
-                        <!option value="popular" @(Model.SortOrder == "popular" ? "selected" : "")>Phổ biến nhất</!option>
-                        <!option value="price_asc" @(Model.SortOrder == "price_asc" ? "selected" : "")>Giá thấp đến cao</!option>
-                        <!option value="price_desc" @(Model.SortOrder == "price_desc" ? "selected" : "")>Giá cao đến thấp</!option>
-                        <!option value="new" @(Model.SortOrder == "new" ? "selected" : "")>Mới nhất</!option>
+                        <!option value="popular" @(Model.SortOrder == "popular" ? "selected" : "")>Most Popular</!option>
+                        <!option value="price_asc" @(Model.SortOrder == "price_asc" ? "selected" : "")>Price: Low to High</!option>
+                        <!option value="price_desc" @(Model.SortOrder == "price_desc" ? "selected" : "")>Price: High to Low</!option>
+                        <!option value="new" @(Model.SortOrder == "new" ? "selected" : "")>Newest</!option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#89616b]">
                         <span class="material-symbols-outlined text-[20px]">expand_more</span>
@@ -131,7 +131,7 @@
                                 </p>
                                 <div class="text-[13px] font-medium text-[#5a464c] dark:text-gray-300 flex items-center gap-2">
                                     <span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
-                                    <span>Thời gian: @item.DurationMinutes phút</span>
+                                    <span>Duration: @item.DurationMinutes mins</span>
                                 </div>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                         <!-- Nút Đặt Lịch (Đã đổi thành Xem Chi Tiết) -->
                         <a href="/Combos/Detail/@item.Id" 
                            class="w-full flex items-center justify-center rounded-full h-11 px-4 bg-[#f4f0f1] dark:bg-[#2e1a1f] text-[#181113] dark:text-white hover:bg-primary hover:text-white transition-all text-sm font-bold mt-auto group-hover:bg-primary group-hover:text-white cursor-pointer">
-                            Xem Chi Tiết
+                            View Details
                         </a>
                     </div>
                 }
@@ -148,9 +148,9 @@
             {
                 <div class="col-span-full text-center py-20">
                     <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">search_off</span>
-                    <p class="text-lg text-gray-500 font-medium">Không tìm thấy combo nào phù hợp.</p>
+                    <p class="text-lg text-gray-500 font-medium">No matching combos found.</p>
                     @if (hasFilter) {
-                        <a href="/Combos" class="inline-block mt-4 text-primary font-bold hover:underline">Xóa bộ lọc để xem tất cả</a>
+                        <a href="/Combos" class="inline-block mt-4 text-primary font-bold hover:underline">Clear filter to see all</a>
                     }
                 </div>
             }

@@ -37,10 +37,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _comboService.CreateComboAsync(model);
-                TempData["SuccessMessage"] = "Thêm Combo thành công!";
+                TempData["SuccessMessage"] = "Combo added successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            // Nếu lỗi, load lại danh sách services để không bị mất dropdown
+            // If error, reload services list to keep dropdown
             var loadedModel = await _comboService.GetComboForCreateAsync();
             model.AvailableServices = loadedModel.AvailableServices;
             return View(model);
@@ -61,11 +61,11 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _comboService.UpdateComboAsync(model);
-                TempData["SuccessMessage"] = "Cập nhật Combo thành công!";
+                TempData["SuccessMessage"] = "Combo updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            // Load lại dropdown nếu lỗi
-            var loadedModel = await _comboService.GetComboForCreateAsync(); // Reuse hàm lấy list
+            // Reload dropdown if error
+            var loadedModel = await _comboService.GetComboForCreateAsync(); // Reuse list retrieval function
             model.AvailableServices = loadedModel.AvailableServices;
             return View(model);
         }
@@ -83,7 +83,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _comboService.DeleteComboAsync(id);
-            TempData["SuccessMessage"] = "Xóa Combo thành công!";
+            TempData["SuccessMessage"] = "Combo deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
     }

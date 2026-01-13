@@ -1,17 +1,17 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ComboViewModel
 
 @{
-    ViewData["Title"] = "Thêm Combo Mới";
+    ViewData["Title"] = "Add New Combo";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 
 <div class="row justify-content-center">
     <div class="col-12 col-lg-10 col-xl-10">
-        <h2 class="h3 mb-4 page-title">Thêm Combo Mới</h2>
+        <h2 class="h3 mb-4 page-title">Add New Combo</h2>
         <div class="card shadow mb-4">
             <div class="card-header">
-                <strong class="card-title">Thông tin Combo</strong>
+                <strong class="card-title">Combo Information</strong>
             </div>
             <div class="card-body">
                 <form asp-action="Create" method="post" enctype="multipart/form-data">
@@ -19,13 +19,13 @@
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label asp-for="ComboName" class="control-label">Tên Combo <span
+                            <label asp-for="ComboName" class="control-label">Combo Name <span
                                     class="text-danger">*</span></label>
-                            <input asp-for="ComboName" class="form-control" placeholder="Nhập tên combo" />
+                            <input asp-for="ComboName" class="form-control" placeholder="Enter combo name" />
                             <span asp-validation-for="ComboName" class="text-danger"></span>
                         </div>
                         <div class="form-group col-md-6">
-                            <label asp-for="Price" class="control-label">Giá Combo (VNĐ) <span
+                            <label asp-for="Price" class="control-label">Price (VND) <span
                                     class="text-danger">*</span></label>
                             <input asp-for="Price" class="form-control" type="number" placeholder="0" />
                             <span asp-validation-for="Price" class="text-danger"></span>
@@ -34,42 +34,41 @@
 
                     <!-- Phần chọn nhiều dịch vụ -->
                     <div class="form-group">
-                        <label asp-for="SelectedServiceIds" class="control-label">Chọn các dịch vụ trong Combo <span
+                        <label asp-for="SelectedServiceIds" class="control-label">Select Services <span
                                 class="text-danger">*</span></label>
                         <select asp-for="SelectedServiceIds" asp-items="Model.AvailableServices"
                             class="form-control select2-multi" multiple="multiple" style="width: 100%;">
                         </select>
                         <span asp-validation-for="SelectedServiceIds" class="text-danger"></span>
-                        <small class="form-text text-muted">Bạn có thể tìm kiếm và chọn nhiều dịch vụ cùng
-                            lúc.</small>
+                        <small class="form-text text-muted">You can search and select multiple services at once.</small>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="ImageFile" class="control-label">Hình ảnh</label>
+                        <label asp-for="ImageFile" class="control-label">Image</label>
                         <div class="custom-file">
                             <input asp-for="ImageFile" class="custom-file-input" id="customFile" accept="image/*">
-                            <label class="custom-file-label" for="customFile">Chọn ảnh...</label>
+                            <label class="custom-file-label" for="customFile">Choose image...</label>
                         </div>
                         <span asp-validation-for="ImageFile" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="Description" class="control-label">Mô tả</label>
+                        <label asp-for="Description" class="control-label">Description</label>
                         <textarea asp-for="Description" class="form-control" rows="4"
-                            placeholder="Mô tả chi tiết về combo này..."></textarea>
+                            placeholder="Detailed description of this combo..."></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
                     <hr />
-                    <h5 class="mb-3">Ước tính tiêu hao nguyên liệu (Tự động từ các dịch vụ)</h5>
+                    <h5 class="mb-3">Estimated Material Usage (Automatic from Services)</h5>
                     <div id="consumables-display-area" class="alert alert-secondary">
-                        <p class="text-muted mb-0 font-italic">Chưa có dịch vụ nào được chọn.</p>
+                        <p class="text-muted mb-0 font-italic">No services selected.</p>
                     </div>
                     <hr />
 
                     <div class="mt-4 d-flex justify-content-end">
-                        <a asp-action="Index" class="btn btn-secondary mr-2">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-primary">Lưu Combo</button>
+                        <a asp-action="Index" class="btn btn-secondary mr-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Combo</button>
                     </div>
                 </form>
             </div>
@@ -95,7 +94,7 @@
             // Kích hoạt Select2 cho ô chọn nhiều dịch vụ
             var $select = $('.select2-multi').select2({
                 theme: 'bootstrap4',
-                placeholder: "--- Chọn các dịch vụ ---",
+                placeholder: "--- Select Services ---",
                 allowClear: true,
                 width: '100%'
             });
@@ -112,7 +111,7 @@
             function updateConsumablesDisplay(ids) {
                 var $container = $("#consumables-display-area");
                 if (!ids || ids.length === 0) {
-                    $container.html('<p class="text-muted mb-0 font-italic">Chưa có dịch vụ nào được chọn.</p>');
+                    $container.html('<p class="text-muted mb-0 font-italic">No services selected.</p>');
                     return;
                 }
 
@@ -140,7 +139,7 @@
                 // Render HTML
                 var keys = Object.keys(summary);
                 if (keys.length === 0) {
-                    $container.html('<p class="text-muted mb-0 font-italic">Các dịch vụ đã chọn không tiêu hao nguyên liệu nào.</p>');
+                    $container.html('<p class="text-muted mb-0 font-italic">Selected services do not consume materials.</p>');
                 } else {
                     var html = '<ul class="list-group list-group-flush" style="background: transparent;">';
                     keys.forEach(function(pid) {

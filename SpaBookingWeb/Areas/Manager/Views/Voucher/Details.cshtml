@@ -1,80 +1,80 @@
 ﻿@model SpaBookingWeb.Models.Voucher
 
 @{
-    ViewData["Title"] = "Chi Tiết Voucher";
+    ViewData["Title"] = "Voucher Details";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 
     <div class="row justify-content-center">
         <div class="col-12 col-md-10">
-            <h2 class="h3 mb-4 page-title">Chi Tiết: @Model.Code</h2>
+            <h2 class="h3 mb-4 page-title">Details: @Model.Code</h2>
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title">Thông tin chi tiết</strong>
+                    <strong class="card-title">Detailed Information</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-4">Tên Voucher</dt>
+                        <dt class="col-sm-4">Voucher Name</dt>
                         <dd class="col-sm-8">@Model.Name</dd>
 
-                        <dt class="col-sm-4">Mã Code</dt>
+                        <dt class="col-sm-4">Code</dt>
                         <dd class="col-sm-8"><span class="badge badge-light border text-uppercase">@Model.Code</span>
                         </dd>
 
-                        <dt class="col-sm-4">Mô Tả</dt>
+                        <dt class="col-sm-4">Description</dt>
                         <dd class="col-sm-8">@Model.Description</dd>
 
-                        <dt class="col-sm-4">Mức Giảm</dt>
+                        <dt class="col-sm-4">Discount</dt>
                         <dd class="col-sm-8">
                             @if (Model.DiscountType == "Percent")
                             {
-                                <span class="text-primary font-weight-bold">Giảm
+                                <span class="text-primary font-weight-bold">Discount
                                     @Model.DiscountValue.ToString("0.#")%</span>
                                 @if (Model.MaxDiscountAmount.HasValue)
                                 {
-                                    <div class="small text-muted">(Giảm tối đa @Model.MaxDiscountAmount.Value.ToString("N0")
-                                        VNĐ)</div>
+                                    <div class="small text-muted">(Max Discount @Model.MaxDiscountAmount.Value.ToString("N0")
+                                        VND)</div>
                                 }
                             }
                             else
                             {
-                                <span class="text-primary font-weight-bold">Giảm @Model.DiscountValue.ToString("N0")
-                                    VNĐ</span>
+                                <span class="text-primary font-weight-bold">Discount @Model.DiscountValue.ToString("N0")
+                                    VND</span>
                             }
                         </dd>
 
-                        <dt class="col-sm-4">Điều Kiện Áp Dụng</dt>
+                        <dt class="col-sm-4">Conditions</dt>
                         <dd class="col-sm-8">
-                            Đơn hàng tối thiểu: <strong>@Model.MinSpend.ToString("N0") VNĐ</strong>
+                            Min Order: <strong>@Model.MinSpend.ToString("N0") VND</strong>
                         </dd>
 
-                        <dt class="col-sm-4">Tình Trạng Sử Dụng</dt>
+                        <dt class="col-sm-4">Usage Status</dt>
                         <dd class="col-sm-8">
-                            Đã dùng: <strong>@Model.UsageCount</strong> /
-                            @(Model.UsageLimit > 0 ? Model.UsageLimit.ToString() : "Không giới hạn") lượt
+                            Used: <strong>@Model.UsageCount</strong> /
+                            @(Model.UsageLimit > 0 ? Model.UsageLimit.ToString() : "Unlimited") times
                         </dd>
 
-                        <dt class="col-sm-4">Thời Gian Hiệu Lực</dt>
+                        <dt class="col-sm-4">Validity Period</dt>
                         <dd class="col-sm-8">
-                            Từ @Model.StartDate.ToString("dd/MM/yyyy") đến @Model.EndDate.ToString("dd/MM/yyyy")
+                            From @Model.StartDate.ToString("dd/MM/yyyy") to @Model.EndDate.ToString("dd/MM/yyyy")
                         </dd>
 
-                        <dt class="col-sm-4">Trạng Thái</dt>
+                        <dt class="col-sm-4">Status</dt>
                         <dd class="col-sm-8">
                             @if (Model.IsActive)
                             {
-                                <span class="badge badge-success">Đang hoạt động</span>
+                                <span class="badge badge-success">Active</span>
                             }
                             else
                             {
-                                <span class="badge badge-secondary">Tạm ngưng</span>
+                                <span class="badge badge-secondary">Inactive</span>
                             }
                         </dd>
                     </dl>
                     <div class="mt-4 border-top pt-3">
-                        <a asp-action="Edit" asp-route-id="@Model.VoucherId" class="btn btn-primary">Chỉnh Sửa</a>
-                        <a asp-action="Index" class="btn btn-secondary">Quay Lại Danh Sách</a>
+                        <a asp-action="Edit" asp-route-id="@Model.VoucherId" class="btn btn-primary">Edit</a>
+                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                     </div>
                 </div>
             </div>

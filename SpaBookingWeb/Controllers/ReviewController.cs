@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SpaBookingWeb.Controllers
 {
-    [Authorize] // Bắt buộc đăng nhập
+    [Authorize] // Requires login
     public class ReviewController : Controller
     {
         private readonly IReviewClientService _reviewService;
@@ -31,7 +31,7 @@ namespace SpaBookingWeb.Controllers
             
             if (model == null)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy lịch hẹn hoặc bạn không có quyền đánh giá.";
+                TempData["ErrorMessage"] = "Appointment not found or you do not have permission to review.";
                 return RedirectToAction("History", "Profile");
             }
 
@@ -43,7 +43,7 @@ namespace SpaBookingWeb.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Reload data nếu lỗi validation
+                // Reload data if validation error
                 var user = await _userManager.GetUserAsync(User);
                 var viewModel = await _reviewService.GetReviewPageDataAsync(model.AppointmentId, user.Email);
                 return View("Index", viewModel);
@@ -52,12 +52,12 @@ namespace SpaBookingWeb.Controllers
             var result = await _reviewService.SubmitReviewAsync(model);
             if (result)
             {
-                TempData["SuccessMessage"] = "Cảm ơn bạn đã gửi đánh giá!";
+                TempData["SuccessMessage"] = "Thank you for sending your review!";
                 return RedirectToAction("History", "Profile");
             }
             else
             {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra hoặc bạn đã đánh giá đơn này rồi.";
+                TempData["ErrorMessage"] = "An error occurred or you have already reviewed this order.";
                 return RedirectToAction("History", "Profile");
             }
         }

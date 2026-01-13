@@ -22,15 +22,15 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task<ProductDashboardViewModel> GetAllProductsAsync()
         {
-            // 1. Lấy danh sách sản phẩm cơ bản
+            // 1. Get basic product list
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Unit)
                 .OrderByDescending(p => p.ProductId)
                 .ToListAsync();
 
-            // 2. Lấy dữ liệu tiêu hao (Consumables)
-            // Group by ProductId để tính tổng số lượng đã dùng
+            // 2. Get Consumables data
+            // Group by ProductId to sum total used quantity
             var consumablesStats = await _context.AppointmentConsumables
                 .GroupBy(ac => ac.ProductId)
                 .Select(g => new { 
@@ -39,8 +39,8 @@ namespace SpaBookingWeb.Services.Manager
                 })
                 .ToListAsync();
 
-            // 3. Tìm dịch vụ sử dụng sản phẩm nhiều nhất
-            // Cần join bảng: AppointmentConsumables -> AppointmentDetails -> Services
+            // 3. Find service using the product most
+            // Need to join tables: AppointmentConsumables -> AppointmentDetails -> Services
             var topServiceUsage = await _context.AppointmentConsumables
                 .Include(ac => ac.AppointmentDetail)
                 .ThenInclude(ad => ad.Service)
@@ -49,45 +49,45 @@ namespace SpaBookingWeb.Services.Manager
                 .Select(g => new {
                     ProductId = g.Key.ProductId,
                     ServiceName = g.Key.ServiceName,
-                    Count = g.Count() // Số lần xuất hiện
+                    Count = g.Count() // Occurrences
                 })
                 .ToListAsync();
 
-            // 4. Lấy dữ liệu bán lẻ (SoldCount)
-            // Giả sử bán lẻ được lưu trong một bảng InvoiceDetails hoặc tương tự. 
-            // Hiện tại trong SQL Script chưa có bảng chi tiết hóa đơn bán lẻ, 
-            // nên tôi sẽ tạm để SoldCount = 0 hoặc lấy từ logic tương tự nếu bạn đã có bảng đó.
-            // Ví dụ giả định: var soldStats = ...
+            // 4. Get Retail Data (SoldCount)
+            // Assuming retail sales are saved in InvoiceDetails table or similar. 
+            // Currently SQL Script doesn't have retail invoice detail table, 
+            // so I will temporarily set SoldCount = 0 or get from similar logic if you have it.
+            // Example assumption: var soldStats = ...
 
             var dtos = new List<ProductDto>();
 
             foreach (var p in products)
             {
-                // Lấy thống kê đã dùng
+                // Get used statistics
                 var usedStat = consumablesStats.FirstOrDefault(c => c.ProductId == p.ProductId);
                 int usedCount = usedStat?.TotalUsed ?? 0;
 
-                // Lấy tên dịch vụ dùng nhiều nhất
+                // Get name of most used service
                 var topService = topServiceUsage
                     .Where(x => x.ProductId == p.ProductId)
                     .OrderByDescending(x => x.Count)
                     .FirstOrDefault();
-                string topServiceName = topService?.ServiceName ?? "Chưa sử dụng";
+                string topServiceName = topService?.ServiceName ?? "Not used";
 
                 dtos.Add(new ProductDto
                 {
                     ProductId = p.ProductId,
                     ProductName = p.ProductName,
                     CategoryName = p.Category?.CategoryName ?? "N/A",
-                    UnitName = p.Unit?.UnitName ?? "Cái",
+                    UnitName = p.Unit?.UnitName ?? "Piece",
                     PurchasePrice = p.PurchasePrice,
                     SalePrice = p.SalePrice,
                     StockQuantity = p.StockQuantity,
                     IsForSale = p.IsForSale,
                     
-                    // Gán dữ liệu thống kê
+                    // Assign statistics data
                     UsedInServiceCount = usedCount,
-                    SoldCount = 0, // Tạm thời 0
+                    SoldCount = 0, // Temporarily 0
                     TopServiceUsage = topServiceName
                 });
             }
@@ -151,7 +151,7 @@ namespace SpaBookingWeb.Services.Manager
         public async Task UpdateProductAsync(ProductViewModel model)
         {
             var product = await _context.Products.FindAsync(model.ProductId);
-            if (product == null) throw new Exception("Sản phẩm không tồn tại");
+            if (product == null) throw new Exception("Product not found");
 
             product.ProductName = model.ProductName;
             product.CategoryId = model.CategoryId;

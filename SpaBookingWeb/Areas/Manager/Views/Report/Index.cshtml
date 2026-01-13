@@ -1,15 +1,15 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.RevenueReportViewModel
 
 @{
-    ViewData["Title"] = "Báo Cáo Doanh Thu";
+    ViewData["Title"] = "Revenue Report";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
     <!-- Tiêu đề và nút Xuất Excel -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Báo Cáo Doanh Thu Tháng @(Model.FilterFromDate.HasValue ? Model.FilterFromDate.Value.Month : DateTime.Now.Month)</h1>
+        <h1 class="h3 mb-0 text-gray-800">Revenue Report for Month @(Model.FilterFromDate.HasValue ? Model.FilterFromDate.Value.Month : DateTime.Now.Month)</h1>
         <a href="@Url.Action("ExportRevenueReport", new { fromDate = Model.FilterFromDate, toDate = Model.FilterToDate })" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm">
-            <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Xuất Báo Cáo Excel (Toàn bộ)
+            <i class="fas fa-file-excel fa-sm text-white-50 mr-1"></i> Export Excel Report (Full)
         </a>
     </div>
 
@@ -18,25 +18,25 @@
         <div class="col-xl-12 col-lg-12">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Biểu Đồ Doanh Thu Tổng Quan</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Revenue Overview Chart</h6>
                     <form asp-action="Index" method="get" class="form-inline">
                         <select name="filterType" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
-                            @if(Model.FilterType == "Date"){<option value="Date" selected>Theo Ngày/Ca</option>}else{<option value="Date">Theo Ngày/Ca</option>}
-                            @if(Model.FilterType == "Service"){<option value="Service" selected>Theo Dịch Vụ</option>}else{<option value="Service">Theo Dịch Vụ</option>}
-                            @if(Model.FilterType == "Employee"){<option value="Employee" selected>Theo Nhân Viên</option>}else{<option value="Employee">Theo Nhân Viên</option>}
-                            @if(Model.FilterType == "Customer"){<option value="Customer" selected>Theo Khách Hàng</option>}else{<option value="Customer">Theo Khách Hàng</option>}
+                            @if(Model.FilterType == "Date"){<option value="Date" selected>By Date/Shift</option>}else{<option value="Date">By Date/Shift</option>}
+                            @if(Model.FilterType == "Service"){<option value="Service" selected>By Service</option>}else{<option value="Service">By Service</option>}
+                            @if(Model.FilterType == "Employee"){<option value="Employee" selected>By Employee</option>}else{<option value="Employee">By Employee</option>}
+                            @if(Model.FilterType == "Customer"){<option value="Customer" selected>By Customer</option>}else{<option value="Customer">By Customer</option>}
                         </select>
                         <input type="date" id="fromDate" name="fromDate" value="@(Model.FilterFromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm mr-2" />
                         <span class="mr-2">-</span>
                         <input type="date" id="toDate" name="toDate" value="@(Model.FilterToDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm mr-2" />
                         
                         <div class="btn-group mr-2" role="group">
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('today')">Hôm nay</button>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('week')">Tuần này</button>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('month')">Tháng này</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('today')">Today</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('week')">This Week</button>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="setFilter('month')">This Month</button>
                         </div>
 
-                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Filter</button>
                     </form>
                 </div>
                 <div class="card-body">
@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Doanh thu tháng này</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Revenue This Month</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.CurrentRevenue.ToString("#,##0") VNĐ</div>
                         </div>
                         <div class="col-auto">
@@ -74,7 +74,7 @@
                         {
                             <span class="text-danger mr-2"><i class="fas fa-arrow-down"></i> @Model.RevenueGrowth.ToString("0.0")%</span>
                         }
-                        <span>So với tháng trước</span>
+                        <span>Compared to last month</span>
                     </div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng đơn hàng</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Orders</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.CurrentOrders</div>
                         </div>
                         <div class="col-auto">
@@ -109,7 +109,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Giá trị TB/Đơn</div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Avg Order Value</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.AverageOrderValue.ToString("#,##0") VNĐ</div>
                         </div>
                         <div class="col-auto">
@@ -126,7 +126,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Sản phẩm bán ra</div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Products Sold</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ProductsSold</div>
                         </div>
                         <div class="col-auto">
@@ -143,13 +143,13 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Top Sản Phẩm Bán Chạy</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Top Selling Products</h6>
                 </div>
                 <div class="card-body">
                     @foreach (var item in Model.TopProducts)
                     {
                         <div class="mb-3">
-                            <h4 class="small font-weight-bold">@item.ProductName <span class="float-right">@item.Quantity đã bán</span></h4>
+                            <h4 class="small font-weight-bold">@item.ProductName <span class="float-right">@item.Quantity sold</span></h4>
                             <div class="progress mb-4">
                                 <!-- Thanh progress bar giả lập % -->
                                 <div class="progress-bar bg-info" role="progressbar" style="width: @(item.Quantity)%"></div>
@@ -167,20 +167,20 @@
         <div class="col-lg-12 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Báo Cáo Hiệu Quả Voucher</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Voucher Performance Report</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>Mã Voucher</th>
-                                    <th>Tên Chương Trình</th>
-                                    <th class="text-center">Số lượt dùng</th>
-                                    <th class="text-right">Doanh thu gốc</th>
-                                    <th class="text-right">Giảm giá</th>
-                                    <th class="text-right">Thực thu</th>
-                                    <th class="text-right">% Giảm thực tế</th>
+                                    <th>Voucher Code</th>
+                                    <th>Program Name</th>
+                                    <th class="text-center">Usage Count</th>
+                                    <th class="text-right">Original Revenue</th>
+                                    <th class="text-right">Discount</th>
+                                    <th class="text-right">Net Revenue</th>
+                                    <th class="text-right">Actual % Discount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -207,7 +207,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted">Không có dữ liệu voucher trong khoảng thời gian này.</td>
+                                        <td colspan="7" class="text-center text-muted">No voucher data for this period.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -221,17 +221,17 @@
         <div class="col-lg-12 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Báo Cáo Chi Phí Tip</h6>
-                    <span class="font-weight-bold text-danger">Tổng Tip: @Model.TotalTipAmount.ToString("#,##0") VNĐ</span>
+                    <h6 class="m-0 font-weight-bold text-primary">Tip Expense Report</h6>
+                    <span class="font-weight-bold text-danger">Total Tip: @Model.TotalTipAmount.ToString("#,##0") VNĐ</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>Ngày</th>
-                                    <th>Mô tả</th>
-                                    <th class="text-right">Số tiền</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th class="text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -249,7 +249,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">Không có dữ liệu Tip trong khoảng thời gian này.</td>
+                                        <td colspan="3" class="text-center text-muted">No Tip data for this period.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -294,7 +294,7 @@
             data: {
                 labels: @Html.Raw(Json.Serialize(Model.ChartLabels)),
                 datasets: [{
-                    label: 'Doanh thu (VNĐ)',
+                    label: 'Revenue (VND)',
                     data: @Html.Raw(Json.Serialize(Model.ChartData)),
                     backgroundColor: 'rgba(78, 115, 223, 0.5)',
                     borderColor: 'rgba(78, 115, 223, 1)',

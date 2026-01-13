@@ -1,80 +1,80 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.CreateVoucherViewModel
 
 @{
-    ViewData["Title"] = "Cập Nhật Voucher";
+    ViewData["Title"] = "Update Voucher";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
-            <h2 class="h3 mb-4 page-title">Cập Nhật Voucher: @Model.Code</h2>
+            <h2 class="h3 mb-4 page-title">Update Voucher: @Model.Code</h2>
             <div class="card shadow mb-4">
                 <div class="card-body">
                     <form asp-action="Edit">
                         <input type="hidden" asp-for="VoucherId" />
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        <h5 class="mb-3">Thông tin Voucher</h5>
+                        <h5 class="mb-3">Voucher Information</h5>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="Name">Tên Voucher <span class="text-danger">*</span></label>
+                                <label asp-for="Name">Voucher Name <span class="text-danger">*</span></label>
                                 <input asp-for="Name" class="form-control" />
                                 <span asp-validation-for="Name" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-6">
-                                <label asp-for="Code">Mã Code <span class="text-danger">*</span></label>
+                                <label asp-for="Code">Code <span class="text-danger">*</span></label>
                                 <input asp-for="Code" class="form-control text-uppercase" />
                                 <span asp-validation-for="Code" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label asp-for="Description">Mô tả</label>
+                            <label asp-for="Description">Description</label>
                             <textarea asp-for="Description" class="form-control" rows="2"></textarea>
                         </div>
 
                         <hr />
-                        <h5 class="mb-3">Giá trị & Điều kiện</h5>
+                        <h5 class="mb-3">Value & Conditions</h5>
                         <div class="form-row">
                             <div class="form-group col-md-4">
-                                <label asp-for="DiscountType">Loại giảm giá</label>
+                                <label asp-for="DiscountType">Discount Type</label>
                                 <select asp-for="DiscountType" class="form-control" id="discountType">
-                                    <option value="Percent">Theo Phần Trăm (%)</option>
-                                    <option value="Amount">Theo Tiền Mặt (VNĐ)</option>
+                                    <option value="Percent">Percentage (%)</option>
+                                    <option value="Amount">Fixed Amount (VND)</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-4">
-                                <label asp-for="DiscountValue">Giá trị giảm</label>
+                                <label asp-for="DiscountValue">Discount Value</label>
                                 <input asp-for="DiscountValue" class="form-control" type="number" />
                                 <span asp-validation-for="DiscountValue" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-4" id="maxDiscountGroup">
-                                <label asp-for="MaxDiscountAmount">Giảm tối đa (VNĐ)</label>
+                                <label asp-for="MaxDiscountAmount">Maximum Discount (VND)</label>
                                 <input asp-for="MaxDiscountAmount" class="form-control" type="number" />
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="MinSpend">Đơn hàng tối thiểu (VNĐ)</label>
+                                <label asp-for="MinSpend">Minimum Order (VND)</label>
                                 <input asp-for="MinSpend" class="form-control" type="number" />
                             </div>
                             <div class="form-group col-md-6">
-                                <label asp-for="UsageLimit">Giới hạn số lượt dùng</label>
+                                <label asp-for="UsageLimit">Usage Limit</label>
                                 <input asp-for="UsageLimit" class="form-control" type="number" />
-                                <small class="text-muted">Nhập 0 nếu không giới hạn.</small>
+                                <small class="text-muted">Enter 0 for unlimited.</small>
                             </div>
                         </div>
 
                         <hr />
-                        <h5 class="mb-3">Thời gian hiệu lực</h5>
+                        <h5 class="mb-3">Validity Period</h5>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="StartDate">Ngày bắt đầu</label>
+                                <label asp-for="StartDate">Start Date</label>
                                 <input asp-for="StartDate" class="form-control" type="date" />
                             </div>
                             <div class="form-group col-md-6">
-                                <label asp-for="EndDate">Ngày kết thúc</label>
+                                <label asp-for="EndDate">End Date</label>
                                 <input asp-for="EndDate" class="form-control" type="date" />
                             </div>
                         </div>
@@ -82,14 +82,13 @@
                         <div class="form-group mt-3">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" asp-for="IsActive">
-                                <label class="custom-control-label font-weight-bold" asp-for="IsActive">Đang hoạt
-                                    động</label>
+                                <label class="custom-control-label font-weight-bold" asp-for="IsActive">Active</label>
                             </div>
                         </div>
 
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-primary px-4">Lưu Thay Đổi</button>
-                            <a asp-action="Index" class="btn btn-secondary px-4">Quay Lại</a>
+                            <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                            <a asp-action="Index" class="btn btn-secondary px-4">Back</a>
                         </div>
                     </form>
                 </div>

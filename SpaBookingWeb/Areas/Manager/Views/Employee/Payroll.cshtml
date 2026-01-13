@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<SpaBookingWeb.ViewModels.Manager.SalaryPayrollViewModel>
 
 @{
-    ViewData["Title"] = "Bảng lương nhân viên";
+    ViewData["Title"] = "Employee Payroll";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
     int currentMonth = ViewBag.Month;
     int currentYear = ViewBag.Year;
@@ -11,43 +11,43 @@
 
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Bảng lương tháng @currentMonth/@currentYear</h1>
+        <h1 class="h3 mb-0 text-gray-800">Payroll - @currentMonth/@currentYear</h1>
         
         @if (ViewBag.LatestPayrollTo != null)
         {
             DateTime latestTo = ViewBag.LatestPayrollTo;
             <div class="alert alert-warning mb-3 shadow-sm border-left-warning" role="alert">
-                <i class="fas fa-history mr-2"></i> Kỳ tính lương gần nhất đã chốt đến ngày: <strong>@latestTo.ToString("dd/MM/yyyy")</strong>
+                <i class="fas fa-history mr-2"></i> Latest payroll closed up to: <strong>@latestTo.ToString("dd/MM/yyyy")</strong>
             </div>
         }
 
         <!-- Filter Form -->
         <form asp-action="Payroll" method="get" class="form-inline bg-white p-2 rounded shadow-sm">
-            <label class="mr-2 font-weight-bold">Tháng:</label>
+            <label class="mr-2 font-weight-bold">Month:</label>
             <select name="month" class="form-control mr-2">
                 @for (int i = 1; i <= 12; i++)
                 {
-                    if (i == currentMonth) { <option value="@i" selected>Tháng @i</option> }
-                    else { <option value="@i">Tháng @i</option> }
+                    if (i == currentMonth) { <option value="@i" selected>Month @i</option> }
+                    else { <option value="@i">Month @i</option> }
                 }
             </select>
             <input type="number" name="year" class="form-control mr-3" value="@currentYear" style="width: 80px;" />
             <div class="border-left pl-3 mr-3 d-flex align-items-center">
-                <label class="mr-2">Từ ngày:</label>
+                <label class="mr-2">From Date:</label>
                 <input type="date" name="fromDate" class="form-control mr-2" value="@(fromDate?.ToString("yyyy-MM-dd"))" />
                 
-                <label class="mr-2">Đến ngày:</label>
+                <label class="mr-2">To Date:</label>
                 <input type="date" name="toDate" class="form-control mr-2" value="@(toDate?.ToString("yyyy-MM-dd"))" />
             </div>
 
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Xem & Tính lại</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> View & Recalculate</button>
         </form>
     </div>
     
     @if(fromDate.HasValue && toDate.HasValue)
     {
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Đang hiển thị bảng lương tính từ ngày <strong>@fromDate.Value.ToString("dd/MM/yyyy")</strong> đến ngày <strong>@toDate.Value.ToString("dd/MM/yyyy")</strong>
+            <i class="fas fa-info-circle"></i> Showing payroll from <strong>@fromDate.Value.ToString("dd/MM/yyyy")</strong> to <strong>@toDate.Value.ToString("dd/MM/yyyy")</strong>
         </div>
     }
 
@@ -57,14 +57,14 @@
                 <table class="table table-bordered table-striped">
                     <thead class="thead-dark">
                         <tr>
-                            <th>Nhân viên</th>
-                            <th>Giờ công</th>
-                            <th>Lương cứng</th>
-                            <th>Hoa hồng</th>
-                            <th>Thưởng/Phạt</th>
-                            <th>Tổng thực nhận</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
+                            <th>Employee</th>
+                            <th>Total Hours</th>
+                            <th>Base Salary</th>
+                            <th>Commission</th>
+                            <th>Bonus/Deduction</th>
+                            <th>Net Pay</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,7 +72,7 @@
                         {
                             <tr>
                                 <td class="font-weight-bold">@item.EmployeeName</td>
-                                <td>@item.TotalWorkHours giờ</td>
+                                <td>@item.TotalWorkHours hours</td>
                                 <td>@item.BaseSalary.ToString("N0")</td>
                                 <td class="text-success">+@item.TotalCommission.ToString("N0")</td>
                                 <td>
@@ -81,39 +81,39 @@
                                         <div class="d-flex">
                                             <div class="mr-2">
                                                 <input type="number" form="confirmForm-@item.EmployeeId" name="bonus" class="form-control form-control-sm" placeholder="0" value="@(item.Bonus > 0 ? item.Bonus : "")" style="width: 85px;" />
-                                                <small class="text-success"><i class="fas fa-plus"></i> Thưởng</small>
+                                                <small class="text-success"><i class="fas fa-plus"></i> Bonus</small>
                                             </div>
                                             <div>
                                                 <input type="number" form="confirmForm-@item.EmployeeId" name="deduction" class="form-control form-control-sm" placeholder="0" value="@(item.Deduction > 0 ? item.Deduction : "")" style="width: 85px;" />
-                                                <small class="text-danger"><i class="fas fa-minus"></i> Phạt</small>
+                                                <small class="text-danger"><i class="fas fa-minus"></i> Deduct</small>
                                             </div>
                                         </div>
                                     }
                                     else
                                     {
-                                        @if(item.Bonus > 0) { <span class="text-success">+@item.Bonus.ToString("N0") (Thưởng)</span><br/> }
-                                        @if(item.Deduction > 0) { <span class="text-danger">-@item.Deduction.ToString("N0") (Phạt)</span> }
+                                        @if(item.Bonus > 0) { <span class="text-success">+@item.Bonus.ToString("N0") (Bonus)</span><br/> }
+                                        @if(item.Deduction > 0) { <span class="text-danger">-@item.Deduction.ToString("N0") (Deduct)</span> }
                                     }
                                 </td>
                                 <td class="font-weight-bold text-primary h5">@item.FinalSalary.ToString("N0")</td>
                                 <td>
                                     @if (item.Status == "Draft")
                                     {
-                                        <span class="badge badge-secondary">Dự thảo</span>
+                                        <span class="badge badge-secondary">Draft</span>
                                     }
                                     else if (item.Status == "ManagerConfirmed")
                                     {
-                                        <span class="badge badge-warning">Chờ NV xác nhận</span>
+                                        <span class="badge badge-warning">Pending Empl Confirm</span>
                                     }
                                     else if (item.Status == "Completed")
                                     {
-                                        <span class="badge badge-success"><i class="fas fa-check-circle"></i> Hoàn tất</span>
+                                        <span class="badge badge-success"><i class="fas fa-check-circle"></i> Completed</span>
                                     }
                                 </td>
                                 <td>
                                     @if (item.Status == "Draft")
                                     {
-                                        <form id="confirmForm-@item.EmployeeId" asp-action="ConfirmSalary" method="post" onsubmit="return confirm('Xác nhận gửi bảng lương này cho nhân viên?');">
+                                        <form id="confirmForm-@item.EmployeeId" asp-action="ConfirmSalary" method="post" onsubmit="return confirm('Confirm sending this payroll to employee?');">
                                             <input type="hidden" name="employeeId" value="@item.EmployeeId" />
                                             <input type="hidden" name="month" value="@item.Month" />
                                             <input type="hidden" name="year" value="@item.Year" />
@@ -124,17 +124,17 @@
                                             <input type="hidden" name="toDate" value="@item.ToDate.ToString("yyyy-MM-dd")" />
                                             
                                             <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-paper-plane"></i> Gửi cho NV
+                                                <i class="fas fa-paper-plane"></i> Send to Empl
                                             </button>
                                         </form>
                                     }
                                     else if (item.Status == "ManagerConfirmed")
                                     {
-                                        <button class="btn btn-sm btn-light text-muted" disabled><i class="fas fa-clock"></i> Đã gửi</button>
+                                        <button class="btn btn-sm btn-light text-muted" disabled><i class="fas fa-clock"></i> Sent</button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-sm btn-success" disabled><i class="fas fa-check"></i> Đã xong</button>
+                                        <button class="btn btn-sm btn-success" disabled><i class="fas fa-check"></i> Done</button>
                                     }
                                 </td>
                             </tr>

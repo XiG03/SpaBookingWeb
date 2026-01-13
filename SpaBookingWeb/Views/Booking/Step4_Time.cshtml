@@ -3,7 +3,7 @@
 @model Step4ViewModel
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Chọn Thời gian (Bước 4)";
+    ViewData["Title"] = "Select Time (Step 4)";
     var culture = new CultureInfo("vi-VN");
     
     var selectedDate = Model.CurrentSession.SelectedDate ?? DateTime.Today;
@@ -18,9 +18,9 @@
     
     string GetStaffName(int? staffId)
     {
-        if (staffId == null) return "Bất kỳ ai";
+        if (staffId == null) return "Anyone";
         var staff = Model.Staffs.FirstOrDefault(s => s.Id == staffId);
-        return staff != null ? staff.Name : "Bất kỳ ai";
+        return staff != null ? staff.Name : "Anyone";
     }
 }
 
@@ -59,7 +59,7 @@
                 <a asp-action="Index" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
                     <span class="material-symbols-outlined text-lg">check</span>
                 </a>
-                <span class="text-xs font-semibold text-gray-500">Dịch vụ</span>
+                <span class="text-xs font-semibold text-gray-500">Services</span>
             </div>
             
             <!-- Step 2 -->
@@ -67,7 +67,7 @@
                 <a asp-action="Step2_Services" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
                     <span class="material-symbols-outlined text-lg">check</span>
                 </a>
-                <span class="text-xs font-semibold text-gray-500">Gói & Combo</span>
+                <span class="text-xs font-semibold text-gray-500">Packages & Combos</span>
             </div>
 
             <!-- Step 3 -->
@@ -75,7 +75,7 @@
                 <a asp-action="Step3_Staff" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
                     <span class="material-symbols-outlined text-lg">check</span>
                 </a>
-                <span class="text-xs font-semibold text-gray-500">Kỹ thuật viên</span>
+                <span class="text-xs font-semibold text-gray-500">Technician</span>
             </div>
 
             <!-- Step 4 (Active) -->
@@ -83,7 +83,7 @@
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-primary text-white flex items-center justify-center font-bold text-lg shadow-xl shadow-pink-300 ring-4 ring-white">
                     4
                 </div>
-                <span class="text-sm font-bold text-primary">Thời gian</span>
+                <span class="text-sm font-bold text-primary">Time</span>
             </div>
         </div>
     </div>
@@ -99,11 +99,11 @@
                             <span class="material-symbols-outlined text-[18px]">check</span>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Dịch vụ & Chuyên gia</h3>
-                            <p class="text-sm text-gray-500">@Model.CurrentSession.Members.Sum(m=>m.SelectedServiceIds.Count) dịch vụ đã chọn</p>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Services & Specialist</h3>
+                            <p class="text-sm text-gray-500">@Model.CurrentSession.Members.Sum(m=>m.SelectedServiceIds.Count) services selected</p>
                         </div>
                     </div>
-                    <a asp-action="Step3_Staff" class="text-sm font-semibold text-primary hover:text-primary-dark px-3 py-1 hover:bg-pink-50 rounded-lg transition-colors">Sửa</a>
+                    <a asp-action="Step3_Staff" class="text-sm font-semibold text-primary hover:text-primary-dark px-3 py-1 hover:bg-pink-50 rounded-lg transition-colors">Edit</a>
                 </div>
             </section>
 
@@ -111,7 +111,7 @@
             <section class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-md border border-primary/20 dark:border-primary/20 ring-4 ring-pink-50 dark:ring-gray-800">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-pink-200">4</div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Chọn Thời gian</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Select Time</h3>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-8">
@@ -120,23 +120,23 @@
                         <!-- Month Navigation -->
                         <div class="flex items-center justify-between mb-4 px-2">
                             <div class="flex items-center gap-2">
-                                <a href="?date=@prevWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Tuần trước">
+                                <a href="?date=@prevWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Previous Week">
                                     <span class="material-symbols-outlined text-gray-900 dark:text-white">chevron_left</span>
                                 </a>
                                 <span class="font-bold text-lg text-gray-900 dark:text-white capitalize">
-                                    Tháng @selectedDate.ToString("MM yyyy", culture)
+                                    Month @selectedDate.ToString("MM yyyy", culture)
                                 </span>
-                                <a href="?date=@nextWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Tuần sau">
+                                <a href="?date=@nextWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Next Week">
                                     <span class="material-symbols-outlined text-gray-900 dark:text-white">chevron_right</span>
                                 </a>
                             </div>
                             
-                            <a href="?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="text-xs font-bold text-primary hover:underline">Hôm nay</a>
+                            <a href="?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="text-xs font-bold text-primary hover:underline">Today</a>
                         </div>
                         
                         <!-- Calendar Header Days -->
                         <div class="grid grid-cols-7 text-center text-xs text-gray-500 mb-3 font-medium uppercase tracking-wide">
-                            <div>Hai</div><div>Ba</div><div>Tư</div><div>Năm</div><div>Sáu</div><div>Bảy</div><div>CN</div>
+                            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
                         </div>
 
                         <!-- Calendar Days Row -->
@@ -160,7 +160,7 @@
                         
                         <!-- Full Calendar Input -->
                         <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Hoặc chọn ngày cụ thể</label>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Or select a specific date</label>
                             <form method="get" action="Step4_Time" id="customDateForm" class="relative">
                                 <input type="date" name="date" 
                                        value="@selectedDate.ToString("yyyy-MM-dd")"
@@ -197,8 +197,8 @@
                             {
                                 <div class="col-span-3 flex flex-col items-center justify-center text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
                                     <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
-                                    <p class="text-sm font-medium">Không có giờ trống</p>
-                                    <p class="text-xs">Vui lòng chọn ngày khác.</p>
+                                    <p class="text-sm font-medium">No available slots</p>
+                                    <p class="text-xs">Please choose another date.</p>
                                 </div>
                             }
                         </div>
@@ -211,7 +211,7 @@
         <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
             <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl shadow-pink-100/50 dark:shadow-none border border-pink-100 dark:border-gray-800">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                    Tóm tắt đặt lịch
+                    Booking Summary
                 </h3>
                 
                 <div class="space-y-4 mb-6 relative">
@@ -233,7 +233,7 @@
                                     <div>
                                         <p class="text-sm font-semibold text-gray-900 dark:text-white">@service.Name</p>
                                         <p class="text-xs text-gray-500 mt-0.5">
-                                            @service.DurationMinutes phút • 
+                                            @service.DurationMinutes mins • 
                                             <span class="text-primary font-medium">@staffName</span>
                                         </p>
                                         @if(Model.CurrentSession.IsGroupBooking){
@@ -254,7 +254,7 @@
                                     @(Model.CurrentSession.SelectedTime?.ToString(@"hh\:mm") ?? ""), @selectedDate.ToString("dd/MM")
                                 </p>
                                 <p class="text-xs text-gray-500 mt-0.5">
-                                    Thời gian đã chọn
+                                    Selected Time
                                     <span id="end-time-display" class="block text-primary font-medium mt-1"></span>
                                 </p>
                             </div>
@@ -267,11 +267,11 @@
                 <div class="space-y-2 mb-6">
                     <div class="flex justify-between items-end pt-2">
                         <div>
-                            <span class="block text-sm text-gray-500 mb-1">Tổng thời gian</span>
-                            <span class="text-base font-semibold text-gray-900 dark:text-white">@Model.TotalDuration phút</span>
+                            <span class="block text-sm text-gray-500 mb-1">Total Duration</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">@Model.TotalDuration mins</span>
                         </div>
                         <div class="text-right">
-                            <span class="block text-sm text-gray-500 mb-1">Tổng tiền</span>
+                            <span class="block text-sm text-gray-500 mb-1">Total Price</span>
                             <span class="text-2xl font-black text-primary-dark">@Model.TotalAmount.ToString("N0") đ</span>
                         </div>
                     </div>
@@ -279,13 +279,13 @@
 
                 <form asp-action="Step5_Confirm" method="get" id="nextStepForm">
                     <button type="button" onclick="validateAndSubmit()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2 group">
-                        Tiếp tục
+                        Continue
                         <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </button>
                 </form>
                 
                 <p class="text-center text-xs text-gray-500">
-                    Bạn chưa bị trừ tiền ở bước này.
+                    You have not been charged at this step.
                 </p>
             </div>
         </aside>
@@ -312,7 +312,7 @@
 
         document.getElementById('time-summary').classList.remove('hidden');
         document.getElementById('summary-time-text').innerText = `${time}, ${selectedDateStr}`;
-        document.getElementById('end-time-display').innerText = `Dự kiến xong lúc: ${endTimeStr}`;
+        document.getElementById('end-time-display').innerText = `Expected finish at: ${endTimeStr}`;
 
         const formData = new FormData();
         formData.append('date', '@selectedDate.ToString("yyyy-MM-dd")');
@@ -322,13 +322,13 @@
             method: 'POST',
             body: formData
         }).then(res => {
-            if(!res.ok) console.error("Lỗi lưu giờ");
+            if(!res.ok) console.error("Error saving time");
         });
     }
 
     function validateAndSubmit() {
         if (!selectedTime) {
-            alert('Vui lòng chọn thời gian đặt lịch.');
+            alert('Please select a booking time.');
             return;
         }
         document.getElementById('nextStepForm').submit();

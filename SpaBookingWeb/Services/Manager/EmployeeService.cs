@@ -25,25 +25,25 @@ namespace SpaBookingWeb.Services.Manager
         }
 
         // ====================================================================
-        // 1. QUẢN LÝ NHÂN VIÊN
+        // 1. EMPLOYEE MANAGEMENT
         // ====================================================================
 
         public async Task<List<EmployeeListViewModel>> GetAllEmployeesAsync()
         {
             var employees = await _context.Employees
                 .Include(e => e.ApplicationUser)
-                .Where(e => !EF.Property<bool>(e, "IsDeleted")) // Lọc xóa mềm
+                .Where(e => !EF.Property<bool>(e, "IsDeleted")) // Soft delete filter
                 .ToListAsync();
 
             var viewModels = new List<EmployeeListViewModel>();
 
             foreach (var emp in employees)
             {
-                // Lấy Role của User
+                // Get User Role
                 var roles = emp.ApplicationUser != null 
                     ? await _userManager.GetRolesAsync(emp.ApplicationUser) 
                     : new List<string>();
-                // Tính rating trung bình
+                // Calculate average rating
                 var reviews = await _context.Appointments
                     .Where(a => a.EmployeeId == emp.EmployeeId && a.Status == "Completed")
                     .Join(_context.Reviews, a => a.AppointmentId, r => r.AppointmentId, (a, r) => r)
@@ -72,7 +72,7 @@ namespace SpaBookingWeb.Services.Manager
         {
             var emp = await _context.Employees
                 .Include(e => e.ApplicationUser)
-                .Include(e => e.TechnicianServices) // Include dịch vụ
+                .Include(e => e.TechnicianServices) // Include services
                 .FirstOrDefaultAsync(e => e.EmployeeId == id);
             
             if (emp == null) return null;
@@ -89,11 +89,11 @@ namespace SpaBookingWeb.Services.Manager
                 BaseSalary = emp.BaseSalary,
                 HireDate = emp.HireDate,
                 IsActive = emp.IsActive,
-                // Load Services đã chọn
+                // Load Selected Services
                 SelectedServiceIds = emp.TechnicianServices.Select(ts => ts.ServiceId).ToList()
             };
 
-            // Load Role đã chọn
+            // Load Selected Role
             if (emp.ApplicationUser != null)
             {
                 var userRoles = await _userManager.GetRolesAsync(emp.ApplicationUser);
@@ -123,10 +123,10 @@ namespace SpaBookingWeb.Services.Manager
             var result = await _userManager.CreateAsync(user, "Spa@123456");
             if (!result.Succeeded)
             {
-                throw new Exception("Lỗi tạo tài khoản: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                throw new Exception("Account creation error: " + string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
-            // 1. Gán Role
+            // 1. Assign Role
             if (!string.IsNullOrEmpty(model.SelectedRoleId))
             {
                 var role = await _roleManager.FindByIdAsync(model.SelectedRoleId);
@@ -150,11 +150,11 @@ namespace SpaBookingWeb.Services.Manager
             };
 
             _context.Employees.Add(employee);
-            await _context.SaveChangesAsync(); // Lưu để có EmployeeId
+            await _context.SaveChangesAsync(); // Save to get EmployeeId
 
-            // 2. Lưu Dịch vụ (Nếu là Technician và có chọn dịch vụ)
-            // Giả sử role Technician có tên là "Technician" hoặc "Kỹ thuật viên"
-            // Hoặc đơn giản là cứ có chọn dịch vụ thì lưu
+            // 2. Save Services (If Technician and services selected)
+            // Assume Technician role is named "Technician"
+            // Or simply save if services are selected
             if (model.SelectedServiceIds != null && model.SelectedServiceIds.Any())
             {
                 foreach (var serviceId in model.SelectedServiceIds)
@@ -176,7 +176,7 @@ namespace SpaBookingWeb.Services.Manager
                 .Include(e => e.TechnicianServices)
                 .FirstOrDefaultAsync(e => e.EmployeeId == model.EmployeeId);
 
-            if (emp == null) throw new Exception("Không tìm thấy nhân viên");
+            if (emp == null) throw new Exception("Employee not found");
 
             emp.FullName = model.FullName;
             emp.BaseSalary = model.BaseSalary;
@@ -192,7 +192,7 @@ namespace SpaBookingWeb.Services.Manager
                 emp.ApplicationUser.PhoneNumber = model.PhoneNumber;
                 await _userManager.UpdateAsync(emp.ApplicationUser);
 
-                // 1. Cập nhật Role
+                // 1. Update Role
                 var currentRoles = await _userManager.GetRolesAsync(emp.ApplicationUser);
                 await _userManager.RemoveFromRolesAsync(emp.ApplicationUser, currentRoles);
 
@@ -206,10 +206,10 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // 2. Cập nhật Dịch vụ (Logic Smart Merge để tránh lỗi Tracking và xử lý Soft Delete)
+            // 2. Update Services (Smart Merge logic to avoid Tracking errors and handle Soft Delete)
             var currentServiceIds = model.SelectedServiceIds ?? new List<int>();
             
-            // Lấy tất cả TechnicianServices (bao gồm cả đã xóa mềm) để xử lý
+            // Get all TechnicianServices (including soft deleted) to process
             var allExistingServices = await _context.TechnicianServices
                 .IgnoreQueryFilters()
                 .Where(ts => ts.EmployeeId == emp.EmployeeId)
@@ -219,8 +219,8 @@ namespace SpaBookingWeb.Services.Manager
             {
                 if (currentServiceIds.Contains(existing.ServiceId))
                 {
-                    // Nếu đang chọn: Đảm bảo nó Active (Khôi phục nếu cần)
-                    // Dùng Entry để set IsDeleted = false vì có thể model không expose trực tiếp hoặc để chắc chắn
+                    // If selected: Ensure it is Active (Restore if needed)
+                    // Use Entry to set IsDeleted = false because model might not expose it directly or to be sure
                     var entry = _context.Entry(existing);
                     if (entry.CurrentValues.Properties.Any(p => p.Name == "IsDeleted"))
                     {
@@ -229,12 +229,12 @@ namespace SpaBookingWeb.Services.Manager
                 }
                 else
                 {
-                    // Nếu không chọn nữa: Xóa (Soft Delete)
+                    // If deselectd: Soft Delete
                     _context.TechnicianServices.Remove(existing);
                 }
             }
 
-            // Thêm mới các dịch vụ chưa từng tồn tại
+            // Add new services that never existed
             var existingIds = allExistingServices.Select(x => x.ServiceId).ToList();
             var newIds = currentServiceIds.Except(existingIds);
 
@@ -271,15 +271,15 @@ namespace SpaBookingWeb.Services.Manager
             var emp = await _context.Employees.FindAsync(id);
             if (emp != null)
             {
-                // Soft delete logic (đã được cấu hình trong DbContext)
+                // Soft delete logic (configured in DbContext)
                 emp.IsActive = false;
-                _context.Employees.Remove(emp); // DbContext sẽ tự chuyển thành Soft Delete
+                _context.Employees.Remove(emp); // DbContext will automatically convert to Soft Delete
                 await _context.SaveChangesAsync();
             }
         }
 
         // ====================================================================
-        // 2. LỊCH LÀM VIỆC & ĐIỂM DANH
+        // 2. WORK SCHEDULE & ATTENDANCE
         // ====================================================================
 
         public async Task<List<ShiftViewModel>> GetAllShiftsAsync()
@@ -294,7 +294,7 @@ namespace SpaBookingWeb.Services.Manager
                 })
                 .ToListAsync();
             
-            // Đảm bảo không trả về null
+            // Ensure not return null
             return shifts ?? new List<ShiftViewModel>();
         }
 
@@ -315,9 +315,9 @@ namespace SpaBookingWeb.Services.Manager
             var shift = await _context.Shifts.FindAsync(shiftId);
             if (shift != null)
             {
-                // Kiểm tra xem có lịch làm việc nào đang dùng shift này không?
+                // Check if any work schedule is using this shift?
                 var isUsed = await _context.WorkSchedules.AnyAsync(ws => ws.ShiftId == shiftId);
-                if (isUsed) throw new Exception("Không thể xóa ca làm việc đang được sử dụng trong lịch làm việc của nhân viên.");
+                if (isUsed) throw new Exception("Cannot delete shift currently used in employee schedule.");
 
                 _context.Shifts.Remove(shift);
                 await _context.SaveChangesAsync();
@@ -328,7 +328,7 @@ namespace SpaBookingWeb.Services.Manager
         {
             var shifts = await _context.Shifts.ToListAsync();
             
-            // Lấy lịch làm việc của ngày đó
+            // Get work schedule for that day
             var schedules = await _context.WorkSchedules
                 .Include(ws => ws.Employee)
                 .Where(ws => ws.WorkDate.Date == date.Date)
@@ -348,15 +348,15 @@ namespace SpaBookingWeb.Services.Manager
                     ShiftName = shift.ShiftName,
                     TimeRange = $"{shift.StartTime:hh\\:mm} - {shift.EndTime:hh\\:mm}",
                     
-                    // Map sang WorkScheduleViewModel để có thông tin điểm danh
+                    // Map to WorkScheduleViewModel to get attendance info
                     Schedules = schedules
                         .Where(s => s.ShiftId == shift.ShiftId)
                         .Select(s => new WorkScheduleViewModel
                         {
-                            ScheduleId = s.ScheduleId, // Map với ScheduleId trong Model WorkSchedule
+                            ScheduleId = s.ScheduleId, // Map with ScheduleId in WorkSchedule Model
                             EmployeeId = s.EmployeeId,
                             EmployeeName = s.Employee.FullName,
-                            Position = "Kỹ thuật viên",
+                            Position = "Technician",
                             IsPresent = s.IsCheckIn, 
                             Note = "" 
                         }).ToList()
@@ -381,14 +381,14 @@ namespace SpaBookingWeb.Services.Manager
             var exists = await _context.WorkSchedules
                 .AnyAsync(ws => ws.EmployeeId == employeeId && ws.ShiftId == shiftId && ws.WorkDate.Date == date.Date);
 
-            if (exists) throw new Exception("Nhân viên đã được xếp vào ca này rồi.");
+            if (exists) throw new Exception("Employee is already assigned to this shift.");
 
             var schedule = new WorkSchedule
             {
                 EmployeeId = employeeId,
                 ShiftId = shiftId,
                 WorkDate = date,
-                IsCheckIn = false // Mặc định chưa điểm danh
+                IsCheckIn = false // Default not checked in
             };
             _context.WorkSchedules.Add(schedule);
             await _context.SaveChangesAsync();
@@ -407,7 +407,7 @@ namespace SpaBookingWeb.Services.Manager
         public async Task UpdateAttendanceStatusAsync(int scheduleId, bool isPresent, string note, bool isOnBreak, TimeSpan? breakStartTime)
         {
             var schedule = await _context.WorkSchedules.FindAsync(scheduleId);
-            if (schedule == null) throw new Exception("Lịch làm việc không tồn tại.");
+            if (schedule == null) throw new Exception("Work schedule not found.");
 
             schedule.IsCheckIn = isPresent;
             schedule.Note = note ?? ""; 
@@ -419,19 +419,19 @@ namespace SpaBookingWeb.Services.Manager
         }
 
         // ====================================================================
-        // 3. QUẢN LÝ TIỀN TIP
+        // 3. TIP MANAGEMENT
         // ====================================================================
 
         public async Task<List<DailyTipViewModel>> GetDailyTipsAsync(DateTime date)
         {
-            // LƯU Ý: Đoạn này giả định bạn đã thêm TipAmount và IsTipPaid vào Appointment
-            // Nếu Model chưa có, bạn cần thêm vào Entity Appointment
+            // NOTE: Assumes you added TipAmount and IsTipPaid to Appointment
+            // If Model doesn't have it, you need to add to Appointment Entity
             var tips = await _context.Appointments
                 .Include(a => a.Customer)
                 .Include(a => a.Employee)
-                // Giả định TipAmount có trong DB. Nếu chưa có, code sẽ lỗi biên dịch tại đây.
+                // Assume TipAmount exists in DB. If not, code will compile error here.
                 // .Where(a => a.CreatedDate.Date == date.Date && a.TipAmount > 0) 
-                // Tạm thời comment logic TipAmount để code chạy được với Model hiện tại
+                // Temporarily comment TipAmount logic to make code run with current Model
                 .Where(a => a.CreatedDate.Date == date.Date) 
                 .Select(a => new DailyTipViewModel
                 {
@@ -439,8 +439,8 @@ namespace SpaBookingWeb.Services.Manager
                     CreatedDate = a.CreatedDate,
                     CustomerName = a.Customer.FullName,
                     EmployeeName = a.Employee != null ? a.Employee.FullName : "N/A",
-                    Amount = 0, // Thay bằng a.TipAmount khi đã update DB
-                    IsDistributed = false // Thay bằng a.IsTipPaid khi đã update DB
+                    Amount = 0, // Replace with a.TipAmount when DB updated
+                    IsDistributed = false // Replace with a.IsTipPaid when DB updated
                 })
                 .ToListAsync();
 
@@ -449,7 +449,7 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task<decimal> GetTotalTipsAmountAsync(DateTime date)
         {
-            // Tạm thời trả về 0 vì chưa có cột TipAmount
+            // Temporarily return 0 because no TipAmount column
             return 0;
             // return await _context.Appointments
             //    .Where(a => a.CreatedDate.Date == date.Date)
@@ -459,16 +459,16 @@ namespace SpaBookingWeb.Services.Manager
         public async Task ConfirmTipSentToEmployeeAsync(int tipId)
         {
             var appointment = await _context.Appointments.FindAsync(tipId);
-            if (appointment == null) throw new Exception("Không tìm thấy đơn hàng.");
+            if (appointment == null) throw new Exception("Order not found.");
 
-            // appointment.IsTipPaid = true; // Cần update DB Appointment
+            // appointment.IsTipPaid = true; // Need to update Appointment DB
             _context.Appointments.Update(appointment);
             await _context.SaveChangesAsync();
         }
 
         public async Task ConfirmAllTipsForDateAsync(DateTime date)
         {
-            // Logic chờ update DB Appointment
+            // Logic waiting for Appointment DB update
             await Task.CompletedTask;
         }
 
@@ -702,15 +702,15 @@ namespace SpaBookingWeb.Services.Manager
         public async Task ConfirmSalaryByEmployeeAsync(int salaryId)
         {
             var salary = await _context.Salaries.FindAsync(salaryId);
-            if (salary == null) throw new Exception("Không tìm thấy bảng lương.");
+            if (salary == null) throw new Exception("Payroll not found.");
 
-            // Chỉ cho phép xác nhận khi Manager đã gửi
+            // Only allow confirmation when Manager has sent
             if (salary.Status != "ManagerConfirmed") 
             {
-                throw new Exception("Bảng lương chưa được quản lý chốt hoặc đã hoàn tất.");
+                throw new Exception("Payroll not finalized by manager or already completed.");
             }
 
-            salary.Status = "Completed"; // Trạng thái cuối cùng
+            salary.Status = "Completed"; // Final status
             _context.Salaries.Update(salary);
             await _context.SaveChangesAsync();
         }

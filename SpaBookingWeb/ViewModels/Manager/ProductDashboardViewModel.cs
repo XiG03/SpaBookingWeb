@@ -32,32 +32,32 @@ namespace SpaBookingWeb.ViewModels.Manager
     {
         public int ProductId { get; set; }
 
-        [Display(Name = "Tên sản phẩm")]
-        [Required(ErrorMessage = "Vui lòng nhập tên sản phẩm")]
-        [StringLength(200, ErrorMessage = "Tên sản phẩm không quá 200 ký tự")]
+        [Display(Name = "Product Name")]
+        [Required(ErrorMessage = "Please enter product name")]
+        [StringLength(200, ErrorMessage = "Product name cannot exceed 200 characters")]
         public string ProductName { get; set; } = string.Empty;
 
-        [Display(Name = "Danh mục")]
+        [Display(Name = "Category")]
         public int? CategoryId { get; set; }
 
-        [Display(Name = "Đơn vị tính")]
+        [Display(Name = "Unit")]
         public int? UnitId { get; set; }
 
-        [Display(Name = "Giá nhập")]
+        [Display(Name = "Purchase Price")]
         [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá nhập phải lớn hơn hoặc bằng 0")]
+        [Range(0, double.MaxValue, ErrorMessage = "Purchase price must be greater than or equal to 0")]
         public decimal PurchasePrice { get; set; }
 
-        [Display(Name = "Giá bán")]
+        [Display(Name = "Sale Price")]
         [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá bán phải lớn hơn hoặc bằng 0")]
+        [Range(0, double.MaxValue, ErrorMessage = "Sale price must be greater than or equal to 0")]
         public decimal SalePrice { get; set; }
 
-        [Display(Name = "Số lượng tồn")]
+        [Display(Name = "Stock Quantity")]
         [Required]
         public int StockQuantity { get; set; }
 
-        [Display(Name = "Sản phẩm bán lẻ?")]
+        [Display(Name = "Is for sale?")]
         public bool IsForSale { get; set; }
 
         // Dữ liệu cho Dropdown

@@ -39,14 +39,14 @@ namespace SpaBookingWeb.ViewModels.Client
 
     public class CustomerInfo
     {
-        [Required(ErrorMessage = "Vui lòng nhập họ tên.")]
+        [Required(ErrorMessage = "Please enter your full name.")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập số điện thoại.")]
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
+        [Required(ErrorMessage = "Please enter your phone number.")]
+        [Phone(ErrorMessage = "Invalid phone number.")]
         public string Phone { get; set; }
 
-        [EmailAddress(ErrorMessage = "Email không hợp lệ.")]
+        [EmailAddress(ErrorMessage = "Invalid Email.")]
         public string Email { get; set; }
         public string Note { get; set; }
     }

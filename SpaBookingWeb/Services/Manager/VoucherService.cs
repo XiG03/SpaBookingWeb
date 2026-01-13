@@ -56,15 +56,15 @@ namespace SpaBookingWeb.Services.Manager
         public async Task CreateVoucherAsync(CreateVoucherViewModel model)
         {
             if (model.StartDate.Date < DateTime.Today)
-                throw new ArgumentException("Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
+                throw new ArgumentException("StartDate cannot be earlier than today.");
 
             if (model.EndDate.Date < model.StartDate.Date)
-                throw new ArgumentException("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.");
+                throw new ArgumentException("EndDate must be greater than or equal to StartDate.");
 
-            // Kiểm tra trùng mã (Case-insensitive) - Bao gồm cả mã đã xóa để tránh conflict logic
+            // Check for duplicate code (Case-insensitive) - Including deleted codes to avoid logic conflict
             var codeToCheck = model.Code.Trim().ToUpper();
             var exists = await _context.Vouchers.AnyAsync(d => d.Code == codeToCheck);
-            if (exists) throw new ArgumentException($"Mã voucher '{model.Code}' đã được sử dụng trong hệ thống (bao gồm cả mã cũ). Vui lòng chọn mã khác.");
+            if (exists) throw new ArgumentException($"Voucher code '{model.Code}' is already used in the system (including old codes). Please choose another code.");
 
             var voucher = new Voucher
             {
@@ -93,15 +93,15 @@ namespace SpaBookingWeb.Services.Manager
             if (voucher == null) return;
 
             if (model.EndDate.Date < model.StartDate.Date)
-                throw new ArgumentException("Ngày kết thúc không hợp lệ.");
+                throw new ArgumentException("EndDate is invalid.");
 
-            // Kiểm tra trùng mã khi update (loại trừ chính nó)
+            // Check for duplicate code when updating (exclude itself)
             var codeToCheck = model.Code.Trim().ToUpper();
             var exists = await _context.Vouchers.AnyAsync(d => d.Code == codeToCheck && d.VoucherId != model.VoucherId);
-            if (exists) throw new ArgumentException($"Mã voucher '{model.Code}' đã được sử dụng bởi một chiến dịch khác.");
+            if (exists) throw new ArgumentException($"Voucher code '{model.Code}' is already used by another campaign.");
 
             voucher.Name = model.Name;
-            voucher.Code = codeToCheck; // Đảm bảo lưu UpperCase
+            voucher.Code = codeToCheck; // Ensure UpperCase saved
             voucher.Description = model.Description;
             voucher.DiscountType = model.DiscountType;
             voucher.DiscountValue = model.DiscountValue;

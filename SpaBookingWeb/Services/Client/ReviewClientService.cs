@@ -20,7 +20,7 @@ namespace SpaBookingWeb.Services.Client
 
         public async Task<ReviewPageViewModel> GetReviewPageDataAsync(int appointmentId, string userEmail)
         {
-            // 1. Lấy Appointment và kiểm tra quyền
+            // 1. Get Appointment and check permissions
             var appointment = await _context.Appointments
                 .Include(a => a.Customer)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service)
@@ -29,19 +29,19 @@ namespace SpaBookingWeb.Services.Client
 
             if (appointment == null) return null;
 
-            // Validate email (đảm bảo đúng người review)
+            // Validate email (ensure correct reviewer)
             if (appointment.Customer.Email != userEmail) return null;
 
-            // Validate trạng thái (chỉ review khi đã hoàn thành)
-            // if (appointment.Status != "Completed") return null; // Uncomment khi chạy thật
+            // Validate status (only review when completed)
+            // if (appointment.Status != "Completed") return null; // Uncomment when running in production
 
             var model = new ReviewPageViewModel
             {
                 AppointmentId = appointment.AppointmentId,
-                SpaName = "Lotus Spa & Salon" // Hoặc lấy từ SystemSettings
+                SpaName = "Lotus Spa & Salon" // Or get from SystemSettings
             };
 
-            // 2. Map danh sách dịch vụ đã dùng
+            // 2. Map list of used services
             foreach (var detail in appointment.AppointmentDetails)
             {
                 if (detail.ServiceId.HasValue)
@@ -51,7 +51,7 @@ namespace SpaBookingWeb.Services.Client
                         Id = $"service_{detail.ServiceId}",
                         Name = detail.Service.ServiceName,
                         Price = detail.PriceAtBooking,
-                        Type = "Dịch vụ"
+                        Type = "Service"
                     });
                 }
                 else if (detail.ComboId.HasValue)
@@ -73,15 +73,15 @@ namespace SpaBookingWeb.Services.Client
         {
             try
             {
-                // Kiểm tra xem đã review chưa (nếu chỉ cho phép 1 review/appointment)
+                // Check if already reviewed (if only allowing 1 review/appointment)
                 var exists = await _context.Reviews.AnyAsync(r => r.AppointmentId == model.AppointmentId && !r.IsDeleted);
                 if (exists) return false;
 
-                // Xử lý nội dung ẩn danh
+                // Handle anonymous content
                 string finalComment = model.Comment;
                 if (model.IsAnonymous)
                 {
-                    finalComment += " (Đánh giá ẩn danh)";
+                    finalComment += " (Anonymous Review)";
                 }
 
                 var review = new Review

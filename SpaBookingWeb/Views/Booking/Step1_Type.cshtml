@@ -1,6 +1,6 @@
 ﻿@{
     Layout = "_Layout";
-    ViewData["Title"] = "Chọn loại lịch hẹn";
+    ViewData["Title"] = "Select Appointment Type";
 }
 
 <!-- Custom styles for this page if needed, normally handled by _Layout -->
@@ -16,11 +16,10 @@
         <div class="flex flex-col gap-4 text-center md:text-left animate-fade-in-up">
             <div class="flex flex-col gap-2">
                 <h1 class="text-text-main dark:text-white text-3xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-                    Chọn loại lịch hẹn
+                    Select Appointment Type
                 </h1>
                 <p class="text-text-secondary dark:text-gray-300 text-lg font-normal leading-normal max-w-2xl">
-                    Bạn muốn đặt lịch thư giãn cho riêng mình hay đi cùng bạn bè? Hãy chọn một trong hai phương
-                    thức dưới đây để bắt đầu.
+                    Do you want to book a relaxing session for yourself or go with friends? Choose one of the two methods below to start.
                 </p>
             </div>
         </div>
@@ -43,11 +42,10 @@
                 <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
                     <div class="flex-1 space-y-2">
                         <h3 class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
-                            Đặt lịch cá nhân
+                            Book Individual
                         </h3>
                         <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
-                            Dành cho một người. Tận hưởng thời gian thư giãn riêng tư với các dịch vụ chăm sóc
-                            chuyên sâu như massage, chăm sóc da mặt và trị liệu toàn thân.
+                            For one person. Enjoy private relaxation time with intensive care services such as massage, facial care, and body therapy.
                         </p>
                     </div>
                     <div class="mt-auto pt-4">
@@ -57,7 +55,7 @@
                             <input type="hidden" name="type" value="individual" />
                             <button type="submit" onclick="event.stopPropagation()"
                                 class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-primary text-white text-base font-bold leading-normal shadow-lg shadow-primary/30 hover:bg-opacity-90 transition-all group-hover:translate-y-[-2px]">
-                                <span>Đặt ngay</span>
+                                <span>Book Now</span>
                                 <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </button>
                         </form>
@@ -81,11 +79,10 @@
                 <div class="flex flex-1 flex-col p-6 md:p-8 gap-4">
                     <div class="flex-1 space-y-2">
                         <h3 class="text-text-main dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] group-hover:text-primary transition-colors">
-                            Đặt lịch nhóm
+                            Book Group
                         </h3>
                         <p class="text-text-secondary dark:text-gray-400 text-base font-normal leading-relaxed">
-                            Đi cùng bạn bè hoặc người thân. Nhận ưu đãi đặc biệt giảm giá 15% khi đặt combo cho
-                            nhóm từ 2 người trở lên. Trải nghiệm tuyệt vời hơn khi cùng nhau.
+                            Go with friends or family. Get a special 15% discount when booking combos for groups of 2 or more. Better experience together.
                         </p>
                     </div>
                     <div class="mt-auto pt-4">
@@ -95,7 +92,7 @@
                             <input type="hidden" name="type" value="group" />
                             <button type="submit" onclick="event.stopPropagation()"
                                 class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-white dark:bg-white/10 text-primary dark:text-white border-2 border-primary/20 hover:border-primary text-base font-bold leading-normal hover:bg-primary hover:text-white transition-all group-hover:translate-y-[-2px]">
-                                <span>Đặt cho nhóm</span>
+                                <span>Book for Group</span>
                                 <span class="material-symbols-outlined text-sm">arrow_forward</span>
                             </button>
                         </form>
@@ -107,15 +104,15 @@
         <div class="flex flex-wrap items-center justify-center gap-6 md:gap-12 mt-8 opacity-80">
             <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
                 <span class="material-symbols-outlined text-primary">verified_user</span>
-                <span class="text-sm font-medium">Bảo mật thông tin</span>
+                <span class="text-sm font-medium">Secure Information</span>
             </div>
             <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
                 <span class="material-symbols-outlined text-primary">schedule</span>
-                <span class="text-sm font-medium">Đặt lịch 24/7</span>
+                <span class="text-sm font-medium">24/7 Booking</span>
             </div>
             <div class="flex items-center gap-2 text-text-secondary dark:text-gray-400">
                 <span class="material-symbols-outlined text-primary">thumb_up</span>
-                <span class="text-sm font-medium">Dịch vụ hàng đầu</span>
+                <span class="text-sm font-medium">Top Services</span>
             </div>
         </div>
     </div>

@@ -4,8 +4,8 @@ namespace SpaBookingWeb.ViewModels
 {
     public class ForgotPasswordViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập Email")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Please enter Email")]
+        [EmailAddress(ErrorMessage = "Invalid Email")]
         public string Email { get; set; }
     }
 
@@ -15,20 +15,20 @@ namespace SpaBookingWeb.ViewModels
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập mật khẩu hệ thống cấp")]
+        [Required(ErrorMessage = "Please enter the system-provided password")]
         [DataType(DataType.Password)]
-        [Display(Name = "Mật khẩu hệ thống cấp")]
+        [Display(Name = "System-provided Password")]
         public string SystemPassword { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới")]
-        [StringLength(100, ErrorMessage = "{0} phải dài ít nhất {2} ký tự.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Please enter new password")]
+        [StringLength(100, ErrorMessage = "{0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Mật khẩu mới")]
+        [Display(Name = "New Password")]
         public string NewPassword { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Xác nhận mật khẩu mới")]
-        [Compare("NewPassword", ErrorMessage = "Mật khẩu xác nhận không khớp.")]
+        [Display(Name = "Confirm New Password")]
+        [Compare("NewPassword", ErrorMessage = "The confirmation password does not match.")]
         public string ConfirmPassword { get; set; }
     }
 }

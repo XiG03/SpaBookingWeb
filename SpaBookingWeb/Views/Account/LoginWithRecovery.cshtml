@@ -2,16 +2,16 @@
 @model SpaBookingWeb.ViewModels.RecoveryPasswordViewModel
 
 @{
-    ViewData["Title"] = "Đặt lại mật khẩu";
+    ViewData["Title"] = "Reset Password";
     Layout = "~/Views/Shared/_Layout.cshtml"; 
 }
 
 <div class="flex items-center justify-center min-h-[600px] py-10 px-4">
     <div class="w-full max-w-md bg-white dark:bg-[#1f1014] rounded-3xl shadow-xl border border-pink-100 dark:border-pink-900 overflow-hidden p-8">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Khôi phục mật khẩu</h1>
+            <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2">Recover Password</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                Nhập mật khẩu tạm thời từ email và mật khẩu mới của bạn.
+                Enter the temporary password from your email and your new password.
             </p>
         </div>
 
@@ -29,42 +29,42 @@
 
             <!-- System Password -->
             <div class="flex flex-col gap-2">
-                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="SystemPassword">Mật khẩu hệ thống cấp</label>
+                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="SystemPassword">System Generated Password</label>
                 <div class="relative flex items-center">
                     <span class="material-symbols-outlined absolute left-4 text-gray-400 pointer-events-none text-[20px]">key</span>
-                    <input asp-for="SystemPassword" type="text" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Nhập mật khẩu từ email" required />
+                    <input asp-for="SystemPassword" type="text" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter password from email" required />
                 </div>
                  <span asp-validation-for="SystemPassword" class="text-red-500 text-xs mt-1"></span>
             </div>
 
              <!-- New Password -->
             <div class="flex flex-col gap-2">
-                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="NewPassword">Mật khẩu mới</label>
+                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="NewPassword">New Password</label>
                 <div class="relative flex items-center">
                     <span class="material-symbols-outlined absolute left-4 text-gray-400 pointer-events-none text-[20px]">lock_reset</span>
-                     <input asp-for="NewPassword" type="password" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Nhập mật khẩu mới" required />
+                     <input asp-for="NewPassword" type="password" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter new password" required />
                 </div>
                 <span asp-validation-for="NewPassword" class="text-red-500 text-xs mt-1"></span>
             </div>
 
              <!-- Confirm Password -->
             <div class="flex flex-col gap-2">
-                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="ConfirmPassword">Xác nhận mật khẩu mới</label>
+                <label class="text-sm font-bold text-gray-900 dark:text-white" asp-for="ConfirmPassword">Confirm New Password</label>
                 <div class="relative flex items-center">
                     <span class="material-symbols-outlined absolute left-4 text-gray-400 pointer-events-none text-[20px]">lock</span>
-                     <input asp-for="ConfirmPassword" type="password" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Nhập lại mật khẩu mới" required />
+                     <input asp-for="ConfirmPassword" type="password" class="flex w-full rounded-xl border border-gray-200 dark:border-pink-900 bg-gray-50 dark:bg-[#331d23] h-12 pl-11 pr-4 text-base text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Re-enter new password" required />
                 </div>
                 <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1"></span>
             </div>
 
             <button type="submit" class="mt-2 flex w-full items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-md shadow-pink-200 dark:shadow-none">
-                Đổi mật khẩu và Đăng nhập
+                Change Password and Login
             </button>
         </form>
         
         <div class="mt-6 text-center">
              <a asp-action="Login" class="text-sm font-bold text-gray-500 hover:text-primary transition-colors">
-                Quay lại Đăng nhập
+                Back to Login
             </a>
         </div>
     </div>

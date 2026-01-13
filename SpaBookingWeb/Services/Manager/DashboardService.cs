@@ -23,7 +23,7 @@ namespace SpaBookingWeb.Services.Manager
             var viewModel = new DashboardViewModel();
             var targetDate = date.Date;
 
-            // 1. Thống kê Appointment
+            // 1. Appointment Statistics
             var appointments = await _context.Appointments
                 .Include(a => a.Customer)
                 .Include(a => a.Employee)
@@ -36,25 +36,25 @@ namespace SpaBookingWeb.Services.Manager
             viewModel.CompletedAppointments = appointments.Count(a => a.Status == "Completed");
             viewModel.CancelledAppointments = appointments.Count(a => a.Status == "Cancelled");
 
-            // Tính doanh thu ước tính (dựa trên các đơn chưa hủy)
+            // Calculate estimated revenue (based on non-cancelled orders)
             viewModel.EstimatedRevenueToday = appointments
                 .Where(a => a.Status != "Cancelled")
                 .Sum(a => a.AppointmentDetails.Sum(ad => ad.PriceAtBooking));
 
-            // Map sang ViewModel chi tiết
+            // Map to detailed ViewModel
             viewModel.TodayAppointments = appointments.Select(a => new AppointmentItemViewModel
             {
                 AppointmentId = a.AppointmentId,
-                CustomerName = a.Customer?.FullName ?? "Khách lẻ",
-                EmployeeName = a.Employee?.FullName ?? "Chưa phân công",
+                CustomerName = a.Customer?.FullName ?? "Walk-in Customer",
+                EmployeeName = a.Employee?.FullName ?? "Unassigned",
                 StartTime = a.StartTime,
                 EndTime = a.EndTime ?? a.StartTime.AddMinutes(60), // Fallback nếu null
-                ServiceNames = string.Join(", ", a.AppointmentDetails.Select(ad => ad.Service?.ServiceName ?? "Dịch vụ khác")),
+                ServiceNames = string.Join(", ", a.AppointmentDetails.Select(ad => ad.Service?.ServiceName ?? "Other Service")),
                 Status = a.Status,
                 StatusColor = GetStatusColor(a.Status)
             }).OrderBy(a => a.StartTime).ToList();
 
-            // 2. Thống kê Điểm danh (Attendance)
+            // 2. Attendance Statistics
             var shifts = await _context.Shifts.ToListAsync();
             var workSchedules = await _context.WorkSchedules
                 .Include(ws => ws.Employee)
@@ -98,12 +98,12 @@ namespace SpaBookingWeb.Services.Manager
                 start = a.StartTime.ToString("yyyy-MM-ddTHH:mm:ss"),
                 end = (a.EndTime ?? a.StartTime.AddHours(1)).ToString("yyyy-MM-ddTHH:mm:ss"),
                 className = GetEventClass(a.Status),
-                description = $"Khách hàng: {a.Customer?.PhoneNumber}<br/>Ghi chú: {a.Notes ?? "Không"}",
-                url = $"/Manager/Appointments/Details/{a.AppointmentId}" // Link xem chi tiết
+                description = $"Customer: {a.Customer?.PhoneNumber}<br/>Note: {a.Notes ?? "None"}",
+                url = $"/Manager/Appointments/Details/{a.AppointmentId}" // Detail link
             }).ToList();
         }
 
-        // MỚI: Triển khai hàm lấy chi tiết
+        // NEW: Implement method to get detail
         public async Task<AppointmentDetailViewModel> GetAppointmentDetailAsync(int id)
         {
             var app = await _context.Appointments
@@ -111,7 +111,7 @@ namespace SpaBookingWeb.Services.Manager
                 .Include(a => a.Employee)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Technician)
-                .Include(a => a.Invoice) // Include Invoice để check PaymentStatus
+                .Include(a => a.Invoice) // Include Invoice to check PaymentStatus
                 .FirstOrDefaultAsync(a => a.AppointmentId == id);
 
             if (app == null) return null;
@@ -119,7 +119,7 @@ namespace SpaBookingWeb.Services.Manager
             return new AppointmentDetailViewModel
             {
                 AppointmentId = app.AppointmentId,
-                CustomerName = app.Customer?.FullName ?? "Khách lẻ",
+                CustomerName = app.Customer?.FullName ?? "Walk-in Customer",
                 CustomerPhone = app.Customer?.PhoneNumber ?? "N/A",
                 StartTime = app.StartTime,
                 EndTime = app.EndTime ?? app.StartTime.AddHours(1),
@@ -128,12 +128,12 @@ namespace SpaBookingWeb.Services.Manager
                 TotalAmount = app.AppointmentDetails.Sum(ad => ad.PriceAtBooking),
                 IsDepositPaid = app.IsDepositPaid,
                 DepositAmount = app.DepositAmount,
-                // Kiểm tra Invoice liên kết (nếu có)
+                // Check linked Invoice (if any)
                 IsPaidFull = app.Invoice != null && app.Invoice.PaymentStatus == "Paid",
                 Services = app.AppointmentDetails.Select(ad => new ServiceDetailDto
                 {
-                    ServiceName = ad.Service?.ServiceName ?? "Dịch vụ khác",
-                    TechnicianName = ad.Technician?.FullName ?? "Chưa chỉ định",
+                    ServiceName = ad.Service?.ServiceName ?? "Other Service",
+                    TechnicianName = ad.Technician?.FullName ?? "Unassigned",
                     Price = ad.PriceAtBooking
                 }).ToList()
             };

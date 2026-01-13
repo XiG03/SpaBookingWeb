@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SpaBookingWeb.Services.Manager;
-using SpaBookingWeb.ViewModels.Manager; // Giả định chứa các ViewModel cần thiết
+using SpaBookingWeb.ViewModels.Manager; // Assuming it contains necessary ViewModels
 using System;
 using System.Threading.Tasks;
 
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Authorize(Roles = "Manager,Admin")] // Đảm bảo chỉ quản lý mới vào được
+    // [Authorize(Roles = "Manager,Admin")] // Ensure only managers can access
     public class EmployeeController : Controller
     {
         private readonly IEmployeeService _employeeService;
@@ -20,10 +20,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         }
 
         // ==================================================================================
-        // 1. QUẢN LÝ NHÂN VIÊN (CRUD)
+        // 1. EMPLOYEE MANAGEMENT (CRUD)
         // ==================================================================================
 
-        // GET: Danh sách nhân viên
+        // GET: Employee List
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -31,18 +31,18 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return View(model);
         }
 
-        // GET: Tạo nhân viên
+        // GET: Create Employee
         [HttpGet]
         public async Task<IActionResult> Create()
         {
             var model = new EmployeeViewModel();
-            // Nạp dữ liệu cho Dropdown và Checkbox
+            // Load data for Dropdown and Checkbox
             model.Roles = await _employeeService.GetRolesSelectListAsync();
             model.Services = await _employeeService.GetServicesSelectListAsync();
             return View(model);
         }
 
-        // POST: Tạo nhân viên
+        // POST: Create Employee
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeViewModel model)
@@ -52,7 +52,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 try
                 {
                     await _employeeService.CreateEmployeeAsync(model);
-                    TempData["Success"] = "Tạo nhân viên thành công";
+                    TempData["Success"] = "Employee created successfully";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -60,27 +60,27 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                     ModelState.AddModelError("", ex.Message);
                 }
             }
-            // Nếu lỗi, nạp lại dữ liệu
+            // If error, reload data
             model.Roles = await _employeeService.GetRolesSelectListAsync();
             model.Services = await _employeeService.GetServicesSelectListAsync();
             return View(model);
         }
 
-        // GET: Sửa nhân viên
+        // GET: Edit Employee
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
             if (employee == null) return NotFound();
 
-            // Nạp dữ liệu
+            // Load data
             employee.Roles = await _employeeService.GetRolesSelectListAsync();
             employee.Services = await _employeeService.GetServicesSelectListAsync();
 
             return View(employee);
         }
 
-        // POST: Sửa nhân viên
+        // POST: Edit Employee
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EmployeeViewModel model)
@@ -90,53 +90,53 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 try
                 {
                     await _employeeService.UpdateEmployeeAsync(model);
-                    TempData["Success"] = "Cập nhật thông tin nhân viên thành công";
+                    TempData["Success"] = "Employee updated successfully";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Lỗi cập nhật: " + ex.Message);
+                    ModelState.AddModelError("", "Update error: " + ex.Message);
                 }
             }
             
-            // Nạp lại dữ liệu nếu lỗi
+            // Reload data if error
             model.Roles = await _employeeService.GetRolesSelectListAsync();
             model.Services = await _employeeService.GetServicesSelectListAsync();
             return View(model);
         }
 
-        // POST: Xóa nhân viên
+        // POST: Delete Employee
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
                 await _employeeService.DeleteEmployeeAsync(id);
-                TempData["Success"] = "Đã xóa nhân viên.";
+                TempData["Success"] = "Employee deleted.";
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Không thể xóa: " + ex.Message;
+                TempData["Error"] = "Cannot delete: " + ex.Message;
             }
             return RedirectToAction(nameof(Index));
         }
 
         // ==================================================================================
-        // 2. LỊCH LÀM VIỆC & ĐIỂM DANH (SCHEDULING & ATTENDANCE)
+        // 2. SCHEDULING & ATTENDANCE
         // ==================================================================================
 
-        // GET: Xem lịch & Trạng thái điểm danh theo ngày
+        // GET: View Schedule & Attendance Status by Date
         [HttpGet]
         public async Task<IActionResult> Schedule(DateTime? date)
         {
             var selectedDate = date ?? DateTime.Today;
             ViewBag.CurrentDate = selectedDate;
 
-            // ViewModel này cần chứa danh sách lịch làm việc (WorkSchedule) 
-            // và trạng thái điểm danh (IsPresent, CheckInTime...)
+            // This ViewModel needs to contain work schedule list (WorkSchedule) 
+            // and attendance status (IsPresent, CheckInTime...)
             var model = await _employeeService.GetDailyScheduleAsync(selectedDate);
             
-            // Load danh sách ca làm việc (Shift) và Nhân viên để dùng cho Modal thêm lịch
+            // Load Shift list and Employees for Modal to add schedule
              var shifts = await _employeeService.GetAllShiftsAsync() ?? new List<ShiftViewModel>();
             var employees = await _employeeService.GetAllEmployeesAsync() ?? new List<EmployeeListViewModel>();
 
@@ -152,7 +152,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return View(model);
         }
 
-        // GET: API trả về events cho FullCalendar
+        // GET: API returns events for FullCalendar
         [HttpGet]
         public async Task<IActionResult> GetCalendarEvents(DateTime start, DateTime end)
         {
@@ -163,22 +163,22 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             var events = schedules.Select(s => {
                 string color;
                 
-                // Logic màu sắc ưu tiên
+                // Priority color logic
                 if (s.IsOnBreak)
                 {
-                    color = "#ffc107"; // Vàng: Nghỉ giữa ca
+                    color = "#ffc107"; // Yellow: On Break
                 }
                 else if (s.IsCheckIn) 
                 {
-                    color = "#28a745"; // Xanh lá: Đã đi làm (Present)
+                    color = "#28a745"; // Green: Present
                 }
                 else if (!string.IsNullOrEmpty(s.Note))
                 {
-                    color = "#ffc107"; // Vàng: Chưa đi làm nhưng có phép/lý do (Excused)
+                    color = "#ffc107"; // Yellow: Absent (Excused)
                 }
                 else 
                 {
-                     color = "#007bff"; // Xanh dương: Chưa điểm danh (Bất kể quá khứ hay tương lai)
+                     color = "#007bff"; // Blue: Not checked in (Past or Future)
                 }
 
                 return new
@@ -203,59 +203,59 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return Json(events);
         }
 
-        // POST: Xếp lịch (Thêm ca làm cho nhân viên)
+        // POST: Schedule (Add shift for employee)
         // ... (AssignShift giữ nguyên)
 
         // ... (Các action khác giữ nguyên)
 
-        // POST: Điểm danh (Check Attendance)
-        // Hành động này dùng để Manager xác nhận nhân viên có đi làm hay không/hoặc đến trễ
+        // POST: Check Attendance
+        // This action is for Manager to confirm employee attendance/lateness
         [HttpPost]
         public async Task<IActionResult> UpdateAttendance(int scheduleId, bool isPresent, string note, bool isOnBreak, TimeSpan? breakStartTime, DateTime returnDate)
         {
             try 
             {
-                // Logic: Cập nhật cột IsPresent, có thể là cả CheckInTime thực tế nếu cần
+                // Logic: Update IsPresent column, maybe actual CheckInTime if needed
                 await _employeeService.UpdateAttendanceStatusAsync(scheduleId, isPresent, note, isOnBreak, breakStartTime);
-                TempData["Success"] = "Cập nhật điểm danh thành công.";
+                TempData["Success"] = "Attendance updated successfully.";
             }
             catch(Exception ex)
             {
-                TempData["Error"] = "Lỗi điểm danh: " + ex.Message;
+                TempData["Error"] = "Attendance error: " + ex.Message;
             }
             return RedirectToAction(nameof(Schedule), new { date = returnDate });
         }
 
         // ==================================================================================
-        // 3. QUẢN LÝ TIỀN TIP (TIP MANAGEMENT)
+        // 3. TIP MANAGEMENT
         // ==================================================================================
 
-        // GET: Danh sách tiền Tip trong ngày
+        // GET: Daily Tip List
         [HttpGet]
         public async Task<IActionResult> DailyTips(DateTime? date)
         {
             var selectedDate = date ?? DateTime.Today;
             ViewBag.CurrentDate = selectedDate;
 
-            // Lấy danh sách các khoản Tip từ Invoice/Appointment
-            // Model trả về nên có: EmployeeName, CustomerName, Amount, IsDistributed (Đã đưa tiền cho NV chưa)
+            // Get list of Tips from Invoice/Appointment
+            // Model should contain: EmployeeName, CustomerName, Amount, IsDistributed
             var model = await _employeeService.GetDailyTipsAsync(selectedDate);
             
-            // Tính tổng
+            // Calculate total
             ViewBag.TotalTips = await _employeeService.GetTotalTipsAmountAsync(selectedDate);
 
             return View(model);
         }
 
-        // POST: Xác nhận đã trả tiền Tip cho nhân viên
-        // Dùng khi cuối ngày Manager lấy tiền mặt hoặc chuyển khoản tip cho KTV
+        // POST: Confirm Tip Distributed to Employee
+        // Used when Manager distributes cash/transfer to Technician at end of day
         [HttpPost]
-        public async Task<IActionResult> ConfirmTipDistribution(int tipId, DateTime returnDate) // tipId có thể là ID của AppointmentDetail hoặc bảng Tip riêng
+        public async Task<IActionResult> ConfirmTipDistribution(int tipId, DateTime returnDate) // tipId can be AppointmentDetail ID or separate Tip table
         {
             try
             {
                 await _employeeService.ConfirmTipSentToEmployeeAsync(tipId);
-                TempData["Success"] = "Đã xác nhận trả Tip.";
+                TempData["Success"] = "Tip distribution confirmed.";
             }
             catch (Exception ex)
             {
@@ -264,14 +264,14 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return RedirectToAction(nameof(DailyTips), new { date = returnDate });
         }
 
-        // POST: Xác nhận trả TOÀN BỘ Tip trong ngày (Tiện ích nhanh)
+        // POST: Confirm ALL Tips for day (Quick Utility)
         [HttpPost]
         public async Task<IActionResult> ConfirmAllTips(DateTime date)
         {
             try
             {
                 await _employeeService.ConfirmAllTipsForDateAsync(date);
-                TempData["Success"] = $"Đã xác nhận trả hết Tip ngày {date:dd/MM}.";
+                TempData["Success"] = $"Confirmed all tips for {date:dd/MM}.";
             }
             catch (Exception ex)
             {
@@ -281,23 +281,23 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         }
 
         // ==================================================================================
-        // 4. TÍNH LƯƠNG (PAYROLL)
+        // 4. PAYROLL
         // ==================================================================================
         
         [HttpGet]
         public async Task<IActionResult> Payroll(int? month, int? year, DateTime? fromDate, DateTime? toDate)
         {
-            // Nếu không chọn tháng/năm, tự động lấy theo ngày kết thúc của kỳ lương (hoặc hiện tại)
+            // If month/year not selected, auto use end date of payroll period or current
             var m = month ?? toDate?.Month ?? DateTime.Now.Month;
             var y = year ?? toDate?.Year ?? DateTime.Now.Year;
 
             ViewBag.Month = m;
             ViewBag.Year = y;
 
-            // Truyền tham số lọc ngày vào Service
+            // Pass date filter parameters to Service
             var payrolls = await _employeeService.GeneratePayrollAsync(m, y, fromDate, toDate);
 
-            // Kiểm tra kỳ lương gần nhất
+            // Check latest payroll period
             var latestPeriod = await _employeeService.GetLatestPayrollPeriodAsync();
             if (latestPeriod.ToDate.HasValue)
             {
@@ -305,7 +305,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 ViewBag.LatestPayrollTo = latestPeriod.ToDate;
             }
             
-            // Lấy khoảng ngày thực tế từ kết quả trả về (để hiển thị trên UI)
+            // Get actual date range from result (to display on UI)
             if (payrolls.Any())
             {
                 ViewBag.FromDate = payrolls.First().FromDate;
@@ -313,7 +313,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             }
             else
             {
-                // Fallback nếu chưa có lương
+                // Fallback if no payroll
                 ViewBag.FromDate = fromDate ?? new DateTime(y, 1, 1);
                 ViewBag.ToDate = toDate ?? new DateTime(y, m, 1).AddMonths(1).AddDays(-1);
             }
@@ -324,10 +324,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmSalary(int employeeId, int month, int year, decimal finalAmount, DateTime fromDate, DateTime toDate, decimal bonus = 0, decimal deduction = 0)
         {
-            // Logic lưu lương vào DB với Status = "ManagerConfirmed"
+            // Logic to save payroll to DB with Status = 'ManagerConfirmed'
             await _employeeService.ConfirmPayrollAsync(employeeId, month, year, finalAmount, fromDate, toDate, bonus, deduction);
             
-            TempData["Success"] = "Đã xác nhận bảng lương cho nhân viên.";
+            TempData["Success"] = "Payroll confirmed for employee.";
             return RedirectToAction(nameof(Payroll), new { month, year, fromDate, toDate });
         }
     }

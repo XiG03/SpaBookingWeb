@@ -27,7 +27,7 @@ namespace SpaBookingWeb.Services.Implements
 
         public async Task<List<BlogPostViewModel>> GetAllAsync()
         {
-            // Lấy danh sách bài viết chưa bị xóa mềm (IsDeleted = false)
+            // Get list of posts not soft deleted (IsDeleted = false)
             return await _context.Posts
                 .AsNoTracking()
                 .Where(x => !x.IsDeleted) 
@@ -38,13 +38,13 @@ namespace SpaBookingWeb.Services.Implements
                 {
                     Id = b.PostId,
                     Title = b.Title,
-                    // Ưu tiên lấy Summary có sẵn, nếu không thì cắt từ Content
+                    // Prioritize existing Summary, otherwise cut from Content
                     Summary = !string.IsNullOrEmpty(b.Summary) 
                               ? b.Summary 
                               : (b.Content.Length > 100 ? b.Content.Substring(0, 100) + "..." : b.Content),
                     Content = b.Content,
-                    ImageUrl = b.Thumbnail, // Map Thumbnail sang ImageUrl của ViewModel
-                    AuthorName = b.Author != null ? b.Author.FullName : "Unknown", // Giả định Employee có FullName
+                    ImageUrl = b.Thumbnail, // Map Thumbnail to ViewModel ImageUrl
+                    AuthorName = b.Author != null ? b.Author.FullName : "Unknown", // Assume Employee has FullName
                     IsPublished = b.IsPublished,
                     CreatedAt = b.CreatedDate
                 })
@@ -75,7 +75,7 @@ namespace SpaBookingWeb.Services.Implements
 
         public async Task<int> CreateAsync(CreateBlogPostRequest request, string userId)
         {
-            // 1. Xử lý lưu ảnh thumbnail
+            // 1. Handle image upload
             string imagePath = null;
             if (request.ImageFile != null)
             {
@@ -83,17 +83,17 @@ namespace SpaBookingWeb.Services.Implements
             }
 
             // 2. Tìm EmployeeId dựa trên UserId (Identity)
-            // Lưu ý: Cần đảm bảo bảng Employees có trường liên kết với User (ví dụ AppUserId hoặc Email)
-            // Ở đây tôi dùng logic giả định là tìm Employee theo UserId
+            // Note: need to ensure Employees table has field linked to User (e.g. AppUserId or Email)
+            // Here I assume logic find Employee by UserId
             var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.IdentityUserId == userId ); // Điều chỉnh tùy theo cấu trúc Employee
+                .FirstOrDefaultAsync(e => e.IdentityUserId == userId ); // Adjust according to Employee structure
 
-            // 3. Tạo Entity Post mới
+            // 3. Create new Post Entity
             var post = new Post
             {
                 Title = request.Title,
-                Slug = GenerateSlug(request.Title), // Tự động tạo slug
-                Summary = GetSummaryFromContent(request.Content), // Tự động tạo summary nếu cần
+                Slug = GenerateSlug(request.Title), // Auto generate slug
+                Summary = GetSummaryFromContent(request.Content), // Auto generate summary if needed
                 Content = request.Content,
                 Thumbnail = imagePath,
                 IsPublished = request.IsPublished,
@@ -101,10 +101,10 @@ namespace SpaBookingWeb.Services.Implements
                 CreatedDate = DateTime.Now,
                 LastUpdated = DateTime.Now,
                 
-                // Gán tác giả nếu tìm thấy Employee, nếu không thì null
+                // Assign author if Employee found, else null
                 AuthorId = int.Parse(employee?.IdentityUserId) ,
                 
-                // Mặc định category là null hoặc ID danh mục chung (nếu có logic chọn category)
+                // Default category is null or general category ID (if selection logic exists)
                 PostCategoryId = null 
             };
 
@@ -116,20 +116,20 @@ namespace SpaBookingWeb.Services.Implements
         public async Task UpdateAsync(UpdateBlogPostRequest request)
         {
             var post = await _context.Posts.FirstOrDefaultAsync(x => x.PostId == request.Id && !x.IsDeleted);
-            if (post == null) throw new Exception("Bài viết không tồn tại hoặc đã bị xóa");
+            if (post == null) throw new Exception("Blog post does not exist or has been deleted");
 
-            // Cập nhật thông tin
+            // Update info
             post.Title = request.Title;
-            post.Slug = GenerateSlug(request.Title); // Cập nhật lại slug nếu đổi tên
+            post.Slug = GenerateSlug(request.Title); // Update slug if title changed
             post.Content = request.Content;
-            post.Summary = GetSummaryFromContent(request.Content); // Cập nhật lại summary
+            post.Summary = GetSummaryFromContent(request.Content); // Update summary
             post.IsPublished = request.IsPublished;
-            post.LastUpdated = DateTime.Now; // Cập nhật thời gian sửa đổi
+            post.LastUpdated = DateTime.Now; // Update modification time
 
-            // Chỉ cập nhật ảnh nếu người dùng upload ảnh mới
+            // Only update image if user uploaded new one
             if (request.ImageFile != null)
             {
-                // Có thể thêm logic xóa ảnh cũ ở đây nếu muốn tiết kiệm dung lượng
+                // Can add logic to delete old image here to save space
                 post.Thumbnail = await SaveFileAsync(request.ImageFile);
             }
 
@@ -142,7 +142,7 @@ namespace SpaBookingWeb.Services.Implements
             var post = await _context.Posts.FindAsync(id);
             if (post != null)
             {
-                // Soft Delete: Không xóa khỏi DB mà chỉ đánh dấu là đã xóa
+                // Soft Delete: Do not delete from DB, just mark as deleted
                 post.IsDeleted = true;
                 post.LastUpdated = DateTime.Now;
                 
@@ -158,7 +158,7 @@ namespace SpaBookingWeb.Services.Implements
             string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads/blog");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-            // Thêm timestamp để tránh trùng tên file
+            // Add timestamp to avoid duplicate filename
             string extension = Path.GetExtension(file.FileName);
             string uniqueFileName = $"{Guid.NewGuid()}{extension}";
             string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -174,7 +174,7 @@ namespace SpaBookingWeb.Services.Implements
         private string GetSummaryFromContent(string content)
         {
             if (string.IsNullOrEmpty(content)) return string.Empty;
-            // Loại bỏ thẻ HTML đơn giản (nếu content là HTML) để lấy text thuần làm summary
+            // Remove simple HTML tags (if content is HTML) to get plain text for summary
             var plainText = Regex.Replace(content, "<.*?>", String.Empty);
             return plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
         }
@@ -183,13 +183,13 @@ namespace SpaBookingWeb.Services.Implements
         {
             if (string.IsNullOrEmpty(title)) return string.Empty;
 
-            // Chuyển về chữ thường
+            // Convert to lowercase
             string slug = title.ToLower().Trim();
 
-            // Thay thế ký tự có dấu thành không dấu (Ví dụ: ấ -> a)
+            // Replace accented characters with unaccented (Example: ấ -> a)
             slug = ConvertToUnSign(slug);
 
-            // Thay thế khoảng trắng và ký tự đặc biệt bằng dấu gạch ngang
+            // Replace spaces and special characters with hyphens
             slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
             slug = Regex.Replace(slug, @"\s+", "-");
             slug = Regex.Replace(slug, @"-+", "-");

@@ -1,7 +1,7 @@
 @model SpaBookingWeb.ViewModels.Manager.CustomerDashboardViewModel
 
 @{
-    ViewData["Title"] = "Quản Lý Khách Hàng";
+    ViewData["Title"] = "Customer Management";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,12 +11,12 @@
             <!-- Header Section with Create Button -->
             <div class="row align-items-center mb-4">
                 <div class="col">
-                    <h2 class="h3 page-title">Tổng Quan Khách Hàng</h2>
-                    <p class="text-muted mb-0">Báo cáo hiệu suất và danh sách khách hàng tháng @DateTime.Now.Month/@DateTime.Now.Year</p>
+                    <h2 class="h3 page-title">Customer Overview</h2>
+                    <p class="text-muted mb-0">Performance report and customer list for @DateTime.Now.Month/@DateTime.Now.Year</p>
                 </div>
                 <div class="col-auto">
                     <a asp-action="Create" class="btn btn-primary">
-                        <span class="fe fe-plus fe-16 mr-2"></span>Thêm Khách Hàng
+                        <span class="fe fe-plus fe-16 mr-2"></span>Add Customer
                     </a>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Tổng Khách Hàng</p>
+                                    <p class="small text-muted mb-0">Total Customers</p>
                                     <span class="h3 mb-0">@Model.TotalCustomers</span>
                                 </div>
                             </div>
@@ -50,7 +50,7 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Lượt Ghé Tháng Này</p>
+                                    <p class="small text-muted mb-0">Visits This Month</p>
                                     <span class="h3 mb-0">@Model.TotalVisitsThisMonth</span>
                                     <span class="small text-muted">(@(Model.GrowthRate > 0 ? "+" : "")@Model.GrowthRate%)</span>
                                 </div>
@@ -68,9 +68,9 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Tỉ Lệ Quay Lại</p>
+                                    <p class="small text-muted mb-0">Return Rate</p>
                                     <span class="h3 mb-0">@Model.ReturnRateThisMonth%</span>
-                                    <span class="small text-muted">vs @Model.ReturnRateLastMonth% trước</span>
+                                    <span class="small text-muted">vs @Model.ReturnRateLastMonth% last month</span>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Đơn Hủy</p>
+                                    <p class="small text-muted mb-0">Cancelled Orders</p>
                                     <span class="h3 mb-0">@Model.CancelledOrdersThisMonth</span>
                                 </div>
                             </div>
@@ -100,15 +100,15 @@
                 <div class="col-md-12">
                     <div class="card shadow">
                         <div class="card-body">
-                            <h5 class="card-title">Danh Sách Khách Hàng</h5>
+                            <h5 class="card-title">Customer List</h5>
                             <table class="table datatables" id="dataTable-1">
                                 <thead>
                                     <tr>
                                         @* <th>ID</th> *@
-                                        <th>Họ Tên</th>
+                                        <th>Full Name</th>
                                         <th>Email</th>
-                                        <th>SĐT</th>
-                                        <th>Hành Động</th>
+                                        <th>Phone</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -130,9 +130,9 @@
                                                         <span class="text-muted sr-only">Action</span>
                                                     </button>
                                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dr1">
-                                                        <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
-                                                        <a class="dropdown-item" asp-action="Detail" asp-route-id="@item.Id">Chi tiết</a>
-                                                        <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                                                        <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                                                        <a class="dropdown-item" asp-action="Detail" asp-route-id="@item.Id">Details</a>
+                                                        <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                                                     </div>
                                                 </div>
                                             </td>

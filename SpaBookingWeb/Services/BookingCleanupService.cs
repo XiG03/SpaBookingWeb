@@ -36,7 +36,7 @@ namespace SpaBookingWeb.Services
                     _logger.LogError(ex, "Error occurred while cancelling expired bookings.");
                 }
 
-                // Chạy mỗi 1 giờ một lần
+                // Run every 1 hour
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
 
@@ -49,10 +49,10 @@ namespace SpaBookingWeb.Services
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 
-                // Ngưỡng thời gian: Quá 2 ngày
+                // Time threshold: Over 2 days
                 var thresholdDate = DateTime.Now.AddDays(-2);
 
-                // Tìm các lịch hẹn đang Pending, chưa thanh toán cọc và quá hạn
+                // Find Pending appointments, unpaid deposit and expired
                 var expiredBookings = await context.Appointments
                     .Where(a => a.Status == "Pending" 
                              && !a.IsDepositPaid 
@@ -61,19 +61,19 @@ namespace SpaBookingWeb.Services
 
                 if (expiredBookings.Any())
                 {
-                    _logger.LogInformation($"Tìm thấy {expiredBookings.Count} lịch hẹn quá hạn. Đang hủy...");
+                    _logger.LogInformation($"Found {expiredBookings.Count} expired bookings. Cancelling...");
 
                     foreach (var booking in expiredBookings)
                     {
                         booking.Status = "Cancelled";
-                        // Ghi chú thêm lý do hủy
+                        // Add cancellation reason note
                         booking.Notes = string.IsNullOrEmpty(booking.Notes) 
-                            ? "Hủy tự động do quá hạn đặt cọc." 
-                            : booking.Notes + " | Hủy tự động do quá hạn đặt cọc.";
+                            ? "Automatically cancelled due to overdue deposit." 
+                            : booking.Notes + " | Automatically cancelled due to overdue deposit.";
                     }
 
                     await context.SaveChangesAsync();
-                    _logger.LogInformation("Đã hủy các lịch hẹn quá hạn thành công.");
+                    _logger.LogInformation("Expired bookings cancelled successfully.");
                 }
             }
         }

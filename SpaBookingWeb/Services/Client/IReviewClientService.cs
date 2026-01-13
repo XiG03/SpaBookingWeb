@@ -5,10 +5,10 @@ namespace SpaBookingWeb.Services.Client
 {
     public interface IReviewClientService
     {
-        // Lấy thông tin để hiển thị form đánh giá
+        // Get info to display review form
         Task<ReviewPageViewModel> GetReviewPageDataAsync(int appointmentId, string userEmail);
 
-        // Lưu đánh giá
+        // Save review
         Task<bool> SubmitReviewAsync(SubmitReviewModel model);
     }
 }

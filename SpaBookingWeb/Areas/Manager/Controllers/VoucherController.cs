@@ -38,7 +38,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 try
                 {
                     await _voucherService.CreateVoucherAsync(model);
-                    TempData["Success"] = "Tạo voucher thành công!";
+                    TempData["Success"] = "Voucher created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (ArgumentException ex)
@@ -83,7 +83,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 try
                 {
                     await _voucherService.UpdateVoucherAsync(model);
-                    TempData["Success"] = "Cập nhật thành công!";
+                    TempData["Success"] = "Updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (ArgumentException ex)
@@ -106,7 +106,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _voucherService.DeleteVoucherAsync(id);
-            TempData["Success"] = "Đã xóa voucher.";
+            TempData["Success"] = "Voucher deleted.";
             return RedirectToAction(nameof(Index));
         }
     }

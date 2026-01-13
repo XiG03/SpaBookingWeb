@@ -17,7 +17,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             _dashboardService = dashboardService;
         }
 
-        // Trang chủ Dashboard
+        // Dashboard Home
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -26,11 +26,11 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return View(model);
         }
 
-        // API trả về JSON cho FullCalendar
+        // API returns JSON for FullCalendar
         [HttpGet]
         public async Task<IActionResult> GetCalendarEvents(string start, string end)
         {
-            // FullCalendar gửi start/end format ISO, ta parse ra DateTime
+            // FullCalendar sends ISO format start/end, parse to DateTime
             if (DateTime.TryParse(start, out DateTime startDate) && DateTime.TryParse(end, out DateTime endDate))
             {
                 var events = await _dashboardService.GetCalendarEventsAsync(startDate, endDate);
@@ -42,9 +42,9 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAppointmentDetails(int id)
         {
-            // Gọi service lấy chi tiết (có thể tái sử dụng AppointmentService hoặc query trực tiếp nếu đơn giản)
-            // Ở đây tôi giả định bạn có AppointmentService hoặc query nhanh trong DashboardService
-            // Để đơn giản và nhanh chóng, tôi sẽ query thông qua DashboardService (cần bổ sung hàm này vào Interface)
+            // Call service to get details (can reuse AppointmentService or query directly if simple)
+            // Assuming you have AppointmentService or quick query in DashboardService
+            // For simplicity and speed, I will query via DashboardService (need to add this function to Interface)
             
             var detail = await _dashboardService.GetAppointmentDetailAsync(id);
             if (detail == null) return NotFound();

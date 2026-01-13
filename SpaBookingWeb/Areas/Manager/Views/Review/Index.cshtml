@@ -1,19 +1,19 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ReviewDashboardViewModel
 
 @{
-    ViewData["Title"] = "Quản lý Đánh giá";
+    ViewData["Title"] = "Review Management";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
-    <h2 class="h3 mb-3 page-title">Phản hồi khách hàng</h2>
+    <h2 class="h3 mb-3 page-title">Customer Feedback</h2>
 
     <!-- Thống kê nhanh -->
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card shadow border-0">
                 <div class="card-body text-center">
-                    <p class="mb-2 text-muted">Tổng số đánh giá</p>
+                    <p class="mb-2 text-muted">Total Reviews</p>
                     <h3 class="mb-0 font-weight-bold">@Model.TotalReviews</h3>
                 </div>
             </div>
@@ -21,7 +21,7 @@
         <div class="col-md-3">
             <div class="card shadow border-0">
                 <div class="card-body text-center">
-                    <p class="mb-2 text-muted">Điểm trung bình</p>
+                    <p class="mb-2 text-muted">Average Rating</p>
                     <h3 class="mb-0 font-weight-bold text-warning">
                         @Model.AverageRating <i class="fe fe-star text-warning"></i>
                     </h3>
@@ -31,7 +31,7 @@
         <div class="col-md-3">
             <div class="card shadow border-0">
                 <div class="card-body text-center">
-                    <p class="mb-2 text-muted">5 Sao tuyệt đối</p>
+                    <p class="mb-2 text-muted">5 Stars</p>
                     <h3 class="mb-0 font-weight-bold text-success">@Model.FiveStarCount</h3>
                 </div>
             </div>
@@ -39,7 +39,7 @@
         <div class="col-md-3">
             <div class="card shadow border-0">
                 <div class="card-body text-center">
-                    <p class="mb-2 text-muted">1 Sao (Cần chú ý)</p>
+                    <p class="mb-2 text-muted">1 Star (Attention)</p>
                     <h3 class="mb-0 font-weight-bold text-danger">@Model.OneStarCount</h3>
                 </div>
             </div>
@@ -49,7 +49,7 @@
     <!-- Danh sách -->
     <div class="card shadow">
         <div class="card-header border-0">
-            <strong class="card-title">Danh sách chi tiết</strong>
+            <strong class="card-title">Detailed List</strong>
         </div>
         <div class="card-body">
             @if (TempData["SuccessMessage"] != null)
@@ -66,12 +66,12 @@
                 <thead class="thead-light">
                     <tr>
                         <th>#ID</th>
-                        <th>Khách hàng</th>
-                        <th>Dịch vụ & Nhân viên</th>
-                        <th>Đánh giá</th>
-                        <th>Nội dung</th>
-                        <th>Ngày tạo</th>
-                        <th>Hành động</th>
+                        <th>Customer</th>
+                        <th>Service & Staff</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,7 +81,7 @@
                             <td>@item.ReviewId</td>
                             <td>
                                 <strong>@item.CustomerName</strong><br/>
-                                <small class="text-muted">Mã hẹn: #@item.AppointmentId</small>
+                                <small class="text-muted">Booking ID: #@item.AppointmentId</small>
                             </td>
                             <td>
                                 <span class="d-block text-truncate" style="max-width: 150px;" title="@item.ServiceName">@item.ServiceName</span>
@@ -116,9 +116,9 @@
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right">
                                         <!-- Chức năng xóa -->
-                                        <form asp-action="Delete" asp-route-id="@item.ReviewId" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                        <form asp-action="Delete" asp-route-id="@item.ReviewId" method="post" onsubmit="return confirm('Are you sure you want to delete this review?');">
                                             <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fe fe-trash-2 mr-2"></i>Xóa
+                                                <i class="fe fe-trash-2 mr-2"></i>Delete
                                             </button>
                                         </form>
                                     </div>

@@ -26,7 +26,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _reviewService.DeleteReviewAsync(id);
-            TempData["SuccessMessage"] = "Đã xóa đánh giá thành công.";
+            TempData["SuccessMessage"] = "Review deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

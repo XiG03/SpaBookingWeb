@@ -22,7 +22,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         {
             var logs = _context.ActivityLogs.AsQueryable();
 
-            // 1. Lọc theo từ khóa: Cập nhật để tìm trong EntityId hoặc NewValues thay vì chỉ Description
+            // 1. Filter by keyword: Update to search in EntityId or NewValues instead of just Description
             if (!string.IsNullOrEmpty(searchString))
             {
                 logs = logs.Where(l => (l.Description != null && l.Description.Contains(searchString)) || 
@@ -31,13 +31,13 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                                        l.EntityId.Contains(searchString));
             }
 
-            // 2. Lọc theo hành động (Create/Update/Delete)
+            // 2. Filter by action (Create/Update/Delete)
             if (!string.IsNullOrEmpty(actionFilter))
             {
                 logs = logs.Where(l => l.Action == actionFilter);
             }
 
-            // 3. Lọc theo ngày
+            // 3. Filter by date
             if (fromDate.HasValue)
             {
                 logs = logs.Where(l => l.Timestamp >= fromDate.Value);
