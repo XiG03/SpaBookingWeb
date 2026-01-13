@@ -107,6 +107,21 @@ namespace SpaBookingWeb.Models
         public bool IsDeleted { get; set; } = false;
 
         public virtual ICollection<AppointmentConsumable> AppointmentConsumables { get; set; }
+
+        // Số tiền típ cụ thể cho dịch vụ này
+        public decimal TipAmount { get; set; }
+
+        // Xác định nguồn tiền: 
+        // true = KTV tự cầm; false = Spa thu hộ
+        public bool IsDirectTip { get; set; }
+
+        // Ngày giờ Spa đã trả tiền típ thu hộ cho KTV
+        // null = Chưa trả
+        public DateTime? TipPayoutDate { get; set; }
+
+        // Tên khách đi cùng (trường hợp booking theo nhóm)_
+        [StringLength(100)] // Giới hạn độ dài tối đa 100 ký tự
+        public string? GuestName { get; set; } // Dấu ? cho phép Null (nếu là khách chính chủ)
     }
 
     [Table("Invoices")]
@@ -144,6 +159,18 @@ namespace SpaBookingWeb.Models
         public bool IsDeleted { get; set; } = false;
 
         public virtual ICollection<Payment> Payments { get; set; }
+
+        //Tip tổng khi xuất hóa đơn
+        public decimal TipAmount { get; set; }
+
+        // 1. Lưu phương thức thanh toán chính (Cash/Momo) ngay trên Invoice để tiện query
+        [StringLength(50)]
+        public string PaymentMethod { get; set; }
+
+        // 2. Lưu nhân viên (Lễ tân) thực hiện thu tiền
+        public int? EmployeeId { get; set; }
+        [ForeignKey("EmployeeId")]
+        public virtual Employee Employee { get; set; }
     }
 
     [Table("Payments")]

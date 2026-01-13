@@ -12,7 +12,7 @@ using SpaBookingWeb.ViewModels.Receptionist;
 namespace SpaBookingWeb.Areas.Receptionist.Controllers
 {
     [Area("Receptionist")]
-    [Authorize(Roles = "Receptionist,Admin")] // [THAY ĐỔI IDENTITY] Thêm Authorize
+    [Authorize(Roles = "Receptionist,Admin,Manager")] // [THAY ĐỔI IDENTITY] Thêm Authorize
     // [THÊM DÒNG NÀY] Chặn toàn bộ hành động trong Controller này nếu chưa Check-in
     [ServiceFilter(typeof(RequireReceptionistAttendanceFilter))]
     public class CalendarController : Controller

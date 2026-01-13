@@ -102,6 +102,9 @@ namespace SpaBookingWeb.Models
         [StringLength(20)]
         public string Status { get; set; }
 
+        // Tổng hợp tiền típ nhân viên kiếm được trong kỳ lương (để báo cáo)
+        public decimal TotalTips { get; set; }
+
         public DateTime FromDate { get; set; } // Ngày bắt đầu chu kỳ lương
         public DateTime ToDate { get; set; }   // Ngày kết thúc chu kỳ lương
 

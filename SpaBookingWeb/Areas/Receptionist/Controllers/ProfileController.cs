@@ -6,7 +6,7 @@ using System.Security.Claims;
 namespace SpaBookingWeb.Areas.Receptionist.Controllers
 {
     [Area("Receptionist")]
-    [Authorize(Roles = "Receptionist,Admin")] // [THAY ĐỔI IDENTITY] Bật bảo mật
+    [Authorize(Roles = "Receptionist,Admin,Manager")] // [THAY ĐỔI IDENTITY] Bật bảo mật
     public class ProfileController : Controller
     {
         private readonly IReceptionistService _receptionistService;

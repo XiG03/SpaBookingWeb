@@ -1,19 +1,20 @@
+﻿using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Session;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using SpaBookingWeb.Data;
+using SpaBookingWeb.Hubs;
 using SpaBookingWeb.Models;
 using SpaBookingWeb.Services;
-using SpaBookingWeb.Services.Manager;
-using Microsoft.AspNetCore.Authorization;
-
-using SpaBookingWeb.Services.Interfaces;
-using SpaBookingWeb.Services.Implements;
-using SpaBookingWeb.Hubs;
 using SpaBookingWeb.Services.Client;
-using Microsoft.AspNetCore.Session;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Http;
+using SpaBookingWeb.Services.Implements;
+using SpaBookingWeb.Services.Interfaces;
+using SpaBookingWeb.Services.Manager;
+using SpaBookingWeb.Services.Receptionist;
+using SpaBookingWeb.Services.Technictian;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -130,11 +131,16 @@ builder.Services.AddScoped<IReviewClientService,ReviewClientService>();
 // Background Services
 builder.Services.AddHostedService<BookingCleanupService>();
 
+// Đăng ký Service cho Technician
+builder.Services.AddScoped<ITechnicianJobService, TechnicianJobService>();
 
+// Đăng ký Service cho Receptionist
+builder.Services.AddScoped<IReceptionistService, ReceptionistService>();
+builder.Services.AddScoped<SpaBookingWeb.Areas.Receptionist.Filters.RequireReceptionistAttendanceFilter>();
 
-// Authorization with Permission
-
-
+// 1. Đọc cấu hình Email từ appsettings.json
+builder.Services.Configure<SpaBookingWeb.Settings.EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<SpaBookingWeb.Services.IEmailSenderReceptionist, SpaBookingWeb.Services.EmailSenderReceptionist>();
 
 
 builder.Services.AddHttpContextAccessor();
@@ -223,6 +229,17 @@ app.UseAuthorization();
 app.UseSession(); // Session usually placed last or before Auth depending on need, but after Auth is safe for user data.
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
+
+app.MapAreaControllerRoute(
+    name: "Technician",
+    areaName: "Technician",
+    pattern: "Technician/{controller=Home}/{action=Index}/{id?}");
+
+app.MapAreaControllerRoute(
+    name: "Receptionist",
+    areaName: "Receptionist",
+    pattern: "Receptionist/{controller=Home}/{action=Index}/{id?}");
 
 app.MapAreaControllerRoute(
     name: "Manager",

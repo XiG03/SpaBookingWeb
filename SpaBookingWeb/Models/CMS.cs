@@ -69,6 +69,9 @@ namespace SpaBookingWeb.Models
         public int ShiftId { get; set; }
         public virtual Shift Shift { get; set; }
 
+        // Thêm trường CheckOut
+        public DateTime? CheckOutTime { get; set; }
+
         public bool IsDeleted { get; set; } = false;
 
         public DateTime WorkDate { get; set; }

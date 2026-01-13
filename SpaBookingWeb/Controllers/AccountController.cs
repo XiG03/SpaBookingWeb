@@ -57,9 +57,13 @@ namespace SpaBookingWeb.Controllers
                 {
                     return RedirectToAction("Index", "Home", new { area = "Manager" });
                 }
-                else if (roles.Contains("Technician") || roles.Contains("Receptionist") || roles.Contains("Staff"))
+                else if (roles.Contains("Receptionist") || roles.Contains("Staff"))
                 {
-                    return RedirectToAction("Index", "Schedule", new { area = "Staff" });
+                    return RedirectToAction("Index", "Calendar", new { area = "Receptionist" });
+                }
+                else if (roles.Contains("Technician") || roles.Contains("Staff"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Technictian" });
                 }
 
                 // Check valid returnUrl
@@ -67,11 +71,11 @@ namespace SpaBookingWeb.Controllers
                 {
                     return LocalRedirect(returnUrl);
                 }
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("HomeClient", "Home");
             }
             catch
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("HomeClient", "Home");
             }
         }
 
@@ -145,9 +149,13 @@ namespace SpaBookingWeb.Controllers
                 {
                     return RedirectToAction("Index", "Home", new { area = "Manager" });
                 }
-                if (roles.Contains("Technician") || roles.Contains("Receptionist") || roles.Contains("Staff"))
+                else if (roles.Contains("Receptionist") || roles.Contains("Staff"))
                 {
-                    return RedirectToAction("Index", "Schedule", new { area = "Staff" });
+                    return RedirectToAction("Index", "Calendar", new { area = "Receptionist" });
+                }
+                else if (roles.Contains("Technician") || roles.Contains("Staff"))
+                {
+                    return RedirectToAction("Index", "Home", new { area = "Technictian" });
                 }
             }
 

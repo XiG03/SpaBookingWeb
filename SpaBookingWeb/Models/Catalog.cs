@@ -18,6 +18,9 @@ namespace SpaBookingWeb.Models
 
         public virtual ICollection<Service> Services { get; set; }
         public virtual ICollection<Product> Products { get; set; }
+
+        // Cập nhật xóa mềm
+        public bool IsDeleted { get; set; } = false;
     }
 
     [Table("Units")]
@@ -27,6 +30,9 @@ namespace SpaBookingWeb.Models
         public int UnitId { get; set; }
         [Required, StringLength(50)]
         public string UnitName { get; set; }
+
+        // Cập nhật xóa mềm
+        public bool IsDeleted { get; set; } = false;
     }
 
     [Table("Services")]

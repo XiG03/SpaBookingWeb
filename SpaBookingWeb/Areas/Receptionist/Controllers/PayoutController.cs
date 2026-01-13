@@ -8,7 +8,7 @@ using SpaBookingWeb.ViewModels.Receptionist;
 namespace SpaBookingWeb.Areas.Receptionist.Controllers
 {
     [Area("Receptionist")]
-    [Authorize(Roles = "Receptionist,Admin")]
+    [Authorize(Roles = "Receptionist,Admin,Manager")]
     // [THÊM DÒNG NÀY] Chặn toàn bộ hành động trong Controller này nếu chưa Check-in
     [ServiceFilter(typeof(RequireReceptionistAttendanceFilter))]
     public class PayoutController : Controller
