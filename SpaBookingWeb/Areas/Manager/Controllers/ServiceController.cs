@@ -17,10 +17,18 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchName)
         {
-            var viewModel = await _serviceService.GetServiceDashboardAsync();
+            ViewData["CurrentFilter"] = searchName;
+            var viewModel = await _serviceService.GetServiceDashboardAsync(searchName);
             return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Filter(string searchName)
+        {
+            var viewModel = await _serviceService.GetServiceDashboardAsync(searchName);
+            return PartialView("_ServiceTableRows", viewModel.Services);
         }
 
         [HttpGet]

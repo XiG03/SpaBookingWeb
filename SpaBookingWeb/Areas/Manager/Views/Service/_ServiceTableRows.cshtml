@@ -1,0 +1,33 @@
+@model IEnumerable<SpaBookingWeb.ViewModels.Manager.ServiceStatisticDto>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.ServiceId</td>
+        <td>@item.ServiceName</td>
+        <td>@item.Price.ToString("N0") đ</td>
+        <td>
+            @if (item.IsActive)
+            {
+                <span class="badge badge-success">Active</span>
+            }
+            else
+            {
+                <span class="badge badge-secondary">Inactive</span>
+            }
+        </td>
+        <td>@item.UsageCount</td>
+        <td class="text-success font-weight-bold">@item.TotalRevenue.ToString("N0") đ</td>
+        <td>
+            <div class="dropdown">
+                <button class="btn btn-sm dropdown-toggle" type="button" id="dr1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="text-muted sr-only">Action</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dr1">
+                    <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a>
+                    <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.ServiceId">Deactivate</a>
+                </div>
+            </div>
+        </td>
+    </tr>
+}

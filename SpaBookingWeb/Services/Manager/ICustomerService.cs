@@ -18,6 +18,9 @@ namespace SpaBookingWeb.Services.Manager
         Task<bool> UpdateCustomerAsync(ApplicationUser user);
         Task<bool> DeleteCustomerAsync(string id); // Usually lock account (Soft Delete)
         Task<bool> CreateCustomerAsync(ApplicationUser user, string password);
+        
+        // Sync Identity User to Customer Table
+        Task SyncCustomerAsync(string fullName, string phoneNumber, string email);
     }
 }
 

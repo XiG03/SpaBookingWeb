@@ -16,19 +16,22 @@ namespace SpaBookingWeb.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager; // Đã thêm
+        private readonly ICustomerService _customerService; // Injected
         private readonly ILogger<AccountController> _logger;
         private readonly IEmailService _emailService;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager, // Inject thêm RoleManager
+            RoleManager<IdentityRole> roleManager,
+            ICustomerService customerService, // Add this
             ILogger<AccountController> logger,
             IEmailService emailService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _customerService = customerService; // Assign
             _logger = logger;
             _emailService = emailService;
         }
@@ -269,6 +272,17 @@ namespace SpaBookingWeb.Controllers
                     }
                     await _userManager.AddToRoleAsync(user, "Customer");
 
+                    // --- SYNC TO CUSTOMER TABLE ---
+                    try 
+                    {
+                          await _customerService.SyncCustomerAsync(user.FullName, user.PhoneNumber, user.Email);
+                    }
+                    catch (Exception ex)
+                    {
+                         _logger.LogError(ex, "Failed to create Customer entity");
+                    }
+                    // -----------------------------
+
                     // 3. Generate Verification Code (Token)
                     // Note: Default Identity Token is too long.
                     // To generate 6-digit code, we can use `GenerateTwoFactorTokenAsync` or generate random number.
@@ -470,6 +484,9 @@ namespace SpaBookingWeb.Controllers
                             { 
                                 if (!await _roleManager.RoleExistsAsync("Customer")) await _roleManager.CreateAsync(new IdentityRole("Customer"));
                                 await _userManager.AddToRoleAsync(user, "Customer");
+                                
+                                // Sync Customer
+                                await _customerService.SyncCustomerAsync(user.FullName, user.PhoneNumber, user.Email);
                             } 
                             catch (Exception ex) 
                             {

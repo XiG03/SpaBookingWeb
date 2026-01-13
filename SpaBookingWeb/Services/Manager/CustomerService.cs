@@ -151,6 +151,25 @@ namespace SpaBookingWeb.Services.Manager
                 }
 
                 await _userManager.AddToRoleAsync(user, ROLE_CUSTOMER);
+
+                // --- Sync to Custom Customer Table ---
+                var customerEntity = new Customer
+                {
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    Appointments = new List<Appointment>(), // Initialize if needed
+                };
+                
+                // Note: We don't have explicit link ID here unless we add AspNetUserId to Customers table
+                // Assuming Name/Phone or Manual correlation for now based on typical quick requests,
+                // BUT best practice is adding ForeignKey. 
+                // However, without changing DB structure request, we just save it as requested.
+                
+                _context.Customers.Add(customerEntity);
+                await _context.SaveChangesAsync();
+                // -------------------------------------
+
                 return true;
             }
             return false;
@@ -204,6 +223,27 @@ namespace SpaBookingWeb.Services.Manager
             
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
+        }
+        public async Task SyncCustomerAsync(string fullName, string phoneNumber, string email)
+        {
+            // Check if customer already exists in custom table (by Phone or Email)
+            // Ideally we should use Identity UserId as Foreign Key, bu based on current schema we match by Phone/Email
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phoneNumber || c.Email == email);
+            
+            if (existingCustomer == null)
+            {
+                var newCustomer = new Customer
+                {
+                    FullName = fullName,
+                    PhoneNumber = phoneNumber,
+                    Email = email,
+                    // Default values
+                    Appointments = new List<Appointment>(),
+                    IsDeleted = false
+                };
+                _context.Customers.Add(newCustomer);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
