@@ -1,0 +1,58 @@
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SpaBookingWeb.Models
+{
+    [Table("SystemSettings")]
+    public class SystemSetting
+    {
+        [Key, StringLength(50)]
+        public string SettingKey { get; set; }
+
+        public string SettingValue { get; set; }
+
+        [StringLength(255)]
+        public string Description { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
+
+        [StringLength(20)]
+        public string DataType { get; set; } = "String";
+    }
+
+    [Table("DepositRules")]
+    public class DepositRule
+    {
+        [Key]
+        public int RuleId { get; set; }
+
+        [Required, StringLength(100)]
+        public string RuleName { get; set; }
+
+        [Required, StringLength(50)]
+        public string ApplyToType { get; set; } = "OrderTotal"; // OrderTotal, SpecificService, MembershipType
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? MinOrderValue { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
+
+        public int? TargetServiceId { get; set; }
+        [ForeignKey("TargetServiceId")]
+        public virtual Service TargetService { get; set; }
+
+        public int? TargetMembershipTypeId { get; set; }
+        [ForeignKey("TargetMembershipTypeId")]
+        public virtual MembershipType TargetMembershipType { get; set; }
+
+        [Required, StringLength(20)]
+        public string DepositType { get; set; } = "Percent"; // Percent, FixedAmount
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DepositValue { get; set; }
+
+        public int Priority { get; set; } = 1;
+        public bool IsActive { get; set; } = true;
+    }
+}
