@@ -29,9 +29,16 @@ namespace SpaBookingWeb.Services.Manager
         // ... Old methods (GetServiceDashboardAsync, GetServiceForEditAsync, Create, Update) kept as is ...
         // I will condense old methods to focus on the newly added method
 
-        public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync()
+        public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync(string searchName = null)
         {
-            var services = await _context.Services.ToListAsync();
+            var query = _context.Services.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                query = query.Where(s => s.ServiceName.Contains(searchName));
+            }
+
+            var services = await query.ToListAsync();
             // Get all appointment details that are (Completed OR Deposit Paid)
             var relevantDetails = await _context.AppointmentDetails
                 .Include(ad => ad.Appointment)

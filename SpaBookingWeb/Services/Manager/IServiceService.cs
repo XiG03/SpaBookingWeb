@@ -7,7 +7,7 @@ namespace SpaBookingWeb.Services.Manager
     public interface IServiceService
     {
         // Get aggregate data for Service list page
-        Task<ServiceDashboardViewModel> GetServiceDashboardAsync();
+        Task<ServiceDashboardViewModel> GetServiceDashboardAsync(string searchName = null);
 
         // Get details to display Edit form
         Task<ServiceViewModel?> GetServiceForEditAsync(int id);
