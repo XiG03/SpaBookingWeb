@@ -473,15 +473,31 @@ namespace SpaBookingWeb.Services.Client
         }
 
         // --- OTHER METHODS KEEP AS IS ---
-        public async Task<int> SaveBookingAsync(BookingSessionModel session)
+        public async Task<int> SaveBookingAsync(BookingSessionModel session, string paymentMethod)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == session.CustomerInfo.Phone);
+            // Improved logic: Find by Phone OR Email to match existing customer
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == session.CustomerInfo.Phone || c.Email == session.CustomerInfo.Email);
+            
             if (customer == null)
             {
-                customer = new Customer { FullName = session.CustomerInfo.FullName, PhoneNumber = session.CustomerInfo.Phone, Email = session.CustomerInfo.Email };
+                customer = new Customer 
+                { 
+                    FullName = session.CustomerInfo.FullName, 
+                    PhoneNumber = session.CustomerInfo.Phone, 
+                    Email = session.CustomerInfo.Email 
+                };
                 _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
             }
+            else
+            {
+                // Update existing customer info with latest input
+                customer.FullName = session.CustomerInfo.FullName;
+                customer.PhoneNumber = session.CustomerInfo.Phone;
+                customer.Email = session.CustomerInfo.Email;
+                _context.Customers.Update(customer);
+            }
+            
+            await _context.SaveChangesAsync();
 
             // Recalculate EndTime
             int maxDuration = 0;
@@ -605,6 +621,7 @@ namespace SpaBookingWeb.Services.Client
                 DepositDeduction = session.DepositAmount,
                 FinalAmount = session.TotalAmount - session.DepositAmount,
                 PaymentStatus = "Unpaid",
+                PaymentMethod = paymentMethod,
                 CreatedDate = DateTime.Now
             };
             _context.Invoices.Add(invoice);

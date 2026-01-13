@@ -19,7 +19,7 @@ namespace SpaBookingWeb.Services.Client
 
         // Business logic
         Task<List<string>> GetAvailableTimeSlotsAsync(DateTime date, BookingSessionModel session);
-        Task<int> SaveBookingAsync(BookingSessionModel session); // Trả về AppointmentId
+        Task<int> SaveBookingAsync(BookingSessionModel session, string paymentMethod); // Trả về AppointmentId
 
         // [NEW] Update deposit payment status
         Task UpdateDepositStatusAsync(int appointmentId, string transactionId);

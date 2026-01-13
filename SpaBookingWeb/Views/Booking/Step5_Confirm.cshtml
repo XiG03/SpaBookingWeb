@@ -120,19 +120,19 @@
                     <div class="grid md:grid-cols-2 gap-5 mb-8">
                         <div class="space-y-1">
                             <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Full Name *</label>
-                            <input asp-for="CurrentSession.CustomerInfo.FullName" name="FullName" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="Enter full name" required/>
+                            <input name="FullName" value="@Model.CurrentSession.CustomerInfo?.FullName" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="Enter full name" required/>
                         </div>
                         <div class="space-y-1">
                             <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Phone Number *</label>
-                            <input asp-for="CurrentSession.CustomerInfo.Phone" name="Phone" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="09xxxxxxxx" required/>
+                            <input name="Phone" value="@Model.CurrentSession.CustomerInfo?.Phone" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="09xxxxxxxx" required/>
                         </div>
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Email (Receive e-ticket)</label>
-                            <input asp-for="CurrentSession.CustomerInfo.Email" name="Email" type="email" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="email@example.com"/>
+                            <input name="Email" type="email" value="@Model.CurrentSession.CustomerInfo?.Email" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="email@example.com"/>
                         </div>
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Notes (Optional)</label>
-                            <textarea asp-for="CurrentSession.CustomerInfo.Note" name="Note" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary resize-none" placeholder="Do you have any special requests?" rows="2"></textarea>
+                            <textarea name="Note" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary resize-none" placeholder="Do you have any special requests?" rows="2">@Model.CurrentSession.CustomerInfo?.Note</textarea>
                         </div>
                     </div>
                     

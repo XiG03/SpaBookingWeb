@@ -49,32 +49,37 @@ namespace SpaBookingWeb.Controllers
         {
             try
             {
+                // IMPORTANT: Check returnUrl FIRST - If user is booking, don't interrupt them
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && returnUrl != "/")
+                {
+                    return LocalRedirect(returnUrl);
+                }
+
                 var roles = await _userManager.GetRolesAsync(user);
 
-                // If Manager, Receptionist or Technician, show Role Selection page
-                if (roles.Contains("Manager") || roles.Contains("Receptionist") || roles.Contains("Technician"))
+                // If Manager, Receptionist or Technician WITHOUT specific returnUrl, show Role Selection page
+                if (roles.Contains("Manager") || roles.Contains("Receptionist") || roles.Contains("Technician") || roles.Contains("Staff"))
                 {
                     return RedirectToAction("RoleSelection");
                 }
 
+                // Manager/Admin default
                 if (roles.Contains("Manager") || roles.Contains("Admin"))
                 {
                     return RedirectToAction("Index", "Home", new { area = "Manager" });
                 }
-                else if (roles.Contains("Receptionist") || roles.Contains("Staff"))
+                // Receptionist default
+                else if (roles.Contains("Receptionist"))
                 {
                     return RedirectToAction("Index", "Calendar", new { area = "Receptionist" });
                 }
-                else if (roles.Contains("Technician") || roles.Contains("Staff"))
+                // Technician default
+                else if (roles.Contains("Technician"))
                 {
                     return RedirectToAction("Index", "Home", new { area = "Technictian" });
                 }
 
-                // Check valid returnUrl
-                if (Url.IsLocalUrl(returnUrl) && returnUrl != "/")
-                {
-                    return LocalRedirect(returnUrl);
-                }
+                // Default for Customer
                 return RedirectToAction("HomeClient", "Home");
             }
             catch

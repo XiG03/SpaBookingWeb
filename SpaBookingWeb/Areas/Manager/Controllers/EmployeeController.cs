@@ -215,7 +215,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 }
                 else if (!string.IsNullOrEmpty(s.Note))
                 {
-                    color = "#ffc107"; // Yellow: Absent (Excused)
+                    color = "#dc3545"; // Red: Absent (Excused)
                 }
                 else 
                 {
@@ -244,10 +244,34 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return Json(events);
         }
 
-        // POST: Schedule (Add shift for employee)
-        // ... (AssignShift giữ nguyên)
 
-        // ... (Các action khác giữ nguyên)
+        // POST: Assign shift to employee
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignShift(int employeeId, int shiftId, DateTime workDate)
+        {
+            try
+            {
+                Console.WriteLine($"[ASSIGN SHIFT] EmployeeId: {employeeId}, ShiftId: {shiftId}, Date: {workDate:yyyy-MM-dd}");
+                
+                await _employeeService.AddWorkScheduleAsync(employeeId, shiftId, workDate);
+                TempData["Success"] = "Shift assigned successfully!";
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += " | Inner: " + ex.InnerException.Message;
+                }
+                Console.WriteLine($"[ASSIGN SHIFT] Error: {errorMessage}");
+                TempData["Error"] = "Error assigning shift: " + errorMessage;
+            }
+            
+            return RedirectToAction(nameof(Schedule), new { date = workDate });
+        }
+
+
 
         // POST: Check Attendance
         // This action is for Manager to confirm employee attendance/lateness

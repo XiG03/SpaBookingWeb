@@ -477,7 +477,7 @@ namespace SpaBookingWeb.Controllers
                 if (session == null) return RedirectToAction("Index");
 
                 if (!User.Identity.IsAuthenticated)
-                    return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Step5_Confirm", "Booking") });
+                    return RedirectToAction("Login", "Account", new { returnUrl = "/Booking/Step5_Confirm" });
 
                 // If old order (Resume), no need to recalculate too much to avoid discrepancies
                 // However, to display full service info, still need to reload Staff/Service info from DB
@@ -501,6 +501,32 @@ namespace SpaBookingWeb.Controllers
                     session.TotalAmount = total;
                     session.DepositPercentage = settings.DepositPercentage;
                     session.DepositAmount = total * settings.DepositPercentage / 100;
+                }
+
+                // Load authenticated user info to prefill form
+                // [FIX] Check if CustomerInfo is null OR empty (because BookingSessionModel initializes it by default)
+                if (session.CustomerInfo == null || string.IsNullOrWhiteSpace(session.CustomerInfo.FullName))
+                {
+                    var user = await _userManager.GetUserAsync(User);
+                    if (user != null)
+                    {
+                        if (session.CustomerInfo == null) session.CustomerInfo = new CustomerInfo();
+                        
+                        // Populate/Overwrite with User Profile data
+                        session.CustomerInfo.FullName = user.FullName;
+                        session.CustomerInfo.Phone = user.PhoneNumber;
+                        session.CustomerInfo.Email = user.Email;
+                        
+                        _logger.LogInformation($"[STEP5] Auto-filled CustomerInfo from Auth User: {user.FullName}");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("[STEP5] User is authenticated but GetUserAsync returned null!");
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"[STEP5] CustomerInfo already exists: {session.CustomerInfo.FullName}");
                 }
 
                 _bookingService.SaveSession(session);
@@ -548,7 +574,7 @@ namespace SpaBookingWeb.Controllers
 
                 // 1. SAVE BOOKING TO DB FIRST (Status Unpaid/Pending)
                 // Must save first to get AppointmentId (OrderId) to send to MoMo
-                var appointmentId = await _bookingService.SaveBookingAsync(session);
+                var appointmentId = await _bookingService.SaveBookingAsync(session, payment_method);
 
                 // 2. REDIRECT TO PAYMENT
                 if (payment_method == "momo")
@@ -586,8 +612,11 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Invalid MoMo data");
-                TempData["ErrorMessage"] = "Error processing: " + ex.Message;
+                _logger.LogError(ex, "Error processing booking");
+                var msg = ex.Message;
+                if (ex.InnerException != null) msg += " | " + ex.InnerException.Message;
+                
+                TempData["ErrorMessage"] = "Error: " + msg;
                 return RedirectToAction("Step5_Confirm");
             }
         }

@@ -500,7 +500,8 @@ namespace SpaBookingWeb.Services.Manager
                 EmployeeId = employeeId,
                 ShiftId = shiftId,
                 WorkDate = date,
-                IsCheckIn = false // Default not checked in
+                IsCheckIn = false, // Default not checked in
+                Note = string.Empty // Fix: Note column does not allow NULL
             };
             _context.WorkSchedules.Add(schedule);
             await _context.SaveChangesAsync();

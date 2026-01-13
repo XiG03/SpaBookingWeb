@@ -62,7 +62,7 @@
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek', // Chế độ mặc định: Tuần
-                initialDate: '@currentDate.ToString("yyyy-MM-dd")',
+                initialDate: '@DateTime.Today.ToString("yyyy-MM-dd")', // Fix: Use DateTime.Today instead of Model.Date
                 height: 600, // Chiều cao cố định để lịch nhỏ gọn hơn
                 // aspect Ratio: 1.5, // Hoặc dùng cái này để chỉnh tỷ lệ
                 headerToolbar: {
@@ -84,11 +84,19 @@
                 
                 // Khi click vào ngày trống -> Mở modal xếp lịch
                 dateClick: function(info) {
-                    // Set ngày cho modal
-                    document.querySelector('#assignShiftModal input[name="date"]').value = info.dateStr;
+                    // Format date to yyyy-MM-dd for input
+                    var clickedDate = info.date;
+                    var year = clickedDate.getFullYear();
+                    var month = String(clickedDate.getMonth() + 1).padStart(2, '0');
+                    var day = String(clickedDate.getDate()).padStart(2, '0');
+                    var formattedDate = year + '-' + month + '-' + day;
+                    
+                    // Set ngày cho modal input
+                    document.querySelector('#assignShiftModal input[name="workDate"]').value = formattedDate;
                     // Mở modal
                     $('#assignShiftModal').modal('show');
                 },
+
 
 
                 // Khi click vào sự kiện -> Mở modal chi tiết (Điểm danh / Xóa)
@@ -235,6 +243,20 @@
                     $('#eventDetailModal').modal('show');
                 }
             });
+            
+            // Form validation before submit
+            $('#attendanceForm').on('submit', function(e) {
+                var isAbsent = $('#statusAbsent').is(':checked');
+                var noteValue = $('#attendanceNote').val().trim();
+                
+                // If Absent is selected but no note is provided, set default note
+                if (isAbsent && noteValue === '') {
+                    $('#attendanceNote').val('Absent');
+                }
+                
+                return true; // Allow form submission
+            });
+            
             calendar.render();
         });
     </script>
@@ -252,7 +274,7 @@
             </div>
             <form asp-action="AssignShift" method="post">
                 <div class="modal-body">
-                    <input type="hidden" name="date" value="@currentDate.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="workDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
 
                     <div class="form-group">
                         <label>Select Employee</label>
