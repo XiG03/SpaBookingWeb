@@ -1,0 +1,104 @@
+﻿@model IEnumerable<SpaBookingWeb.ViewModels.Manager.DailyTipViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý Tiền Tip";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+    var currentDate = (DateTime)ViewBag.CurrentDate;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quản lý Tiền Tip ngày @currentDate.ToString("dd/MM/yyyy")</h1>
+        
+        <form asp-action="DailyTips" method="get" class="form-inline">
+            <input type="date" name="date" class="form-control mr-2" value="@currentDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+        </form>
+    </div>
+
+    <!-- Card Tổng quan -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng tiền Tip hôm nay</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(((decimal)ViewBag.TotalTips).ToString("N0")) đ</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+             <!-- Nút xác nhận trả hết -->
+             <div class="card border-left-info shadow h-100 py-2 d-flex align-items-center justify-content-center">
+                 <form asp-action="ConfirmAllTips" method="post" class="w-100 px-3" onsubmit="return confirm('Bạn xác nhận đã trả toàn bộ tiền Tip cho nhân viên?');">
+                     <input type="hidden" name="date" value="@currentDate.ToString("yyyy-MM-dd")" />
+                     <button type="submit" class="btn btn-info btn-block">
+                         <i class="fas fa-check-double mr-2"></i> Trả hết Tip trong ngày
+                     </button>
+                 </form>
+             </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Chi tiết các khoản Tip</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>Khách hàng</th>
+                            <th>Nhân viên nhận</th>
+                            <th>Số tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tip in Model)
+                        {
+                            <tr>
+                                <td>@tip.CreatedDate.ToString("HH:mm")</td>
+                                <td>@tip.CustomerName</td>
+                                <td class="font-weight-bold text-primary">@tip.EmployeeName</td>
+                                <td class="text-success font-weight-bold">@tip.Amount.ToString("N0") đ</td>
+                                <td>
+                                    @if (tip.IsDistributed)
+                                    {
+                                        <span class="badge badge-success">Đã trả NV</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-warning">Chưa trả</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!tip.IsDistributed)
+                                    {
+                                        <form asp-action="ConfirmTipDistribution" method="post">
+                                            <input type="hidden" name="tipId" value="@tip.TipId" />
+                                            <input type="hidden" name="returnDate" value="@currentDate.ToString("yyyy-MM-dd")" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-check"></i> Xác nhận trả
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

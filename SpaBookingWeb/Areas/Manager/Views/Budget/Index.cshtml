@@ -1,0 +1,171 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.BudgetDashboardViewModel
+
+@{
+    ViewData["Title"] = "Quản Lý Ngân Sách";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Ngân sách tháng @Model.Month/@Model.Year</h1>
+        
+        <div class="d-flex">
+            <!-- Form chuyển tháng -->
+            <form method="get" class="form-inline mr-2">
+                <select name="month" class="form-control mr-2">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(i == Model.Month)">Tháng @i</option>
+                    }
+                </select>
+                <input type="number" name="year" value="@Model.Year" class="form-control mr-2" style="width: 80px" />
+                <button type="submit" class="btn btn-primary"><i class="fas fa-eye"></i> Xem</button>
+            </form>
+
+            <!-- Nút Lập Ngân Sách -->
+            <button class="btn btn-success" data-toggle="modal" data-target="#createBudgetModal">
+                <i class="fas fa-plus-circle"></i> Lập ngân sách
+            </button>
+        </div>
+    </div>
+
+    <!-- Tổng quan tiến độ ngân sách -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng quan chi tiêu</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-2 text-center">
+                            <h2 class="display-4 font-weight-bold @(Model.OverallPercentage > 100 ? "text-danger" : "text-success")">
+                                @Model.OverallPercentage.ToString("0")%
+                            </h2>
+                            <small class="text-muted">Đã sử dụng</small>
+                        </div>
+                        <div class="col-md-10">
+                            <div class="progress mb-2" style="height: 30px;">
+                                <div class="progress-bar @(Model.OverallPercentage > 100 ? "bg-danger" : "bg-success")" 
+                                     role="progressbar" 
+                                     style="width: @(Model.OverallPercentage > 100 ? 100 : Model.OverallPercentage)%;">
+                                     @Model.TotalSpent.ToString("#,##0") / @Model.TotalBudget.ToString("#,##0")
+                                </div>
+                            </div>
+                            <p class="mb-0 text-muted">
+                                Còn lại: <strong>@((Model.TotalBudget - Model.TotalSpent).ToString("#,##0")) VNĐ</strong> 
+                                trong tổng ngân sách @Model.TotalBudget.ToString("#,##0") VNĐ
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chi tiết từng hạng mục -->
+    <div class="row">
+        @if (Model.BudgetItems != null && Model.BudgetItems.Any())
+        {
+            @foreach (var item in Model.BudgetItems)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow mb-4 border-left-@((item.IsOverBudget) ? "danger" : "info")">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">@item.CategoryName</h6>
+                            <div class="dropdown no-arrow">
+                                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#createBudgetModal" onclick="editBudget('@item.CategoryName', @item.LimitAmount)">Điều chỉnh ngân sách</a>
+                                    <a class="dropdown-item" href="#">Xem chi tiết chi tiêu</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Thực tế: <strong>@item.ActualAmount.ToString("#,##0")</strong></span>
+                                <span>Hạn mức: <strong>@item.LimitAmount.ToString("#,##0")</strong></span>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar @(item.IsOverBudget ? "bg-danger" : "bg-info")" 
+                                     role="progressbar" 
+                                     style="width: @(item.UsagePercentage > 100 ? 100 : item.UsagePercentage)%">
+                                </div>
+                            </div>
+                            <div class="text-xs text-right @(item.IsOverBudget ? "text-danger font-weight-bold" : "text-muted")">
+                                @if (item.IsOverBudget)
+                                {
+                                    <span>Vượt ngân sách @((item.ActualAmount - item.LimitAmount).ToString("#,##0"))</span>
+                                }
+                                else
+                                {
+                                    <span>Còn dư @item.RemainingAmount.ToString("#,##0")</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <p class="text-gray-500">Chưa có dữ liệu ngân sách cho tháng này.</p>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#createBudgetModal">
+                    <i class="fas fa-plus"></i> Tạo ngân sách mới
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Tạo/Cập nhật Ngân sách -->
+<div class="modal fade" id="createBudgetModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold text-primary">Thiết lập Ngân sách</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="CreateOrUpdate" method="post">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Tháng</label>
+                            <select name="Month" class="form-control">
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    <option value="@i" selected="@(i == Model.Month)">Tháng @i</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Năm</label>
+                            <input type="number" name="Year" class="form-control" value="@Model.Year" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Danh mục chi tiêu <span class="text-danger">*</span></label>
+                        <!-- Lưu ý: ViewBag.Categories cần được truyền từ Controller -->
+                        <select name="TransactionCategoryId" class="form-control" asp-items="ViewBag.Categories" required>
+                            <option value="">-- Chọn danh mục --</option>
+                        </select>
+                        <small class="form-text text-muted">Chỉ hiển thị các danh mục loại "Chi phí".</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hạn mức ngân sách (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" name="LimitAmount" class="form-control font-weight-bold" placeholder="VD: 5,000,000" required min="0" step="1000" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thiết lập</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

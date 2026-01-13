@@ -1,0 +1,109 @@
+﻿@model SpaBookingWeb.ViewModels.BlogPosts.CreateBlogPostRequest
+
+@{
+    ViewData["Title"] = "Tạo bài viết mới";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Tạo bài viết mới</h1>
+        <a asp-action="Index" class="btn btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin bài viết</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Quan trọng: enctype="multipart/form-data" để upload ảnh -->
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <!-- Cột Trái: Nội dung chính -->
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Title" class="form-label fw-bold">Tiêu đề bài viết <span class="text-danger">*</span></label>
+                                    <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề hấp dẫn..." />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Content" class="form-label fw-bold">Nội dung bài viết <span class="text-danger">*</span></label>
+                                    <textarea asp-for="Content" id="editor" class="form-control" rows="10"></textarea>
+                                    <span asp-validation-for="Content" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Cột Phải: Cấu hình & Ảnh -->
+                            <div class="col-md-4">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light fw-bold">Cài đặt đăng bài</div>
+                                    <div class="card-body">
+                                        <!-- Trạng thái -->
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" asp-for="IsPublished" id="flexSwitchCheckChecked" checked>
+                                            <label class="form-check-label" for="flexSwitchCheckChecked">Xuất bản ngay</label>
+                                        </div>
+
+                                        <!-- Ảnh đại diện -->
+                                        <div class="mb-3">
+                                            <label asp-for="ImageFile" class="form-label fw-bold">Ảnh đại diện (Thumbnail)</label>
+                                            <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" onchange="previewImage(this)">
+                                            <span asp-validation-for="ImageFile" class="text-danger"></span>
+                                            
+                                            <!-- Khung xem trước ảnh -->
+                                            <div class="mt-2 text-center">
+                                                <img id="imgPreview" src="#" alt="Xem trước ảnh" class="img-fluid img-thumbnail d-none" style="max-height: 200px;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 py-2">
+                                    <i class="fas fa-save"></i> Lưu bài viết
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <!-- Nhúng CKEditor 5 từ CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script>
+        // Khởi tạo Editor
+        ClassicEditor
+            .create(document.querySelector('#editor'))
+            .catch(error => {
+                console.error(error);
+            });
+
+        // Hàm xem trước ảnh khi upload
+        function previewImage(input) {
+            var preview = document.getElementById('imgPreview');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "#";
+                preview.classList.add('d-none');
+            }
+        }
+    </script>
+}

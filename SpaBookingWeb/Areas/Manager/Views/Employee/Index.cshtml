@@ -1,0 +1,102 @@
+﻿@model IEnumerable<SpaBookingWeb.ViewModels.Manager.EmployeeListViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách nhân viên";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Quản lý Nhân viên</h1>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Thêm nhân viên mới
+        </a>
+    </div>
+
+    <!-- Thông báo -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Danh sách nhân viên hiện tại</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th>
+                            <th>Họ tên</th>
+                            <th>Liên hệ</th>
+                            <th>Hiệu suất</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <img src="@(string.IsNullOrEmpty(item.Avatar) ? "/img/default-avatar.png" : item.Avatar)" 
+                                         class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" alt="Avatar">
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold">@item.FullName</div>
+                                    <small class="text-muted">@item.Position</small>
+                                </td>
+                                <td>
+                                    <div><i class="fas fa-envelope fa-fw"></i> @item.Email</div>
+                                    <div><i class="fas fa-phone fa-fw"></i> @item.PhoneNumber</div>
+                                </td>
+                                <td>
+                                    <div class="text-warning">
+                                        @item.AverageRating <i class="fas fa-star"></i>
+                                    </div>
+                                    <small>@item.TotalAppointments lượt phục vụ</small>
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge badge-success">Đang làm việc</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Đã nghỉ</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="dropdown no-arrow">
+                                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Tùy chọn
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.EmployeeId">
+                                                <i class="fas fa-edit text-warning mr-2"></i> Sửa thông tin
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <form asp-action="Delete" asp-route-id="@item.EmployeeId" method="post" 
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhân viên này?');" style="display:inline;">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="fas fa-trash mr-2"></i> Xóa nhân viên
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

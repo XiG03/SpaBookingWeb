@@ -8,8 +8,6 @@ using SpaBookingWeb.ViewModels.Manager;
 using SpaBookingWeb.Data;
 using SpaBookingWeb.Models;
 
-
-
 namespace SpaBookingWeb.Services.Manager
 {
     public class CustomerService : ICustomerService
@@ -37,27 +35,28 @@ namespace SpaBookingWeb.Services.Manager
             var startOfLastMonth = startOfMonth.AddMonths(-1);
             var endOfLastMonth = startOfMonth.AddDays(-1);
 
-            // 1. LẤY DANH SÁCH KHÁCH HÀNG (Lọc theo Role)
-            // Lưu ý: GetUsersInRoleAsync sẽ chỉ trả về những user có role là Customer
+            // 1. LẤY DANH SÁCH KHÁCH HÀNG
+            // Global Query Filter trong ApplicationDbContext sẽ tự động loại bỏ các User có IsDeleted = true
             var allUsersInRole = await _userManager.GetUsersInRoleAsync(ROLE_CUSTOMER);
 
-            // Chỉ lấy user có LockoutEnd là null hoặc thời gian khóa đã qua (tức là đang active)
+            // Lưu ý: Logic cũ dùng LockoutEnd để đánh dấu xóa. 
+            // Nếu bạn muốn lọc cả những user bị khóa (banned) vì lý do khác, hãy giữ dòng dưới. 
+            // Nếu chỉ quan tâm đến Xóa Mềm (đã được lọc tự động), có thể bỏ qua check LockoutEnd.
+            // Ở đây mình vẫn giữ check Lockout để đảm bảo tính tương thích.
             var customersList = allUsersInRole
                 .Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.Now)
                 .ToList();
 
-            // Nếu hệ thống chưa có role Customer hoặc chưa gán role, danh sách này sẽ rỗng.
-            // Lúc này ta coi như tổng khách = 0
             var totalCustomers = customersList.Count;
 
-            // 2. Khách hàng mới trong tháng (Lọc từ danh sách customersList đã lấy ở trên)
-            // Sử dụng trường CreatedDate mà ta đã thêm vào Model
+            // 2. Khách hàng mới trong tháng
             var newCustomersCount = customersList.Count(u => u.CreatedDate >= startOfMonth);
 
             // 3. Truy vấn bảng Operations (Lịch sử đặt/Giao dịch)
+            // Global Query Filter cũng áp dụng cho Operations (ẩn các giao dịch bị xóa mềm)
             var operationsThisMonth = await _context.Operations
                 .Where(o => o.CreateDate >= startOfMonth)
-                .Include(o => o.User) // Include để check role nếu cần, nhưng ở đây ta check theo UserId
+                .Include(o => o.User)
                 .ToListAsync();
 
             var operationsLastMonth = await _context.Operations
@@ -65,8 +64,6 @@ namespace SpaBookingWeb.Services.Manager
                 .ToListAsync();
 
             // 4. Số lượng lượt ghé (Status = 1: Hoàn thành)
-            // Chỉ tính lượt ghé của những người là Customer (đề phòng nhân viên test book lịch)
-            // Lấy danh sách ID của khách hàng để đối chiếu
             var customerIds = customersList.Select(c => c.Id).ToHashSet();
 
             var completedVisits = operationsThisMonth
@@ -79,14 +76,12 @@ namespace SpaBookingWeb.Services.Manager
             // 6. Tính tỉ lệ quay lại (Retention Rate)
             double returnRateThisMonth = 0;
 
-            // Nhóm các đơn hàng thành công theo UserId
             var customerVisitsThisMonth = operationsThisMonth
-                .Where(o => o.Status == 1 && customerIds.Contains(o.UserId)) // Chỉ tính User là Customer
+                .Where(o => o.Status == 1 && customerIds.Contains(o.UserId))
                 .GroupBy(o => o.UserId);
 
             if (customerVisitsThisMonth.Any())
             {
-                // Khách quay lại là khách có > 1 đơn thành công trong tháng
                 double returningCustomers = customerVisitsThisMonth.Count(g => g.Count() > 1);
                 double totalActiveCustomers = customerVisitsThisMonth.Count();
 
@@ -96,7 +91,7 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // Tỉ lệ tháng trước (để so sánh)
+            // Tỉ lệ tháng trước
             double returnRateLastMonth = 0;
             var customerVisitsLastMonth = operationsLastMonth
                 .Where(o => o.Status == 1 && customerIds.Contains(o.UserId))
@@ -115,7 +110,6 @@ namespace SpaBookingWeb.Services.Manager
 
             // 7. Tỉ lệ tăng trưởng visits
             double growthRate = 0;
-            // Tính số visits tháng trước của Customer
             var visitsLastMonthCount = operationsLastMonth.Count(o => o.Status == 1 && customerIds.Contains(o.UserId));
 
             if (visitsLastMonthCount > 0)
@@ -123,7 +117,7 @@ namespace SpaBookingWeb.Services.Manager
                 growthRate = ((double)(completedVisits - visitsLastMonthCount) / visitsLastMonthCount) * 100;
             }
 
-            // Xử lý hiển thị tên (Fallback nếu FullName null)
+            // Fallback tên
             foreach (var user in customersList)
             {
                 if (string.IsNullOrEmpty(user.FullName)) user.FullName = user.UserName;
@@ -138,22 +132,19 @@ namespace SpaBookingWeb.Services.Manager
                 ReturnRateThisMonth = Math.Round(returnRateThisMonth, 2),
                 ReturnRateLastMonth = Math.Round(returnRateLastMonth, 2),
                 GrowthRate = Math.Round(growthRate, 2),
-                // Chỉ hiển thị danh sách User thuộc role Customer
                 Customers = customersList.OrderByDescending(u => u.CreatedDate).Take(100).ToList()
             };
         }
 
         public async Task<bool> CreateCustomerAsync(ApplicationUser user, string password)
         {
-            // Gán username bằng email nếu chưa có
             if (string.IsNullOrEmpty(user.UserName)) user.UserName = user.Email;
             user.CreatedDate = DateTime.Now;
-            user.EmailConfirmed = true; // Admin tạo thì mặc định confirm luôn để tiện login
+            user.EmailConfirmed = true; 
 
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                // Đảm bảo Role tồn tại
                 if (!await _roleManager.RoleExistsAsync(ROLE_CUSTOMER))
                 {
                     await _roleManager.CreateAsync(new IdentityRole(ROLE_CUSTOMER));
@@ -165,9 +156,9 @@ namespace SpaBookingWeb.Services.Manager
             return false;
         }
 
-        // Chỉ lấy user là Customer
         public async Task<List<ApplicationUser>> GetAllCustomersAsync()
         {
+            // Global Filter của EF Core sẽ tự động lọc bỏ User đã xóa mềm
             var users = await _userManager.GetUsersInRoleAsync(ROLE_CUSTOMER);
             return users.ToList();
         }
@@ -177,10 +168,7 @@ namespace SpaBookingWeb.Services.Manager
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return null;
 
-            // Kiểm tra xem user này có phải là Customer không
-            // Nếu là Manager/Admin thì không trả về ở đây (để tránh Manager edit nhầm Manager khác trong giao diện Customer)
             var isCustomer = await _userManager.IsInRoleAsync(user, ROLE_CUSTOMER);
-
             if (!isCustomer) return null;
 
             return user;
@@ -191,7 +179,6 @@ namespace SpaBookingWeb.Services.Manager
             var existingUser = await _userManager.FindByIdAsync(user.Id);
             if (existingUser == null) return false;
 
-            // Double check role
             if (!await _userManager.IsInRoleAsync(existingUser, ROLE_CUSTOMER)) return false;
 
             existingUser.FullName = user.FullName;
@@ -208,15 +195,15 @@ namespace SpaBookingWeb.Services.Manager
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return false;
 
-            // Double check role
             if (!await _userManager.IsInRoleAsync(user, ROLE_CUSTOMER)) return false;
 
-             user.LockoutEnabled = true; // Đảm bảo tính năng khóa được bật
-            user.LockoutEnd = DateTimeOffset.MaxValue; // Khóa đến ngày tận thế -> Coi như xóa
-
-            var result = await _userManager.UpdateAsync(user);
+            // --- THAY ĐỔI QUAN TRỌNG: SỬ DỤNG XÓA MỀM ---
+            // Thay vì set Lockout, ta gọi DeleteAsync.
+            // ApplicationDbContext đã được cấu hình để chặn lệnh Delete này và chuyển thành Soft Delete (IsDeleted = true)
+            // AuditLog sẽ ghi nhận hành động này là "Delete".
+            
+            var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
         }
     }
 }
-

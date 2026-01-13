@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "Lỗi 500 - Salon & Spa";
+    Layout = "";
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ecb6",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+            <div class="mx-auto flex h-16 max-w-[960px] items-center justify-between px-4 sm:px-10">
+                <div class="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <span class="material-symbols-outlined text-3xl text-primary">spa</span>
+                    <h2 class="text-lg font-bold leading-tight tracking-tight">Salon &amp; Spa</h2>
+                </div>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Trang chủ</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dịch vụ</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Combo</a>
+                    <a class="text-sm font-medium hover:text-primary transition-colors" href="#">Liên hệ</a>
+                </nav>
+                <div class="flex md:hidden">
+                    <span class="material-symbols-outlined cursor-pointer">menu</span>
+                </div>
+            </div>
+        </header>
+        <!-- Main Content -->
+        <main class="flex flex-col grow items-center justify-center">
+            <div class="w-full max-w-[960px] px-4 py-12 md:px-10">
+                <!-- Hero / Error Section -->              
+                <div class="w-full @@container">
+                    <div class="flex flex-col gap-10 @@[864px]:flex-row @@[864px]:items-center">
+                        <!-- Illustration -->
+                        <div class="w-full @@[864px]:w-1/2 flex justify-center">
+                            <div class="relative w-full aspect-[4/3] max-w-[500px] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-sm"
+                                data-alt="Calm spa setting with towels and oil to soothe the error"
+                                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA11TPkc-cg1whgtbE2Rpkic9RXx5qIQ42kE6X73RZVnCwg-cIqqZZaj2NaXShDO1BA7i11CFHlVZDUZva3V4C7lt8jbh27oxW6o8Lf4En9IVisgJNLD7RjvSETYDWak8StYSkBj4ocSlZZ1r197ILZfD2rBlobkj2XwMN3VHMCN0bzLVJeC8ScInLltMg8aeafydEIJ0SSYM3S8KkJK_R6BfWP4eVuzd5_NBN7wOAtOGog5w-IRbde0Gv-hqr575RRfvPe00Bb7vk'); background-size: cover; background-position: center;">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                <div class="absolute bottom-4 left-4 right-4 text-white">
+                                    <div
+                                        class="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
+                                        <span class="material-symbols-outlined text-sm">warning</span>
+                                        <span class="text-xs font-semibold">Error 500</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Error Message -->
+                        <div class="w-full @@[864px]:w-1/2 flex flex-col gap-6 text-center @@[864px]:text-left">
+                            <div class="flex flex-col gap-3">
+                                <h1
+                                    class="text-4xl font-black leading-tight tracking-[-0.033em] text-slate-900 dark:text-white sm:text-5xl">
+                                    Lỗi 500: Máy chủ đang đi 'spa'
+                                </h1>
+                                <p
+                                    class="text-base font-normal leading-relaxed text-slate-600 dark:text-slate-400 sm:text-lg">
+                                    Chúng tôi xin lỗi vì sự bất tiện này. Có vẻ như hệ thống đang gặp chút trục trặc kỹ
+                                    thuật ('bad hair day'). Đội ngũ kỹ thuật đang xử lý ngay lập tức để lấy lại vẻ đẹp
+                                    hoàn hảo cho website.
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap justify-center gap-3 @@[864px]:justify-start">
+                                <button
+                                    class="group flex h-12 min-w-[140px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-6 text-base font-bold text-slate-900 transition-transform active:scale-95 hover:bg-primary/90"
+                                    onclick="window.location.reload()">
+                                    <span class="material-symbols-outlined text-[20px]">refresh</span>
+                                    <span>Tải lại trang</span>
+                                </button>
+                                <a class="group flex h-12 min-w-[140px] cursor-pointer items-center justify-center gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 px-6 text-base font-bold text-slate-900 dark:text-white transition-colors hover:bg-slate-200 dark:hover:bg-slate-700"
+                                    href="#">
+                                    <span class="material-symbols-outlined text-[20px]">home</span>
+                                    <span>Về trang chủ</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- CTA Support Section -->
+                <div
+                    class="mt-20 w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+                        <div class="flex flex-col gap-2 text-center md:text-left">
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">
+                                Cần đặt lịch gấp?
+                            </h3>
+                            <p class="max-w-md text-slate-600 dark:text-slate-400">
+                                Đừng lo lắng, hãy gọi ngay hotline hỗ trợ của chúng tôi để được trợ giúp đặt lịch thủ
+                                công trong khi chờ hệ thống phục hồi.
+                            </p>
+                        </div>
+                        <div class="flex shrink-0">
+                            <a class="flex h-12 items-center justify-center rounded-xl border-2 border-primary bg-transparent px-8 text-base font-bold text-slate-900 dark:text-primary transition-colors hover:bg-primary hover:text-slate-900"
+                                href="tel:1900xxxx">
+                                <span class="material-symbols-outlined mr-2">call</span>
+                                Gọi hỗ trợ 1900-xxxx
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer class="w-full border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark py-10">
+            <div class="mx-auto flex max-w-[960px] flex-col items-center gap-6 px-4 text-center">
+                <div class="flex flex-wrap justify-center gap-8">
+                    <a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
+                        href="#">Trung tâm hỗ trợ</a>
+                    <a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
+                        href="#">Điều khoản sử dụng</a>
+                    <a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors dark:text-slate-400"
+                        href="#">Chính sách bảo mật</a>
+                </div>
+                <p class="text-sm text-slate-400">© 2024 Salon &amp; Spa Platform. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Nhập Sản phẩm từ Excel";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <h2 class="h3 mb-4 page-title">Nhập Sản phẩm từ Excel</h2>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <strong class="card-title">Upload File</strong>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Hiển thị lỗi nếu có -->
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Form Upload -->
+                    <form asp-action="Import" method="post" enctype="multipart/form-data">
+                        
+                        <div class="form-group">
+                            <label>Chọn file Excel (.xlsx)</label>
+                            <div class="custom-file">
+                                <input type="file" name="file" class="custom-file-input" id="customFile" accept=".xlsx" required>
+                                <label class="custom-file-label" for="customFile">Chọn file...</label>
+                            </div>
+                            <small class="form-text text-muted mt-2">
+                                Lưu ý: File Excel cần tuân thủ đúng định dạng mẫu. 
+                                <a asp-action="DownloadTemplate" class="btn btn-sm btn-outline-primary"> <i class="fas fa-download"></i>
+                                Tải file mẫu tại đây</a>
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info mt-3" role="alert">
+                            <strong>Cấu trúc cột yêu cầu:</strong>
+                            <ul class="mb-0 pl-3">
+                                <li>Cột A: Tên sản phẩm</li>
+                                <li>Cột B: Mã danh mục</li>
+                                <li>Cột C: Đơn vị tính</li>
+                                <li>Cột D: Giá nhập</li>
+                                <li>Cột E: Giá bán</li>
+                                <li>Cột F: Số lượng tồn</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end">
+                            <a asp-controller="Products" asp-action="Index" class="btn btn-secondary mr-2">Quay lại</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload mr-1"></i> Tải lên và Xử lý
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Script nhỏ để hiển thị tên file khi chọn
+        $(".custom-file-input").on("change", function() {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+    </script>
+}

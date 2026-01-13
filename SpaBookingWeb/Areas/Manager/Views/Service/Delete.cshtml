@@ -1,0 +1,79 @@
+﻿@model SpaBookingWeb.Models.Service
+
+@{
+    ViewData["Title"] = "Xác nhận xóa dịch vụ";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="row align-items-center my-4">
+                <div class="col">
+                    <h2 class="h3 mb-0 page-title text-danger">Ngưng hoạt động dịch vụ?</h2>
+                    <p class="text-muted">Bạn có chắc chắn muốn ngưng hoạt động dịch vụ này không? Dịch vụ sẽ không còn hiển thị cho khách hàng đặt lịch.</p>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <strong class="card-title">Chi tiết dịch vụ</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            @if (!string.IsNullOrEmpty(Model.Image))
+                            {
+                                <img src="@Model.Image" alt="@Model.ServiceName" class="img-fluid rounded shadow-sm" style="max-height: 250px;" />
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <span class="text-muted">Không có hình ảnh</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-3">Tên dịch vụ</dt>
+                                <dd class="col-sm-9"><h3>@Model.ServiceName</h3></dd>
+
+                                <dt class="col-sm-3">Giá tiền</dt>
+                                <dd class="col-sm-9 text-success font-weight-bold">@Model.Price.ToString("N0") VNĐ</dd>
+
+                                <dt class="col-sm-3">Thời lượng</dt>
+                                <dd class="col-sm-9">@Model.DurationMinutes phút</dd>
+
+                                <dt class="col-sm-3">Trạng thái</dt>
+                                <dd class="col-sm-9">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Đang hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Đã ngưng</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-3">Yêu cầu cọc</dt>
+                                <dd class="col-sm-9">@(Model.RequiresDeposit ? "Có" : "Không")</dd>
+
+                                <dt class="col-sm-3">Mô tả</dt>
+                                <dd class="col-sm-9">@Model.Description</dd>
+                            </dl>
+
+                            <hr />
+                            
+                            <form asp-action="Delete" method="post">
+                                <input type="hidden" name="id" value="@Model.ServiceId" />
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fe fe-trash-2 mr-2"></i>Xác nhận ngưng hoạt động
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

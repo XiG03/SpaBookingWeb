@@ -1,0 +1,168 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.CashbookIndexViewModel
+
+@{
+    ViewData["Title"] = "Sổ Quỹ Tiền Mặt";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Header: Bộ lọc ngày & Nút tạo phiếu -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Sổ Quỹ Tiền Mặt</h1>
+        <form method="get" class="form-inline">
+            <input type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" class="form-control form-control-sm mr-2" />
+            <span class="mr-2">-</span>
+            <input type="date" name="toDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" class="form-control form-control-sm mr-2" />
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+        </form>
+        <button class="btn btn-sm btn-success ml-2" data-toggle="modal" data-target="#createTransactionModal">
+            <i class="fas fa-plus"></i> Lập Phiếu
+        </button>
+    </div>
+
+    <!-- Thống kê nhanh (Cards) -->
+    <div class="row mb-4">
+        <!-- Tồn đầu kỳ -->
+        <div class="col-md-3">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Tồn đầu kỳ</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.OpeningBalance.ToString("#,##0") ₫</div>
+                </div>
+            </div>
+        </div>
+        <!-- Tổng Thu -->
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng Thu</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalIncome.ToString("#,##0") ₫</div>
+                </div>
+            </div>
+        </div>
+        <!-- Tổng Chi -->
+        <div class="col-md-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Tổng Chi</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalExpense.ToString("#,##0") ₫</div>
+                </div>
+            </div>
+        </div>
+        <!-- Tồn cuối kỳ -->
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tồn cuối kỳ</div>
+                    <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ClosingBalance.ToString("#,##0") ₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách giao dịch -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Chi tiết giao dịch</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Loại</th>
+                            <th>Mô tả</th>
+                            <th>Danh mục</th>
+                            <th>Số tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Transactions != null && Model.Transactions.Any())
+                        {
+                            foreach (var item in Model.Transactions)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (item.Type == "Thu")
+                                        {
+                                            <span class="badge badge-success">Thu</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">Chi</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @item.Description
+                                        @if (!string.IsNullOrEmpty(item.ReferenceCode))
+                                        {
+                                            <br /><small class="text-muted">Ref: @item.ReferenceCode</small>
+                                        }
+                                    </td>
+                                    <td>@item.CategoryName</td>
+                                    <td class="text-right font-weight-bold @(item.Type == "Thu" ? "text-success" : "text-danger")">
+                                        @(item.Type == "Thu" ? "+" : "-")@item.Amount.ToString("#,##0")
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center">Không có giao dịch nào trong khoảng thời gian này.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tạo Giao Dịch -->
+<div class="modal fade" id="createTransactionModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lập Phiếu Thu/Chi</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="Create" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Loại phiếu</label>
+                        <select name="IsIncome" class="form-control">
+                            <option value="true">Phiếu Thu</option>
+                            <option value="false">Phiếu Chi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày</label>
+                        <input type="datetime-local" name="Date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                    </div>
+                    <div class="form-group">
+                        <label>Số tiền</label>
+                        <input type="number" name="Amount" class="form-control" required min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>Mô tả</label>
+                        <textarea name="Description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <!-- Phần chọn danh mục cần load từ DB, ở đây để input tạm -->
+                    <div class="form-group">
+                        <label>Mã Danh mục (Tùy chọn)</label>
+                        <input type="number" name="CategoryId" class="form-control" placeholder="ID danh mục" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu phiếu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

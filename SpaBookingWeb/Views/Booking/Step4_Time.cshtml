@@ -1,0 +1,336 @@
+﻿@using SpaBookingWeb.ViewModels.Client
+@using System.Globalization
+@model Step4ViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Chọn Thời gian (Bước 4)";
+    var culture = new CultureInfo("vi-VN");
+    
+    var selectedDate = Model.CurrentSession.SelectedDate ?? DateTime.Today;
+    
+    var dayOfWeek = selectedDate.DayOfWeek;
+    int diff = dayOfWeek - DayOfWeek.Monday;
+    if (diff < 0) diff += 7;
+    var startOfWeek = selectedDate.AddDays(-diff); 
+    
+    var prevWeekDate = selectedDate.AddDays(-7);
+    var nextWeekDate = selectedDate.AddDays(7);
+    
+    string GetStaffName(int? staffId)
+    {
+        if (staffId == null) return "Bất kỳ ai";
+        var staff = Model.Staffs.FirstOrDefault(s => s.Id == staffId);
+        return staff != null ? staff.Name : "Bất kỳ ai";
+    }
+}
+
+<style>
+    .time-slot-btn.active { 
+        background-color: #ec4899; 
+        color: white; 
+        border-color: #ec4899; 
+        box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.4);
+        transform: scale(1.05);
+    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .date-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+        background-color: #f3f4f6;
+        color: #9ca3af;
+    }
+</style>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- STEP INDICATOR -->
+    <div class="mb-12">
+         <div class="flex items-center justify-between w-full max-w-3xl mx-auto relative">
+            <!-- Progress Track -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1.5 bg-gray-100 rounded-full -z-10"></div>
+            <!-- Progress Fill -->
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[100%] h-1.5 bg-gradient-to-r from-pink-400 to-primary rounded-full -z-10 transition-all duration-500"></div>
+            
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Index" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Dịch vụ</span>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Step2_Services" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Gói & Combo</span>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center gap-2 group">
+                <a asp-action="Step3_Staff" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-lg">check</span>
+                </a>
+                <span class="text-xs font-semibold text-gray-500">Kỹ thuật viên</span>
+            </div>
+
+            <!-- Step 4 (Active) -->
+             <div class="flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-primary text-white flex items-center justify-center font-bold text-lg shadow-xl shadow-pink-300 ring-4 ring-white">
+                    4
+                </div>
+                <span class="text-sm font-bold text-primary">Thời gian</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8 items-start relative">
+        <div class="flex-1 w-full min-w-0 flex flex-col gap-6">
+            
+            <!-- SUMMARY PREVIOUS STEPS -->
+            <section class="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-pink-100 dark:border-gray-800 opacity-80 hover:opacity-100 transition-opacity">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">check</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Dịch vụ & Chuyên gia</h3>
+                            <p class="text-sm text-gray-500">@Model.CurrentSession.Members.Sum(m=>m.SelectedServiceIds.Count) dịch vụ đã chọn</p>
+                        </div>
+                    </div>
+                    <a asp-action="Step3_Staff" class="text-sm font-semibold text-primary hover:text-primary-dark px-3 py-1 hover:bg-pink-50 rounded-lg transition-colors">Sửa</a>
+                </div>
+            </section>
+
+            <!-- TIME SELECTION -->
+            <section class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-md border border-primary/20 dark:border-primary/20 ring-4 ring-pink-50 dark:ring-gray-800">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-pink-200">4</div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Chọn Thời gian</h3>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Date Picker (Flexible Calendar) -->
+                    <div class="w-full">
+                        <!-- Month Navigation -->
+                        <div class="flex items-center justify-between mb-4 px-2">
+                            <div class="flex items-center gap-2">
+                                <a href="?date=@prevWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Tuần trước">
+                                    <span class="material-symbols-outlined text-gray-900 dark:text-white">chevron_left</span>
+                                </a>
+                                <span class="font-bold text-lg text-gray-900 dark:text-white capitalize">
+                                    Tháng @selectedDate.ToString("MM yyyy", culture)
+                                </span>
+                                <a href="?date=@nextWeekDate.ToString("yyyy-MM-dd")" class="p-1 hover:bg-pink-50 dark:hover:bg-gray-800 rounded-full transition-colors" title="Tuần sau">
+                                    <span class="material-symbols-outlined text-gray-900 dark:text-white">chevron_right</span>
+                                </a>
+                            </div>
+                            
+                            <a href="?date=@DateTime.Today.ToString("yyyy-MM-dd")" class="text-xs font-bold text-primary hover:underline">Hôm nay</a>
+                        </div>
+                        
+                        <!-- Calendar Header Days -->
+                        <div class="grid grid-cols-7 text-center text-xs text-gray-500 mb-3 font-medium uppercase tracking-wide">
+                            <div>Hai</div><div>Ba</div><div>Tư</div><div>Năm</div><div>Sáu</div><div>Bảy</div><div>CN</div>
+                        </div>
+
+                        <!-- Calendar Days Row -->
+                        <div class="grid grid-cols-7 gap-1.5 text-center">
+                            @for (int i = 0; i < 7; i++)
+                            {
+                                var d = startOfWeek.AddDays(i);
+                                bool isSelected = d.Date == selectedDate.Date;
+                                bool isPast = d.Date < DateTime.Today;
+                                
+                                <a href="@(isPast ? "javascript:void(0)" : $"?date={d.ToString("yyyy-MM-dd")}")" 
+                                   class="h-10 w-10 mx-auto rounded-full flex items-center justify-center text-sm transition-all date-btn
+                                          @(isPast ? "disabled" : "")
+                                          @(isSelected 
+                                            ? "bg-primary text-white font-bold shadow-lg shadow-primary/30 transform scale-105" 
+                                            : "text-gray-900 hover:bg-pink-50 dark:text-white dark:hover:bg-gray-800")">
+                                    @d.Day
+                                </a>
+                            }
+                        </div>
+                        
+                        <!-- Full Calendar Input -->
+                        <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Hoặc chọn ngày cụ thể</label>
+                            <form method="get" action="Step4_Time" id="customDateForm" class="relative">
+                                <input type="date" name="date" 
+                                       value="@selectedDate.ToString("yyyy-MM-dd")"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       onchange="document.getElementById('customDateForm').submit()"
+                                       class="w-full rounded-xl border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-primary focus:border-primary pl-10 h-10 text-sm font-medium" />
+                                <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-500 text-[18px] pointer-events-none">calendar_month</span>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Time Slots Grid -->
+                    <div class="border-t md:border-t-0 md:border-l border-pink-100 dark:border-gray-800 pt-6 md:pt-0 md:pl-8">
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            @selectedDate.ToString("dddd, dd/MM", culture)
+                        </h4>
+                        
+                        <div class="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto scrollbar-hide pr-1">
+                            @if (Model.AvailableTimeSlots != null && Model.AvailableTimeSlots.Any())
+                            {
+                                @foreach (var slot in Model.AvailableTimeSlots)
+                                {
+                                    bool isActive = Model.CurrentSession.SelectedTime.HasValue 
+                                                    && Model.CurrentSession.SelectedTime.Value.ToString(@"hh\:mm") == slot;
+                                    
+                                    <button onclick="selectTime(this, '@slot')" 
+                                            class="time-slot-btn py-2.5 px-1 rounded-lg border border-gray-200 dark:border-gray-800 text-sm font-medium hover:border-primary hover:text-primary transition-all text-gray-900 dark:text-white bg-white dark:bg-gray-900 hover:shadow-md @(isActive ? "active" : "")">
+                                        @slot
+                                    </button>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-span-3 flex flex-col items-center justify-center text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+                                    <span class="material-symbols-outlined text-4xl mb-2 text-gray-300">event_busy</span>
+                                    <p class="text-sm font-medium">Không có giờ trống</p>
+                                    <p class="text-xs">Vui lòng chọn ngày khác.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl shadow-pink-100/50 dark:shadow-none border border-pink-100 dark:border-gray-800">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                    Tóm tắt đặt lịch
+                </h3>
+                
+                <div class="space-y-4 mb-6 relative">
+                    <div class="absolute left-[7px] top-2 bottom-4 w-0.5 bg-pink-100 dark:bg-gray-800"></div>
+                    
+                    @foreach (var member in Model.CurrentSession.Members)
+                    {
+                        @foreach (var service in member.SelectedServices)
+                        {
+                            int? staffId = null;
+                            if (member.ServiceStaffMap.ContainsKey(service.Id)) {
+                                staffId = member.ServiceStaffMap[service.Id];
+                            }
+                            string staffName = GetStaffName(staffId);
+
+                            <div class="relative pl-6">
+                                <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-white dark:bg-gray-900"></div>
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white">@service.Name</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            @service.DurationMinutes phút • 
+                                            <span class="text-primary font-medium">@staffName</span>
+                                        </p>
+                                        @if(Model.CurrentSession.IsGroupBooking){
+                                            <span class="text-[10px] bg-gray-100 px-1 rounded">@member.Name</span>
+                                        }
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">@service.Price.ToString("N0")</span>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div id="time-summary" class="relative pl-6 transition-all duration-300 @(Model.CurrentSession.SelectedTime.HasValue ? "" : "hidden")">
+                        <div class="absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-primary bg-primary dark:bg-gray-900 shadow-sm"></div>
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white" id="summary-time-text">
+                                    @(Model.CurrentSession.SelectedTime?.ToString(@"hh\:mm") ?? ""), @selectedDate.ToString("dd/MM")
+                                </p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    Thời gian đã chọn
+                                    <span id="end-time-display" class="block text-primary font-medium mt-1"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-dashed border-gray-200 dark:border-gray-800 my-4"></div>
+                
+                <div class="space-y-2 mb-6">
+                    <div class="flex justify-between items-end pt-2">
+                        <div>
+                            <span class="block text-sm text-gray-500 mb-1">Tổng thời gian</span>
+                            <span class="text-base font-semibold text-gray-900 dark:text-white">@Model.TotalDuration phút</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-sm text-gray-500 mb-1">Tổng tiền</span>
+                            <span class="text-2xl font-black text-primary-dark">@Model.TotalAmount.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-action="Step5_Confirm" method="get" id="nextStepForm">
+                    <button type="button" onclick="validateAndSubmit()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2 group">
+                        Tiếp tục
+                        <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
+                </form>
+                
+                <p class="text-center text-xs text-gray-500">
+                    Bạn chưa bị trừ tiền ở bước này.
+                </p>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+    let selectedTime = '@(Model.CurrentSession.SelectedTime?.ToString(@"hh\:mm") ?? "")';
+    const selectedDateStr = '@selectedDate.ToString("dd/MM")';
+    const totalDurationMinutes = @Model.TotalDuration;
+
+    function selectTime(btn, time) {
+        selectedTime = time;
+
+        document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const [hours, minutes] = time.split(':').map(Number);
+        const startTime = new Date();
+        startTime.setHours(hours, minutes, 0);
+        
+        const endTime = new Date(startTime.getTime() + totalDurationMinutes * 60000);
+        const endTimeStr = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        document.getElementById('time-summary').classList.remove('hidden');
+        document.getElementById('summary-time-text').innerText = `${time}, ${selectedDateStr}`;
+        document.getElementById('end-time-display').innerText = `Dự kiến xong lúc: ${endTimeStr}`;
+
+        const formData = new FormData();
+        formData.append('date', '@selectedDate.ToString("yyyy-MM-dd")');
+        formData.append('time', time);
+
+        fetch('/Booking/SetTime', {
+            method: 'POST',
+            body: formData
+        }).then(res => {
+            if(!res.ok) console.error("Lỗi lưu giờ");
+        });
+    }
+
+    function validateAndSubmit() {
+        if (!selectedTime) {
+            alert('Vui lòng chọn thời gian đặt lịch.');
+            return;
+        }
+        document.getElementById('nextStepForm').submit();
+    }
+</script>

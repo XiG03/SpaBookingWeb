@@ -1,0 +1,140 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.ServiceViewModel
+
+@{
+    ViewData["Title"] = "Thêm Dịch vụ mới";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <h2 class="h3 mb-4 page-title">Thêm Dịch vụ mới</h2>
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <strong class="card-title">Thông tin dịch vụ</strong>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="ServiceName">Tên dịch vụ *</label>
+                                <input asp-for="ServiceName" class="form-control" />
+                                <span asp-validation-for="ServiceName" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="Price">Giá tiền (VNĐ) *</label>
+                                <input asp-for="Price" class="form-control" type="number" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="DurationMinutes">Thời lượng (Phút) *</label>
+                                <input asp-for="DurationMinutes" class="form-control" type="number" />
+                                <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="ImageFile">Hình ảnh</label>
+                                <div class="custom-file">
+                                    <input asp-for="ImageFile" class="custom-file-input" id="customFile" accept="image/*">
+                                    <label class="custom-file-label" for="customFile">Chọn ảnh...</label>
+                                </div>
+                                <span asp-validation-for="ImageFile" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Description">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" asp-for="IsActive" id="customSwitch1" checked>
+                                <label class="custom-control-label" for="customSwitch1">Kích hoạt ngay</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" asp-for="RequiresDeposit" id="customCheck2">
+                                <label class="custom-control-label" for="customCheck2">Yêu cầu đặt cọc</label>
+                            </div>
+
+
+                        <hr />
+                        <h5 class="mb-3">Định mức tiêu hao (Nguyên liệu)</h5>
+                        <div id="consumables-container">
+                            <!-- Rows will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btnAddConsumable">
+                            <i class="fas fa-plus"></i> Thêm nguyên liệu
+                        </button>
+                        <hr />
+                        
+                        <button type="submit" class="btn btn-primary">Lưu dịch vụ</button>
+                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Hiển thị tên file khi chọn ảnh
+        $('.custom-file-input').on('change', function () {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+
+        // --- Logic Nguyên Liệu ---
+        var availableProducts = @Html.Raw(Json.Serialize(Model.AvailableProducts));
+
+        function addConsumableRow() {
+            var index = $("#consumables-container .consumable-row").length;
+            var options = '<option value="">-- Chọn nguyên liệu --</option>';
+            if(availableProducts) {
+                availableProducts.forEach(function(p) {
+                    var unitName = p.unit ? p.unit.unitName : '';
+                    options += `<option value="${p.productId}">${p.productName} (${unitName})</option>`;
+                });
+            }
+
+            var html = `
+                <div class="form-row consumable-row mb-2 align-items-end" id="row-${index}">
+                    <div class="form-group col-md-6 mb-0">
+                        <label>Nguyên liệu</label>
+                        <select name="Consumables[${index}].ProductId" class="form-control" required>
+                            ${options}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4 mb-0">
+                        <label>Số lượng</label>
+                        <input type="number" name="Consumables[${index}].Quantity" class="form-control" value="1" min="1" required />
+                    </div>
+                    <div class="form-group col-md-2 mb-0">
+                        <button type="button" class="btn btn-outline-danger btn-block font-weight-bold" onclick="removeRow(${index})" title="Xóa nguyên liệu này">
+                            <i class="fas fa-trash-alt mr-1"></i> Xóa
+                        </button>
+                    </div>
+                </div>`;
+            $("#consumables-container").append(html);
+        }
+
+        window.removeRow = function(index) {
+            $("#row-" + index).remove();
+            reindexRows();
+        }
+
+        function reindexRows() {
+             $("#consumables-container .consumable-row").each(function(i, row) {
+                 $(row).attr("id", "row-" + i);
+                 $(row).find("select").attr("name", `Consumables[${i}].ProductId`);
+                 $(row).find("input[type=number]").attr("name", `Consumables[${i}].Quantity`);
+                 $(row).find("button").attr("onclick", `removeRow(${i})`);
+             });
+        }
+
+        $("#btnAddConsumable").click(addConsumableRow);
+    </script>
+}

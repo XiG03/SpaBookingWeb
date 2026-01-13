@@ -1,0 +1,86 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.ComboDashboardViewModel
+
+@{
+    ViewData["Title"] = "Quản lý Combo";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="page-title">Danh sách Combo</h2>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fe fe-plus-circle mr-2"></i>Thêm Combo
+            </a>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="card shadow">
+            <div class="card-body">
+                <table class="table datatables" id="dataTable-1">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên Combo</th>
+                            <th>Giá (VNĐ)</th>
+                            <th>Dịch vụ bao gồm</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Combos)
+                        {
+                            <tr>
+                                <td>@item.ComboId</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Image))
+                                    {
+                                        <img src="@item.Image" class="avatar-img rounded"
+                                            style="width:50px; height:50px; object-fit:cover;" alt="@item.ComboName" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No Img</span>
+                                    }
+                                </td>
+                                <td><strong>@item.ComboName</strong></td>
+                                <td class="text-success">@item.Price.ToString("N0") đ</td>
+                                <td>
+                                    <span class="badge badge-light">@item.ServiceCount dịch vụ</span><br />
+                                    <small class="text-muted">@item.ServiceNames</small>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                                            <span class="text-muted sr-only">Thao tác</span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.ComboId">
+                                                <i class="fe fe-edit-2 mr-2"></i>Sửa
+                                            </a>
+                                            <a class="dropdown-item text-danger" asp-action="Delete"
+                                                asp-route-id="@item.ComboId">
+                                                <i class="fe fe-trash mr-2"></i>Xóa
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

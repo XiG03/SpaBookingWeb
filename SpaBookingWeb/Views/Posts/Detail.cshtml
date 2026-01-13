@@ -1,0 +1,99 @@
+﻿@model SpaBookingWeb.ViewModels.Client.PostDetailViewModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Title;
+}
+
+<style>
+    /* Styling cho nội dung bài viết HTML */
+    .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; color: var(--color-heading); }
+    .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--color-heading); }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.75; color: var(--color-text); }
+    .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .prose img { border-radius: 1rem; margin: 1.5rem 0; width: 100%; }
+    .prose strong { font-weight: 700; color: var(--color-heading); }
+    
+    .dark .prose { --color-heading: #fff; --color-text: #d1d5db; }
+    .light .prose { --color-heading: #111827; --color-text: #4b5563; }
+</style>
+
+<div class="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
+        <a href="/" class="hover:text-primary">Trang chủ</a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <a href="/Posts" class="hover:text-primary">Tin tức</a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <span class="text-gray-900 dark:text-white font-medium truncate max-w-[200px]">@Model.Title</span>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-8">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
+                @Model.CategoryName
+            </span>
+            <span class="text-gray-400 text-sm">@Model.PublishedDateStr</span>
+        </div>
+        <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white leading-tight mb-6">
+            @Model.Title
+        </h1>
+        <div class="flex items-center gap-4 py-4 border-y border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <img src="@Model.AuthorAvatar" alt="@Model.AuthorName" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                <div>
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">@Model.AuthorName</p>
+                    <p class="text-xs text-gray-500">Tác giả</p>
+                </div>
+            </div>
+            <div class="h-8 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+            <button class="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-[20px]">share</span>
+                <span class="text-sm font-medium">Chia sẻ</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Featured Image -->
+    <div class="rounded-2xl overflow-hidden shadow-lg mb-10 aspect-video relative">
+        <img src="@Model.Thumbnail" alt="@Model.Title" class="w-full h-full object-cover">
+    </div>
+
+    <!-- Content -->
+    <article class="prose max-w-none mb-16 light">
+        @Html.Raw(Model.Content)
+    </article>
+
+    <!-- Related Posts -->
+    @if (Model.RelatedPosts.Any())
+    {
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-12">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Bài viết liên quan</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                @foreach (var post in Model.RelatedPosts)
+                {
+                    <a href="/Posts/Detail/@post.Id" class="group block">
+                        <div class="rounded-xl overflow-hidden aspect-[4/3] mb-3 relative">
+                            <img src="@post.Thumbnail" alt="@post.Title" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        </div>
+                        <h4 class="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 mb-1">
+                            @post.Title
+                        </h4>
+                        <p class="text-xs text-gray-500">@post.PublishedDateStr</p>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+    
+    <!-- CTA Block -->
+    <div class="mt-16 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-[#2f1b25] dark:to-[#1a0d10] rounded-2xl p-8 md:p-10 text-center border border-pink-100 dark:border-gray-800">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Bạn đã sẵn sàng thư giãn?</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto">Đặt lịch ngay hôm nay để trải nghiệm dịch vụ chăm sóc chuyên nghiệp tại Spa của chúng tôi.</p>
+        <a asp-area="" asp-controller="Booking" asp-action="Index" class="inline-flex items-center justify-center h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/30 transition-all hover:-translate-y-1">
+            Đặt lịch ngay
+        </a>
+    </div>
+</div>

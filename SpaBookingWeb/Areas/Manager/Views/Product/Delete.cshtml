@@ -1,0 +1,72 @@
+﻿@model SpaBookingWeb.Models.Product
+
+@{
+    ViewData["Title"] = "Xóa Sản phẩm";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-6">
+            
+            <div class="alert alert-warning" role="alert">
+                <h4 class="alert-heading"><i class="fe fe-alert-triangle mr-2"></i>Cảnh báo!</h4>
+                <p>Bạn đang thực hiện thao tác xóa sản phẩm <strong>@Model.ProductName</strong>. Hành động này không thể hoàn tác.</p>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <strong class="card-title text-danger">Thông tin sản phẩm cần xóa</strong>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">@Model.ProductName</h4>
+                    
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã sản phẩm</dt>
+                        <dd class="col-sm-8">#@Model.ProductId</dd>
+
+                        <dt class="col-sm-4">Danh mục</dt>
+                        <dd class="col-sm-8">@(Model.Category?.CategoryName ?? "Không có")</dd>
+
+                        <dt class="col-sm-4">Đơn vị tính</dt>
+                        <dd class="col-sm-8">@(Model.Unit?.UnitName ?? "Cái")</dd>
+
+                        <dt class="col-sm-4">Giá nhập</dt>
+                        <dd class="col-sm-8">@Model.PurchasePrice.ToString("N0") VNĐ</dd>
+
+                        <dt class="col-sm-4">Giá bán</dt>
+                        <dd class="col-sm-8 text-success font-weight-bold">@Model.SalePrice.ToString("N0") VNĐ</dd>
+
+                        <dt class="col-sm-4">Tồn kho hiện tại</dt>
+                        <dd class="col-sm-8">@Model.StockQuantity</dd>
+
+                        <dt class="col-sm-4">Trạng thái</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.IsForSale)
+                            {
+                                <span class="badge badge-success">Đang bán lẻ</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">Chỉ dùng nội bộ</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <hr />
+
+                    <form asp-action="Delete" method="post" class="d-flex justify-content-end">
+                        <input type="hidden" name="id" value="@Model.ProductId" />
+                        
+                        <a asp-action="Index" class="btn btn-secondary mr-2">
+                            <i class="fe fe-x mr-1"></i>Hủy bỏ
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fe fe-trash-2 mr-1"></i>Xác nhận Xóa vĩnh viễn
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

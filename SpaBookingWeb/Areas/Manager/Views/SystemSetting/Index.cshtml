@@ -1,0 +1,510 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.SystemSettingViewModel
+
+@{
+    ViewData["Title"] = "Cấu hình hệ thống";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Quản trị hệ thống</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show font-weight-bold" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="settingTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab"
+                aria-controls="general" aria-selected="true">
+                <i class="fas fa-cog"></i> Thông tin chung
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="units-tab" data-toggle="tab" href="#units" role="tab" aria-controls="units"
+                aria-selected="false">
+                <i class="fas fa-weight-hanging"></i> Đơn vị tính
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" id="deposit-tab" data-toggle="tab" href="#deposit" role="tab" aria-controls="deposit"
+                aria-selected="false">
+                <i class="fas fa-money-bill-wave"></i> Quy tắc đặt cọc
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="promotion-tab" data-toggle="tab" href="#promotion" role="tab" aria-controls="promotion"
+                aria-selected="false">
+                <i class="fas fa-user-shield"></i> Nâng quyền
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="settingTabsContent">
+
+        <!-- TAB 1: CẤU HÌNH CHUNG -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin Spa & Liên hệ</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Index" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="LogoUrl" />
+
+                        <div class="row">
+                            <!-- Cột trái: Thông tin -->
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label asp-for="SpaName" class="control-label font-weight-bold"></label>
+                                    <input asp-for="SpaName" class="form-control" />
+                                    <span asp-validation-for="SpaName" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label asp-for="PhoneNumber" class="control-label font-weight-bold"></label>
+                                            <input asp-for="PhoneNumber" class="form-control" />
+                                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label asp-for="Email" class="control-label font-weight-bold"></label>
+                                            <input asp-for="Email" class="form-control" />
+                                            <span asp-validation-for="Email" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Address" class="control-label font-weight-bold"></label>
+                                    <input asp-for="Address" class="form-control" />
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="FacebookUrl" class="control-label font-weight-bold"></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fab fa-facebook"></i></span>
+                                        </div>
+                                        <input asp-for="FacebookUrl" class="form-control"
+                                            placeholder="https://facebook.com/..." />
+                                    </div>
+                                    <span asp-validation-for="FacebookUrl" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label asp-for="OpenTime" class="control-label font-weight-bold"></label>
+                                            <input asp-for="OpenTime" type="time" class="form-control" />
+                                            <span asp-validation-for="OpenTime" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label asp-for="CloseTime" class="control-label font-weight-bold"></label>
+                                            <input asp-for="CloseTime" type="time" class="form-control" />
+                                            <span asp-validation-for="CloseTime" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label asp-for="DepositPercentage"
+                                                class="control-label font-weight-bold"></label>
+                                            <div class="input-group">
+                                                <input asp-for="DepositPercentage" class="form-control" />
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </div>
+                                            <small class="form-text text-muted">Mức cọc mặc định</small>
+                                            <span asp-validation-for="DepositPercentage" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cột phải: Logo -->
+                            <div class="col-md-4 text-center">
+                                <label class="font-weight-bold d-block">Logo hiện tại</label>
+                                <div class="card mb-3 p-2">
+                                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                                    {
+                                        <img src="@Model.LogoUrl" class="img-fluid"
+                                            style="max-height: 150px; object-fit: contain;" alt="Logo" />
+                                    }
+                                    else
+                                    {
+                                        <img src="/images/default-logo.png" class="img-fluid" style="max-height: 150px;"
+                                            alt="Chưa có Logo" />
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="LogoFile" class="btn btn-outline-primary btn-block cursor-pointer">
+                                        <i class="fas fa-upload"></i> Tải ảnh mới
+                                        <input asp-for="LogoFile" type="file" hidden
+                                            onchange="$('#file-name-display').text(this.files[0].name)" />
+                                    </label>
+                                    <div id="file-name-display" class="mt-2 text-muted small font-italic"></div>
+                                    <span asp-validation-for="LogoFile" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-right mt-4 border-top pt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu thông tin chung
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: QUẢN LÝ ĐƠN VỊ TÍNH -->
+        <div class="tab-pane fade" id="units" role="tabpanel" aria-labelledby="units-tab">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Danh sách Đơn vị tính</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên đơn vị</th>
+                                        <th style="width: 100px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Units != null && Model.Units.Any())
+                                    {
+                                        foreach (var unit in Model.Units)
+                                        {
+                                            <tr>
+                                                <td>@unit.UnitId</td>
+                                                <td>@unit.UnitName</td>
+                                                <td class="text-center">
+                                                    <form asp-action="DeleteUnit" method="post"
+                                                        onsubmit="return confirm('Bạn có chắc muốn xóa?');">
+                                                        <input type="hidden" name="id" value="@unit.UnitId" />
+                                                        <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
+                                                            <i class="fas fa-trash"></i> Xóa
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">Chưa có dữ liệu</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Thêm mới Đơn vị tính</h6>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="AddUnit" method="post">
+                                <div class="form-group">
+                                    <label asp-for="NewUnitName">Tên đơn vị (Ví dụ: Lần, Suất, Liệu trình)</label>
+                                    <input asp-for="NewUnitName" class="form-control" required />
+                                </div>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Thêm
+                                    mới</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- TAB 4: QUẢN LÝ QUY TẮC ĐẶT CỌC -->
+        <div class="tab-pane fade" id="deposit" role="tabpanel" aria-labelledby="deposit-tab">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Danh sách quy tắc đặt cọc nâng cao</h6>
+                    <!-- Nút Mở Modal Thêm Mới -->
+                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addDepositRuleModal">
+                        <i class="fas fa-plus"></i> Thêm quy tắc
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Tên quy tắc</th>
+                                    <th>Áp dụng cho</th>
+                                    <th>Điều kiện</th>
+                                    <th>Giá trị cọc</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.DepositRules != null && Model.DepositRules.Any())
+                                {
+                                    foreach (var rule in Model.DepositRules)
+                                    {
+                                        <tr>
+                                            <td>@rule.RuleName</td>
+                                            <td>
+                                                @if (rule.ApplyToType == "OrderTotal")
+                                                {
+                                                    <span class="badge badge-info">Tổng đơn</span>
+                                                }
+                                                else if (rule.ApplyToType == "SpecificService")
+                                                {
+                                                    <span class="badge badge-warning">Dịch vụ: @rule.TargetService?.ServiceName</span>
+                                                }
+                                                else if (rule.ApplyToType == "MembershipType")
+                                                {
+                                                    <span class="badge badge-primary">Hạng: @rule.TargetMembershipType?.TypeName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">@rule.ApplyToType</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (rule.MinOrderValue.HasValue)
+                                                {
+                                                    <span>Đơn > @rule.MinOrderValue?.ToString("N0")đ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Tất cả</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (rule.DepositType == "Percent")
+                                                {
+                                                    <strong class="text-danger">@rule.DepositValue.ToString("0")%</strong>
+                                                }
+                                                else
+                                                {
+                                                    <strong class="text-success">@rule.DepositValue.ToString("N0")đ</strong>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <form asp-action="DeleteDepositRule" method="post"
+                                                    onsubmit="return confirm('Bạn có chắc muốn xóa quy tắc này?');">
+                                                    <input type="hidden" name="id" value="@rule.RuleId" />
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="fas fa-trash"></i> Xóa
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">Chưa có quy tắc nào (Sử dụng mức cọc mặc định ở Tab chung)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: NÂNG QUYỀN KHÁCH HÀNG -->
+        <div class="tab-pane fade" id="promotion" role="tabpanel" aria-labelledby="promotion-tab">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Danh sách Khách hàng (Nâng quyền thành Nhân viên)</h6>
+                    <small class="text-muted">Tính năng này sẽ tạo tài khoản nhân viên mới dựa trên thông tin khách hàng. Dữ liệu khách hàng cũ vẫn được giữ nguyên.</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                       <table class="table table-bordered table-striped" id="dataTablePromotion" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tên Khách Hàng</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Email</th>
+                                    <th>Điểm tích lũy</th>
+                                    <th class="text-center" style="width: 150px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(Model.AllCustomers != null && Model.AllCustomers.Any())
+                                {
+                                    foreach(var c in Model.AllCustomers)
+                                    {
+                                        <tr>
+                                            <td>@c.FullName</td>
+                                            <td>@c.PhoneNumber</td>
+                                            <td>@c.Email</td>
+                                            <td>@c.Point</td>
+                                            <td class="text-center">
+                                                <form asp-action="PromoteCustomer" method="post" onsubmit="return confirm('Bạn có chắc muốn nâng khách hàng @c.FullName thành Nhân viên? Tài khoản đăng nhập sẽ được tạo tự động.');">
+                                                    <input type="hidden" name="customerId" value="@c.CustomerId" />
+                                                    <button type="submit" class="btn btn-sm btn-info shadow-sm">
+                                                        <i class="fas fa-arrow-up"></i> Nâng quyền
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                     <tr>
+                                        <td colspan="5" class="text-center text-muted">Không có khách hàng nào trong hệ thống.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                       </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Thêm Quy Tắc Đặt Cọc -->
+<div class="modal fade" id="addDepositRuleModal" tabindex="-1" role="dialog" aria-labelledby="addDepositRuleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addDepositRuleModalLabel">Thêm quy tắc đặt cọc mới</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form asp-action="AddDepositRule" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label asp-for="NewRuleName" class="font-weight-bold">Tên quy tắc</label>
+                        <input asp-for="NewRuleName" class="form-control" placeholder="VD: Cọc cho khách VIP" required />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="NewApplyToType" class="font-weight-bold">Áp dụng cho</label>
+                                <select asp-for="NewApplyToType" asp-items="Model.ApplyToTypes" class="form-control" id="applyTypeSelect"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="NewMinOrderValue" class="font-weight-bold">Giá trị đơn tối thiểu (VNĐ)</label>
+                                <input asp-for="NewMinOrderValue" class="form-control" placeholder="Để trống nếu không giới hạn" type="number" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khu vực chọn Dịch vụ (Ẩn mặc định) -->
+                    <div class="form-group" id="serviceSelectGroup" style="display:none;">
+                        <label asp-for="NewTargetServiceId" class="font-weight-bold">Chọn dịch vụ</label>
+                        <select asp-for="NewTargetServiceId" asp-items="Model.AvailableServices" class="form-control">
+                            <option value="">-- Chọn dịch vụ --</option>
+                        </select>
+                    </div>
+
+                    <!-- Khu vực chọn Hạng thành viên (Ẩn mặc định) -->
+                    <div class="form-group" id="membershipSelectGroup" style="display:none;">
+                        <label asp-for="NewTargetMembershipTypeId" class="font-weight-bold">Chọn hạng thành viên</label>
+                        <select asp-for="NewTargetMembershipTypeId" asp-items="Model.AvailableMembershipTypes" class="form-control">
+                            <option value="">-- Chọn hạng --</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="NewDepositType" class="font-weight-bold">Loại cọc</label>
+                                <select asp-for="NewDepositType" asp-items="Model.DepositTypes" class="form-control"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="NewDepositValue" class="font-weight-bold">Giá trị (VNĐ hoặc %)</label>
+                                <input asp-for="NewDepositValue" class="form-control" required type="number" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Lưu quy tắc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            // Logic giữ Tab active
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                localStorage.setItem('activeTab', $(e.target).attr('href'));
+            });
+            var activeTab = localStorage.getItem('activeTab');
+            if (activeTab) {
+                $('.nav-tabs a[href="' + activeTab + '"]').tab('show');
+            }
+
+            // Logic ẩn hiện dropdown theo loại áp dụng
+            function toggleTargetSelects() {
+                var selectedType = $('#applyTypeSelect').val();
+                
+                $('#serviceSelectGroup').hide();
+                $('#membershipSelectGroup').hide();
+
+                if (selectedType === 'SpecificService') {
+                    $('#serviceSelectGroup').slideDown();
+                } else if (selectedType === 'MembershipType') {
+                    $('#membershipSelectGroup').slideDown();
+                }
+            }
+
+            // Gọi lần đầu và khi thay đổi
+            toggleTargetSelects();
+            $('#applyTypeSelect').change(toggleTargetSelects);
+        });
+    </script>
+}

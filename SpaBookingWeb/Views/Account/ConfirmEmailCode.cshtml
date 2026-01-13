@@ -1,0 +1,135 @@
+﻿@{
+    Layout = null;
+    var email = ViewData["Email"] as string;
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Xác thực Mã OTP - Salon Booking</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec4899",
+                        "background-light": "#fff1f2",
+                        "background-dark": "#1f1014",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#371b26] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden">
+    <header class="w-full bg-white dark:bg-[#2d1b22] border-b border-[#fce7f3] dark:border-[#4a2c35]">
+        <div class="max-w-[1280px] mx-auto px-4 sm:px-10 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a class="flex items-center gap-2 group" href="/">
+                    <div class="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-xl">spa</span>
+                    </div>
+                    <h2 class="text-lg font-bold tracking-tight text-[#371b26] dark:text-white">Lumina Spa</h2>
+                </a>
+            </div>
+            <div class="flex gap-3">
+                <a class="hidden sm:flex items-center justify-center h-9 px-4 rounded-lg text-sm font-bold text-[#9d5c73] dark:text-[#fbcfe8] hover:bg-pink-50 dark:hover:bg-[#4a2c35] transition-colors" href="#">
+                    Trợ giúp
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="flex items-center justify-center h-9 px-4 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white text-sm font-bold transition-all">
+                    Đăng nhập
+                </a>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow flex flex-col items-center justify-center py-10 px-4 sm:px-6">
+        <div class="w-full max-w-[640px] flex flex-col gap-6">
+            <div class="bg-white dark:bg-[#2d1b22] rounded-2xl shadow-sm border border-[#fbcfe8] dark:border-[#4a2c35] p-8 sm:p-12 text-center">
+                <div class="flex flex-col items-center gap-6">
+                    <div class="size-24 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                        <span class="material-symbols-outlined text-5xl text-primary">security</span>
+                    </div>
+                    <div class="space-y-3 max-w-[480px]">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-[#371b26] dark:text-white leading-tight">
+                            Nhập mã xác thực
+                        </h1>
+                        <p class="text-[#70555e] dark:text-[#fbcfe8] text-base font-normal leading-relaxed">
+                            Vui lòng nhập mã OTP 6 số đã được gửi tới email <span class="font-semibold text-[#371b26] dark:text-white">@email</span>.
+                        </p>
+                    </div>
+                    
+                    <form asp-action="ConfirmEmailCode" method="post" class="flex flex-col w-full max-w-[320px] gap-4 pt-4">
+                        <input type="hidden" name="email" value="@email" />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        
+                        <!-- Hiển thị lỗi chung -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="text-sm text-red-500 bg-red-50 border border-red-100 p-2 rounded-lg">
+                                @Html.ValidationSummary(false)
+                            </div>
+                        }
+
+                        <input type="text" name="code" required 
+                               class="w-full rounded-xl border border-gray-200 dark:border-[#4a2c35] bg-white dark:bg-[#3d1a22] h-12 px-4 text-center text-lg font-bold tracking-widest text-[#371b26] dark:text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                               placeholder="------" maxlength="6" />
+
+                        <button type="submit" class="flex w-full items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-[#be185d] text-white text-sm font-bold tracking-wide transition-colors shadow-sm ring-4 ring-primary/20">
+                            Xác thực
+                        </button>
+                        
+                        <a asp-controller="Account" asp-action="Register" class="flex w-full items-center justify-center h-10 px-4 text-[#9d5c73] dark:text-[#fbcfe8] hover:text-[#371b26] dark:hover:text-white text-sm font-medium transition-colors">
+                            Sai địa chỉ email?
+                        </a>
+                    </form>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#2d1b22] rounded-xl border border-[#fbcfe8] dark:border-[#4a2c35] p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex size-10 rounded-full bg-[#fff1f2] dark:bg-[#4a2c35] items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[#9d5c73] dark:text-[#fbcfe8]">timer</span>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <p class="text-[#371b26] dark:text-white text-sm font-bold">Chưa nhận được mã?</p>
+                        <p class="text-[#9d5c73] dark:text-[#fbcfe8] text-sm mt-0.5">Mã có thể mất vài phút để gửi tới.</p>
+                    </div>
+                </div>
+                <button class="shrink-0 flex items-center justify-center rounded-lg h-9 px-4 bg-transparent border border-[#fbcfe8] dark:border-[#5e3a46] text-[#371b26] dark:text-white hover:bg-[#fff1f2] dark:hover:bg-[#4a2c35] text-sm font-bold transition-colors w-full sm:w-auto">
+                    Gửi lại mã
+                </button>
+            </div>
+        </div>
+    </main>
+    <footer class="w-full bg-white dark:bg-[#2d1b22] border-t border-[#fce7f3] dark:border-[#4a2c35] py-8">
+        <div class="max-w-[960px] mx-auto px-6 flex flex-col gap-6 text-center">
+            <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Trợ giúp</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Quyền riêng tư</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Điều khoản</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Liên hệ</a>
+            </div>
+            <div class="flex items-center justify-center gap-2 text-[#bfa5af] dark:text-[#d6aebc] text-sm">
+                <span>© 2023 Lumina Spa. All rights reserved.</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

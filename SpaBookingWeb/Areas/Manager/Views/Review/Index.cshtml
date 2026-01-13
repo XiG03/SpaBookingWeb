@@ -1,0 +1,133 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.ReviewDashboardViewModel
+
+@{
+    ViewData["Title"] = "Quản lý Đánh giá";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <h2 class="h3 mb-3 page-title">Phản hồi khách hàng</h2>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <p class="mb-2 text-muted">Tổng số đánh giá</p>
+                    <h3 class="mb-0 font-weight-bold">@Model.TotalReviews</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <p class="mb-2 text-muted">Điểm trung bình</p>
+                    <h3 class="mb-0 font-weight-bold text-warning">
+                        @Model.AverageRating <i class="fe fe-star text-warning"></i>
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <p class="mb-2 text-muted">5 Sao tuyệt đối</p>
+                    <h3 class="mb-0 font-weight-bold text-success">@Model.FiveStarCount</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <p class="mb-2 text-muted">1 Sao (Cần chú ý)</p>
+                    <h3 class="mb-0 font-weight-bold text-danger">@Model.OneStarCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách -->
+    <div class="card shadow">
+        <div class="card-header border-0">
+            <strong class="card-title">Danh sách chi tiết</strong>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            <table class="table table-hover datatables" id="dataTable-1">
+                <thead class="thead-light">
+                    <tr>
+                        <th>#ID</th>
+                        <th>Khách hàng</th>
+                        <th>Dịch vụ & Nhân viên</th>
+                        <th>Đánh giá</th>
+                        <th>Nội dung</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Reviews)
+                    {
+                        <tr>
+                            <td>@item.ReviewId</td>
+                            <td>
+                                <strong>@item.CustomerName</strong><br/>
+                                <small class="text-muted">Mã hẹn: #@item.AppointmentId</small>
+                            </td>
+                            <td>
+                                <span class="d-block text-truncate" style="max-width: 150px;" title="@item.ServiceName">@item.ServiceName</span>
+                                <small class="text-muted"><i class="fe fe-user"></i> @item.EmployeeName</small>
+                            </td>
+                            <td>
+                                <div class="text-warning">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= item.Rating)
+                                        {
+                                            <i class="fe fe-star"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fe fe-star text-muted"></i> // Sao rỗng
+                                        }
+                                    }
+                                </div>
+                                <span class="small font-weight-bold">@item.Rating/5</span>
+                            </td>
+                            <td>
+                                <p class="mb-0 small text-muted text-justify" style="max-width: 300px;">
+                                    @item.Comment
+                                </p>
+                            </td>
+                            <td>@item.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
+                                        <span class="text-muted sr-only">Action</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <!-- Chức năng xóa -->
+                                        <form asp-action="Delete" asp-route-id="@item.ReviewId" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fe fe-trash-2 mr-2"></i>Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

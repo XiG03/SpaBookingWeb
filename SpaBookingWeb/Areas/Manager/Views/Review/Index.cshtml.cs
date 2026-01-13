@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SpaBookingWeb.Views.Account
+namespace MyApp.Namespace
 {
-    public class ChangePasswordModel : PageModel
+    public class IndexModel : PageModel
     {
         public void OnGet()
         {

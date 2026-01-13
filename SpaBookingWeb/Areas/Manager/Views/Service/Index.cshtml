@@ -1,0 +1,171 @@
+﻿@model SpaBookingWeb.ViewModels.Manager.ServiceDashboardViewModel
+
+@{
+    ViewData["Title"] = "Quản lý Dịch vụ & Thống kê";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="page-title">Quản lý Dịch vụ</h2>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fe fe-plus-circle mr-2"></i>Thêm dịch vụ
+                </a>
+            </div>
+            
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            <!-- ... (Phần thống kê và biểu đồ giữ nguyên) ... -->
+            <div class="row my-4">
+                <div class="col-md-6 col-xl-3 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-3 text-center">
+                                    <span class="circle circle-md bg-primary-light">
+                                        <i class="fe fe-16 fe-layers text-white mb-0"></i>
+                                    </span>
+                                </div>
+                                <div class="col pr-0">
+                                    <p class="small text-muted mb-0">Tổng dịch vụ</p>
+                                    <span class="h3 mb-0">@Model.TotalServices</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-3 text-center">
+                                    <span class="circle circle-md bg-success-light">
+                                        <i class="fe fe-16 fe-check-circle text-white mb-0"></i>
+                                    </span>
+                                </div>
+                                <div class="col pr-0">
+                                    <p class="small text-muted mb-0">Đang hoạt động</p>
+                                    <span class="h3 mb-0">@Model.TotalActiveServices</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row my-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header"><strong class="card-title">Lượt sử dụng dịch vụ (Top 10)</strong></div>
+                        <div class="card-body"><div id="usageChart"></div></div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header"><strong class="card-title">Doanh thu theo dịch vụ (Top 10)</strong></div>
+                        <div class="card-body"><div id="revenueChart"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="row my-4">
+                <div class="col-md-12">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Danh sách chi tiết</h5>
+                            <table class="table datatables" id="dataTable-1">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên dịch vụ</th>
+                                        <th>Giá cơ bản</th>
+                                        <th>Trạng thái</th>
+                                        <th>Số lượt dùng</th>
+                                        <th>Tổng doanh thu</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Services)
+                                    {
+                                        <tr>
+                                            <td>@item.ServiceId</td>
+                                            <td>@item.ServiceName</td>
+                                            <td>@item.Price.ToString("N0") đ</td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge badge-success">Hoạt động</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Tạm ngưng</span>
+                                                }
+                                            </td>
+                                            <td>@item.UsageCount</td>
+                                            <td class="text-success font-weight-bold">@item.TotalRevenue.ToString("N0") đ</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm dropdown-toggle" type="button" id="dr1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <span class="text-muted sr-only">Action</span>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dr1">
+                                                        <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.ServiceId">Sửa</a>
+                                                        <!-- Thay đổi ở đây: Chuyển thành link đến trang Delete -->
+                                                        <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.ServiceId">Ngưng hoạt động</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+@section Scripts {
+    <script src="~/ManagerAssets/js/apexcharts.min.js"></script>
+    <script>
+        var labels = @Html.Raw(Json.Serialize(Model.ChartLabels));
+        var usageData = @Html.Raw(Json.Serialize(Model.ChartUsageCount));
+        var revenueData = @Html.Raw(Json.Serialize(Model.ChartRevenue));
+
+        var usageOptions = {
+            series: [{ name: 'Lượt dùng', data: usageData }],
+            chart: { type: 'bar', height: 350 },
+            plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+            dataLabels: { enabled: true },
+            xaxis: { categories: labels },
+            colors: ['#3ad29f']
+        };
+        new ApexCharts(document.querySelector("#usageChart"), usageOptions).render();
+
+        var revenueOptions = {
+            series: [{ name: 'Doanh thu (VNĐ)', data: revenueData }],
+            chart: { type: 'bar', height: 350 },
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+            dataLabels: { enabled: false },
+            xaxis: { categories: labels },
+            yaxis: { labels: { formatter: function (value) { return value.toLocaleString('vi-VN') + " đ"; } } },
+            colors: ['#1b68ff'],
+            tooltip: { y: { formatter: function (val) { return val.toLocaleString('vi-VN') + " đ"; } } }
+        };
+        new ApexCharts(document.querySelector("#revenueChart"), revenueOptions).render();
+    </script>
+}

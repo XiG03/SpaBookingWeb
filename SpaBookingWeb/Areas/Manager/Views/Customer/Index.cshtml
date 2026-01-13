@@ -5,7 +5,7 @@
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid">
+
     <div class="row justify-content-center">
         <div class="col-12">
             <!-- Header Section with Create Button -->
@@ -104,7 +104,7 @@
                             <table class="table datatables" id="dataTable-1">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        @* <th>ID</th> *@
                                         <th>Họ Tên</th>
                                         <th>Email</th>
                                         <th>SĐT</th>
@@ -115,10 +115,10 @@
                                     @foreach (var item in Model.Customers)
                                     {
                                         <tr>
-                                            <td>@item.Id.Substring(0, 8)...</td>
+                                            @* <td>@item.Id.Substring(0, 8)...</td> *@
                                             <td>
                                                 <div class="avatar avatar-sm mr-2 d-inline-block">
-                                                    <img src="~/ManagerAssets/assets/avatars/face-1.jpg" alt="..." class="avatar-img rounded-circle">
+                                                    <img src="~/ManagerAssets/assets/avatars/user.png" alt="..." class="avatar-img rounded-circle">
                                                 </div>
                                                 @item.FullName
                                             </td>
@@ -146,7 +146,7 @@
             </div> <!-- end section -->
         </div> <!-- .col-12 -->
     </div> <!-- .row -->
-</div> <!-- .container-fluid -->
+<!-- .container-fluid -->
 
 @section Scripts {
     <script src="~/ManagerAssets/js/jquery.dataTables.min.js"></script>

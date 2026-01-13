@@ -1,0 +1,88 @@
+using Microsoft.AspNetCore.Mvc;
+using SpaBookingWeb.Services.Manager;
+using SpaBookingWeb.ViewModels.Manager;
+using System.Threading.Tasks;
+
+namespace SpaBookingWeb.Areas.Manager.Controllers
+{
+    [Area("Manager")]
+    // [Authorize(Roles = "Admin,Manager")]
+    public class ServiceController : Controller
+    {
+        private readonly IServiceService _serviceService;
+
+        public ServiceController(IServiceService serviceService)
+        {
+            _serviceService = serviceService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var viewModel = await _serviceService.GetServiceDashboardAsync();
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            var model = await _serviceService.GetServiceForCreateAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(ServiceViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _serviceService.CreateServiceAsync(model);
+                TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var model = await _serviceService.GetServiceForEditAsync(id);
+            if (model == null) return NotFound();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ServiceViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                await _serviceService.UpdateServiceAsync(model);
+                TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(model);
+        }
+
+        // --- CẬP NHẬT PHẦN DELETE ---
+
+        // GET: Hiển thị trang xác nhận xóa
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var service = await _serviceService.GetServiceByIdAsync(id);
+            if (service == null) return NotFound();
+            return View(service);
+        }
+
+        // POST: Thực hiện xóa (Soft Delete)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            await _serviceService.DeleteServiceAsync(id);
+            TempData["SuccessMessage"] = "Đã ngưng hoạt động dịch vụ thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

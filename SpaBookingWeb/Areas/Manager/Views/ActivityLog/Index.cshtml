@@ -1,0 +1,187 @@
+﻿@model IEnumerable<SpaBookingWeb.Models.ActivityLog>
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+
+@{
+    ViewData["Title"] = "Lịch sử thay đổi hệ thống";
+    Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Lịch sử thay đổi dữ liệu (Audit Log)</h1>
+
+    <!-- Bộ lọc (Giữ nguyên như cũ) -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Bộ lọc tìm kiếm</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row">
+                <div class="col-md-3 mb-2">
+                    <label>Từ khóa</label>
+                    <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="User, Tên bảng, ID..." />
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label>Hành động</label>
+                    <select name="actionFilter" class="form-control">
+                        <option value="">Tất cả</option>
+                        <option value="Create" selected="@(ViewBag.CurrentAction == "Create")">Thêm mới</option>
+                        <option value="Update" selected="@(ViewBag.CurrentAction == "Update")">Cập nhật</option>
+                        <option value="Delete" selected="@(ViewBag.CurrentAction == "Delete")">Xóa</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label>Từ ngày</label>
+                    <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label>Đến ngày</label>
+                    <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+                </div>
+                <div class="col-md-3 mb-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng dữ liệu -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th width="150">Thời gian</th>
+                            <th width="150">Người dùng</th>
+                            <th width="100">Hành động</th>
+                            <th width="150">Đối tượng (Bảng)</th>
+                            <th>Chi tiết thay đổi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Timestamp.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="font-weight-bold text-primary">@item.UserId</span>
+                                        <br/><small class="text-muted">IP: @item.IpAddress</small>
+                                    </td>
+                                    <td>
+                                        @if (item.Action == "Create") { <span class="badge badge-success">Thêm mới</span> }
+                                        else if (item.Action == "Update") { <span class="badge badge-warning text-white">Cập nhật</span> }
+                                        else if (item.Action == "Delete") { <span class="badge badge-danger">Xóa</span> }
+                                        else { <span class="badge badge-secondary">@item.Action</span> }
+                                    </td>
+                                    <td>
+                                        <span class="font-weight-bold">@item.EntityName</span>
+                                        <br/>
+                                        <small class="text-muted">ID: 
+                                            @{
+                                                // Cố gắng hiển thị ID gọn gàng
+                                                try {
+                                                    var keyObj = JObject.Parse(item.EntityId);
+                                                    foreach(var prop in keyObj.Properties()) {
+                                                        <span>@prop.Value </span>
+                                                    }
+                                                } catch { 
+                                                    <span>@item.EntityId</span> 
+                                                }
+                                            }
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <!-- Logic hiển thị chi tiết thay đổi -->
+                                        @if (!string.IsNullOrEmpty(item.OldValues) || !string.IsNullOrEmpty(item.NewValues))
+                                        {
+                                            <div style="font-size: 0.9rem;">
+                                                @if (item.Action == "Update")
+                                                {
+                                                    // Trường hợp Update: So sánh cũ và mới
+                                                    try
+                                                    {
+                                                        var oldObj = !string.IsNullOrEmpty(item.OldValues) ? JObject.Parse(item.OldValues) : new JObject();
+                                                        var newObj = !string.IsNullOrEmpty(item.NewValues) ? JObject.Parse(item.NewValues) : new JObject();
+
+                                                        <ul class="mb-0 pl-3">
+                                                            @foreach (var prop in newObj.Properties())
+                                                            {
+                                                                // Chỉ hiện những field có thay đổi
+                                                                var oldVal = oldObj[prop.Name]?.ToString();
+                                                                var newVal = prop.Value.ToString();
+                                                                
+                                                                if (oldVal != newVal) 
+                                                                {
+                                                                    <li>
+                                                                        <strong>@prop.Name</strong>: 
+                                                                        <span class="text-danger" style="text-decoration: line-through;">@oldVal</span> 
+                                                                        <i class="fas fa-arrow-right mx-1 text-muted"></i> 
+                                                                        <span class="text-success font-weight-bold">@newVal</span>
+                                                                    </li>
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    }
+                                                    catch 
+                                                    { 
+                                                        <span class="text-danger">Lỗi đọc dữ liệu JSON</span> 
+                                                    }
+                                                }
+                                                else if (item.Action == "Create")
+                                                {
+                                                    // Trường hợp Create: Hiển thị các giá trị mới
+                                                    try {
+                                                        var newObj = JObject.Parse(item.NewValues);
+                                                        <a class="btn btn-sm btn-link p-0" data-toggle="collapse" href="#details-@item.Id">Xem chi tiết dữ liệu</a>
+                                                        <div class="collapse" id="details-@item.Id">
+                                                            <div class="card card-body bg-light p-2 mt-1">
+                                                                @foreach (var prop in newObj.Properties())
+                                                                {
+                                                                    <div><small><strong>@prop.Name:</strong> @prop.Value</small></div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    } catch {}
+                                                }
+                                                else if (item.Action == "Delete")
+                                                {
+                                                    // Trường hợp Delete: Hiển thị dữ liệu đã xóa
+                                                    try {
+                                                        var oldObj = JObject.Parse(item.OldValues);
+                                                        <span class="text-danger">Đã xóa dữ liệu:</span>
+                                                        <a class="btn btn-sm btn-link p-0" data-toggle="collapse" href="#details-@item.Id">Xem chi tiết</a>
+                                                        <div class="collapse" id="details-@item.Id">
+                                                            <div class="card card-body bg-light p-2 mt-1 border-danger">
+                                                                @foreach (var prop in oldObj.Properties())
+                                                                {
+                                                                    <div><small><strong>@prop.Name:</strong> @prop.Value</small></div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    } catch {}
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.Description</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Chưa có hoạt động nào được ghi lại.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

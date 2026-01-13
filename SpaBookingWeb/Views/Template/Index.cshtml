@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Lotus Spa - Trang chủ</title>
+    
+    <!-- Unified Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    
+    <!-- Unified Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Load Unified Tailwind Config -->
+    <script src="~/ClientAssets/js/tailwind.config.js"></script>
+
+    <!-- Load Custom CSS -->
+    <link rel="stylesheet" href="~/ClientAssets/css/styles.css">
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white">
+    <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Header Container -->
+        <div class="layout-container flex w-full flex-col bg-white dark:bg-background-dark border-b border-pink-100 dark:border-pink-900 sticky top-0 z-50">
+            <header class="flex items-center justify-between whitespace-nowrap px-4 py-3 md:px-10 lg:px-40 max-w-[1440px] mx-auto w-full">
+                <div class="flex items-center gap-4 text-text-main dark:text-white">
+                    <div class="size-8 text-primary">
+                        <svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-text-main dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Lotus Spa</h2>
+                </div>
+                <div class="hidden md:flex flex-1 justify-end gap-8 items-center">
+                    <div class="flex items-center gap-6 lg:gap-9">
+                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Dịch vụ</a>
+                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Combo</a>
+                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Về chúng tôi</a>
+                        <a class="text-text-main dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Liên hệ</a>
+                    </div>
+                    <button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors shadow-md shadow-pink-200 dark:shadow-none">
+                        <span class="truncate">Đặt lịch ngay</span>
+                    </button>
+                </div>
+                <div class="flex md:hidden items-center">
+                    <span class="material-symbols-outlined text-text-main dark:text-white">menu</span>
+                </div>
+            </header>
+        </div>
+
+        <!-- Main Content -->
+        <div class="w-full bg-white dark:bg-background-dark">
+            <div class="@@container">
+                <!-- Hero Section -->
+                <div class="flex flex-col gap-6 bg-cover bg-center bg-no-repeat min-h-[500px] items-center justify-center p-4 relative" data-alt="Soft focused background of a clean modern spa interior with plants and light wood" style='background-image: linear-gradient(rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBah--uzECHgzqH6TD1Aif-ujE-HHWkcm1zqmjFNQJZ4cax3UU27IddG_Q1jo1FRUmTfso6NJti1XNiM5uWS9vb2_CfJXRwuAkZMmqS7BMSL_TIDinnjoQhd9ibQ5aIlKY12VgKj-ijD-gNJkZCDk-JyLggETZgItrPxoWaI11fdpEzvkw5RHDMM6hcFqXKB1I1muWDErY88n6BcqyCIJz58oPfOj7mX8byVku1WkBSK2kBzKReZDlN6f587NLJ02it9adbgEl96LQ");'>
+                    <div class="flex flex-col gap-6 text-center z-10 max-w-[800px] items-center">
+                        <span class="text-white bg-primary/80 backdrop-blur-sm px-3 py-1 rounded-full font-bold tracking-wider uppercase text-xs md:text-sm shadow-sm">Vẻ đẹp &amp; Thư giãn</span>
+                        <h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-6xl drop-shadow-md">
+                            Chăm sóc bản thân với dịch vụ đẳng cấp 5 sao
+                        </h1>
+                        <h2 class="text-pink-50 text-base font-medium leading-normal md:text-xl drop-shadow-sm max-w-2xl">
+                            Khám phá các liệu trình độc quyền và combo ưu đãi dành riêng cho bạn tại Lotus Spa.
+                        </h2>
+                        <div class="mt-4 flex gap-4">
+                            <button class="h-12 md:h-14 px-8 bg-primary rounded-full text-white font-bold text-base hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-pink-500/30 hover:scale-105 transform duration-200">
+                                <span>Xem dịch vụ</span>
+                            </button>
+                            <button class="h-12 md:h-14 px-8 bg-white/20 backdrop-blur-md border border-white/40 rounded-full text-white font-bold text-base hover:bg-white/30 transition-all flex items-center justify-center gap-2">
+                                <span>Liên hệ tư vấn</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-1 justify-center py-10 px-4 md:px-10 lg:px-40 bg-background-light dark:bg-background-dark">
+                <div class="flex flex-col max-w-[1200px] flex-1 gap-12">
+                    
+                    <!-- Categories Section -->
+                    <section>
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-text-main dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Danh mục dịch vụ</h2>
+                            <a class="text-sm font-medium text-pink-600 dark:text-primary hover:underline" href="#">Xem tất cả</a>
+                        </div>
+                        <div class="flex overflow-x-auto no-scrollbar gap-4 md:gap-8 pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Woman with healthy shiny hair smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuChowAKQh8Np34mUy3hNdqX1rQjOMLk9C5Q_vI5b62pqkcuehV6ZeCJTEazmNy7tubwWSfnZ1qKjlQxEiIiAS5v8Yr7PZwT2R0H9LZZWTxg8NG8SYPfCzwI1kK3OxX7MNgBY-WDvjdTgOR3i4FoVwCVvwQWmcFB6RmVMCgAJmnX7VRFqF6GLSGDwch3NUboe7Ytb5V9lVvdhlNsOoLMFGoTeGSs9rINvFN7U09GV4gvVHSaIRxOELgfKoexTZs5Wt6UC2YuYextLL0");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Cắt tóc</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Professional makeup artist applying blush" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACZQx0tURlkJXaVBoSstpc-oHuoWPp1rSHpz18LgC7Ahrm7A22q0fp0Dd5fSAQHOJVpW3TC199cAxTMywrGr3el7iEUQHa-tgY1NxzzKBnTD0hh3EoFrnsYVdLUZLhsOVbNMUoMruc_B5kPVBDNamQS4og4OgwwkLWxgQJPWD0XssvZcHjt2Ktqa-Sd2XhsWewSaIgp8Dar29kbc0y8XWOUuXPHFqwQmWrAkSJxBTCu3LXtGpqQFhMysJF46ejALaXBtwRT0PE6B0");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Trang điểm</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Close up of eyebrow threading or treatment" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB-1lxyiVbJLEknQ8ItVoSi3lM8KpZPaH5bsyUN5wa0jjDfjtT6cUk3Z_jVa0U36GpIziPx3dqzD6DEZxl-ZYCDbUmWxnWB6AH2FCM8yd9Q4nXIm-kvec4Y1iy-c2OU4UtAgk5Dcl6zOkdqGMJlZueWJEenB-U40Qc2-JGA3VthE326J-4iV6c7j5bWpWEl-N622T3bJ-yGvZ0bXSaNsnpmU1cbWQv1OMHxTk1K8zegzEf32avobzMLKuU4ATq1ltnrdYkEZ7KOiks");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Chân mày</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Relaxing back massage in spa environment" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjlC3ZxfiL8JxteJoE6DhFhso8TdZQmnruu9mVGwlLObIFrRF29BXMaYKwJX2AYzmlRUs0Sd-er79C452nifCE1upbNizdIDoa9gPWDt_f5OF8Paq2lzKIP564_sfq7WK-8kJoZ5pICB93Mre8XtR_FVv_rCkCJiYRjKlQBBCaTU_mtuXHUJ6-PyH8ucIPH6WmxRBTisu_KDUB5qEouko_L6DWtp643rzbBlMw9XUWrm0BszwknzIDC6UKdsll54W2lIZOFsRz68A");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Massage</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Spa setting with towels and zen stones" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCt0rwT-0tFEBiV3-a4TqRU7LpXNbPlhX7AbxxR_f0Vjv8upgMoIA385waTBzPh_R41j0GfrJ_wK14xfTXiIWa-xairCc_h_D20sHfFIcNzm85mOjeUJiXUx8JuhlV6H5t_BjUgpyj8KlSkkyUg-vNqmr4gzun-nLexPf_hOQluX0o1NrFibOaQY8y5YAd6mkilG90jvQJmXJ15_I76ewhrP_jbl2QI1Ftra-QtvhnXZNlHlNmpW10rkZQmbbLsnpG7TR8fX-f7cU0");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Spa</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Manicure process with colorful nail polish" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJMOBhi5pwAVebIcSU3x4dJI2lngHI0bJdtriWww6OatdmkrFD8HYm40ToDE_ZTHxux3a36rx4X_lrV0ysaNBHbFBEtqmT5Q6Dt9TFvay_b40firZ_QY8cnroTJqEYSWdsFP4JKZkvzIZHyt703uBWUvdX_WHZmYRiZ5WOufZA_xHc6XX_Loje4UoPgqx19j2KrYLBx-fG7PA2njJgw40T5_a4N0eo0Ju2yWNeCh9fDmJV7kWp7knfwtLoncXBBTKZNjYGN6aXR2w");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Làm móng</p>
+                            </div>
+                            <div class="flex flex-col items-center gap-3 min-w-[80px] cursor-pointer group">
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-cover bg-center shadow-md group-hover:scale-105 transition-transform duration-300 border-2 border-transparent group-hover:border-primary" data-alt="Man getting a haircut in a barber shop" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuApPnYQkwCnuEyVOZ3557Iwxwp1ZWwX0ZBKQX4fHKsUejS92WUxe0GrIZMFGK4j40Tfh1uVZgEccPHGUXKD0kmY7yU4OLbPBxjdClqUl5-sswo-Lh7WEilS4N2cYIq3B0daljAN24c-8xGlN4LMNHiydqki7Xr00lOmaSwJTM2Okt4mjz_N5ETU9EU2HG-uAvZvp8075A-cEsWzbpiTx9zSoL8YZVoWR2RJkCxqjlbQYX9PbSVHGtk-ZxMj0A6XNyzfHXBYZaqvPf4");'></div>
+                                <p class="text-text-main dark:text-gray-200 text-sm font-medium text-center group-hover:text-primary transition-colors">Barber</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Featured Combos Section -->
+                    <section>
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-text-main dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Combo &amp; Gói Dịch Vụ Nổi Bật</h2>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Card 1 -->
+                            <div class="flex flex-col gap-4 group cursor-pointer bg-white dark:bg-[#3d101c] p-4 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-pink-100 dark:hover:shadow-none transition-shadow border border-pink-100 dark:border-pink-900">
+                                <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Zen spa room with massage table and candles" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOWoiZ3GQ5WjeKEosSAO4jhVKq4YDyjUKosHqWeOXFxud_ATIyG1fvTOLBYt7m3VTipdp8fBzyscW-F_3tJFiZh18KsSwxVj1EbZXNCa5CHUNq6AFZOv_nzFs-9YlzMnyaPAGyuEouKSR_aTnp4fPso4p-x5leDhjMfK9eO-UAtSZg6fZP_OwlOE33ihdTBL5RtqI79c7M42zugRJzJ4IRVBb58wGZ4op7MruYzcAnNDgdtqQfiXCoNmECcQ2Ht3aE1gjbCfB3vRc");'>
+                                    </div>
+                                    <div class="absolute top-3 left-3 bg-primary text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm uppercase tracking-wide">
+                                        Bestseller
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <h3 class="text-text-main dark:text-white text-lg font-bold group-hover:text-primary transition-colors">Combo Thư Giãn Sâu</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Massage Body • Chăm sóc da mặt • Xông hơi</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="inline-flex items-center gap-1 bg-pink-50 dark:bg-pink-900/30 px-2 py-1 rounded text-xs font-medium text-pink-700 dark:text-pink-300">
+                                            <span class="material-symbols-outlined text-[14px]">schedule</span> 120 phút
+                                        </span>
+                                        <span class="text-primary font-bold text-lg">950.000₫</span>
+                                        <span class="text-gray-400 text-sm line-through">1.200.000₫</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-3 border-t border-pink-100 dark:border-pink-900 flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái</span>
+                                        <span class="text-sm font-semibold text-green-600 dark:text-green-400">Còn chỗ hôm nay</span>
+                                    </div>
+                                    <button class="bg-primary/10 hover:bg-primary text-primary hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                                        Đặt ngay
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Card 2 -->
+                            <div class="flex flex-col gap-4 group cursor-pointer bg-white dark:bg-[#3d101c] p-4 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-pink-100 dark:hover:shadow-none transition-shadow border border-pink-100 dark:border-pink-900">
+                                <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Modern bright salon interior with mirrors and chairs" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwgxbOMfJ_8vfpXTn9ASVjSXZhlSEr6UXuXNvTQDAKpTE0IeUlXetDbhLprPBGB-gn20L9cSATwKM7QNZyDGMWkcp527EqGFzd8UqcMyo01p_c5t4ixmbd5xYJ8G9-rGW9Bgmv9N08-j5K-ql4pb5lSZQHD-ZlFl8izX0ig0YG9hq_EWErnZ-Qa4eHB-fZLC3yJ1lXpjVWaxb2RD4Ua5rkJDdpH9DTcPH8YGLmFKnTyioQegsSOphukMa0s89XyNZ3MMrfSMIdYgA");'>
+                                    </div>
+                                    <div class="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm uppercase tracking-wide">
+                                        Hot Deal
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <h3 class="text-text-main dark:text-white text-lg font-bold group-hover:text-primary transition-colors">Gói Tóc Đẹp Toàn Diện</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Cắt • Uốn/Nhuộm • Hấp dầu phục hồi</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="inline-flex items-center gap-1 bg-pink-50 dark:bg-pink-900/30 px-2 py-1 rounded text-xs font-medium text-pink-700 dark:text-pink-300">
+                                            <span class="material-symbols-outlined text-[14px]">schedule</span> 180 phút
+                                        </span>
+                                        <span class="text-primary font-bold text-lg">1.500.000₫</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-3 border-t border-pink-100 dark:border-pink-900 flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái</span>
+                                        <span class="text-sm font-semibold dark:text-white">Đặt trước 1 ngày</span>
+                                    </div>
+                                    <button class="bg-primary/10 hover:bg-primary text-primary hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                                        Đặt ngay
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Card 3 -->
+                            <div class="flex flex-col gap-4 group cursor-pointer bg-white dark:bg-[#3d101c] p-4 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-pink-100 dark:hover:shadow-none transition-shadow border border-pink-100 dark:border-pink-900">
+                                <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Close up of manicure station with many nail polish bottles" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNAKaIyp_X2JDKD9hSQIOAbPKo9tuvx0KLhfdGJqhtH0jVpAP5KwReG7QWtEYoJzpqxUwKfoAZ3m7Vb9a_7wsOdyoNlfsL505mLWfKd9LQsEiUxjZy1NU0gYi4rfi7AD13x3DyPDh3uTzr61or2bgQYGCLYYHnRm3Y_jPAw5KBsmJLMV5c9jxwrx-bubLyIAFkTPV0w93b7p3kp-tXXIih-ljg4IEMyesD07H0A9K6ZctGjsm9d9tVCAXcAa8QuDbWiSszSvvwCZs");'>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <h3 class="text-text-main dark:text-white text-lg font-bold group-hover:text-primary transition-colors">Combo Nails &amp; Spa Chân</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-sm">Sơn Gel • Trang trí • Massage chân</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <span class="inline-flex items-center gap-1 bg-pink-50 dark:bg-pink-900/30 px-2 py-1 rounded text-xs font-medium text-pink-700 dark:text-pink-300">
+                                            <span class="material-symbols-outlined text-[14px]">schedule</span> 60 phút
+                                        </span>
+                                        <span class="text-primary font-bold text-lg">450.000₫</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-3 border-t border-pink-100 dark:border-pink-900 flex items-center justify-between">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Trạng thái</span>
+                                        <span class="text-sm font-semibold dark:text-white">Còn chỗ 16:30</span>
+                                    </div>
+                                    <button class="bg-primary/10 hover:bg-primary text-primary hover:text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors">
+                                        Đặt ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Popular Services Section -->
+                    <section>
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-text-main dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Dịch vụ được yêu thích</h2>
+                            <a class="text-sm font-medium text-pink-600 dark:text-primary hover:underline" href="#">Xem bảng giá</a>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="flex flex-col gap-3 group cursor-pointer">
+                                <div class="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Interior of a modern barber shop with leather chairs" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRPqf-JGVzjlnQDY50Mknpw_BGK0hLt7hkBomlBoy2VVMjekMF1MVs4olKseiEfAVCJWp7z-5t2EZbHPBCRJurE4IUgUhiSsVcKiyuQU_VUwtLORxfStzA7JQf8c0i9Xjw6mJLVGbH9dD5iD1Np_Y4_gn6lYKViFtoKkrUkVB7A6Zj4QBBBnlbmaUWKMafzBLCZu2es8JcnjYTEVt1UWZRG9K30EyxQ9cM2vA2E_SoSmpQr0kUgBwStX2iRnuIs09ujjgwNa4fvls");'>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                        <span class="material-symbols-outlined text-yellow-500 text-[14px] filled">star</span>
+                                        <span class="text-[10px] font-bold dark:text-white">5.0</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-text-main dark:text-white text-base font-bold truncate group-hover:text-primary transition-colors">Cắt Tóc Nam Gentleman</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Barber • 150.000₫</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 group cursor-pointer">
+                                <div class="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Close up of facial treatment application" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD0dPc4abssaNS9d97_Wo1D2a4Sk96zN1Zt8NA0qnHa-4vGt3Oh-KWNGWwhpxdaKLhhvs5JoMg0VawbaSCXTMQbDZqy7hf48bWOEzIKbiFuSP88nQYnnG6qeqtyvtD1kqnriwHJHDd0kzuZiXkcZUqDhk8iool0B_CQGfzW_8irgGIJjvcE4XH_zPpC1Ykdm7m72x4GPLY__143DS9SfVKfMKGXTAFy6eJ-3QY-GTq2W8VYQG-wkgf2oFIxJTzjG3y6X_NmrwNyW6U");'>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-text-main dark:text-white text-base font-bold truncate group-hover:text-primary transition-colors">Chăm Sóc Da Mặt Cơ Bản</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Skincare • 300.000₫</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 group cursor-pointer">
+                                <div class="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Yoga studio interior with mats" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALPlTKyzfMmSvrIzjgbOdeqMXZbAygrtqIhHKm9kOR9j5yJ6iipEH06mF1piv8sb7lXqp0zCw72aqZLZ2TcKhU10DOFmJ02On-qTQzjip_dHsJs7hPnb2rETZ7hiM3gc6GxSksxM2Mtnym7q9NEZ1_7iQFNhkeQPG-dzc3Wy8qp03sfzZYBBu0o3bl4uhZjDV12XV6AS0R5ZnA9hPCskIxQlclBX9Ghsr1N1e4ffWcZ6SsobDDkCuefIpquRsJWuSNhI-MsupT6PM");'>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                        <span class="material-symbols-outlined text-yellow-500 text-[14px] filled">star</span>
+                                        <span class="text-[10px] font-bold dark:text-white">4.9</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-text-main dark:text-white text-base font-bold truncate group-hover:text-primary transition-colors">Lớp Yoga Trị Liệu</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Wellness • 120.000₫/buổi</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 group cursor-pointer">
+                                <div class="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100">
+                                    <div class="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" data-alt="Lash extension procedure close up" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmYGO-vU1halEIIEhWklBSiOp4XTKLsfS5ChjRY4hwJHfWeq6vEvGfAt8xShti1C6u782OyKqSLNlUND-CMwlPw1eOkwQCFMGsehLfx3mTrJ8_3kWIJ5mRay-Y0TlGijtYbteQTlygF-LgynXdihpxb-3telqFMm_1zhtOpvYqVUnfONAyderIA1i6P5ogvawzWyMHXmNYgd-GUjVVA-V0KebmGA_yuwcFCPm1K2nVmvS-GLfdHiPT9xsUMQJv0bl0Zh8lhSOZSvY");'>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-text-main dark:text-white text-base font-bold truncate group-hover:text-primary transition-colors">Nối Mi Volume Tự Nhiên</h3>
+                                    <p class="text-gray-500 dark:text-gray-400 text-xs">Eyebrows &amp; Lashes • 250.000₫</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Promo Section -->
+                    <section class="mt-8">
+                        <div class="relative w-full rounded-2xl overflow-hidden bg-[#831843] text-white flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">
+                            <div class="flex flex-col gap-4 z-10 max-w-lg">
+                                <span class="text-pink-300 font-bold tracking-wider uppercase text-sm">Ưu đãi đặc biệt</span>
+                                <h2 class="text-3xl font-black tracking-tight">Rạng rỡ đón hè cùng Lotus Spa</h2>
+                                <p class="text-pink-100">Nhập mã <span class="text-[#831843] font-bold bg-white px-2 py-0.5 rounded">SUMMER2024</span> để được giảm ngay 20% cho lần đặt lịch đầu tiên của bạn.</p>
+                                <div class="flex gap-4 pt-2">
+                                    <button class="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-lg">
+                                        Đặt lịch ngay
+                                    </button>
+                                    <button class="bg-transparent border border-pink-300 hover:border-white text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                                        Xem chi tiết
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="absolute right-0 top-0 bottom-0 w-full md:w-1/2 opacity-30 bg-cover bg-center pointer-events-none" data-alt="Business owner using tablet in salon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpHMYwS4e9oCrd_jAN7pXZzMAepjREtJHjK2qFEnoAiJvgFziruiMQq0jGdDKjlXtUmb4i5Qe7nsP2t46nT30jL2hRYctmxxcGR3bZutDZx7JGqf83aRRxB_NYh6-jkNqZPZi-LutywXPcuAsKQZh8h5gM6BvyZPE1TNEofy04BDfF1ag1se1iXL0lUEZM_Rrft_Rsb1TcxmpK59BcSof8eFb1iXEn26jMOa1-43UusrSFL08STbtIXP2CWCF6Bvle2Zb1V8u_0Rw"); mask-image: linear-gradient(to right, transparent, black); -webkit-mask-image: linear-gradient(to right, transparent, black);'>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-white dark:bg-background-dark border-t border-pink-100 dark:border-pink-900 pt-12 pb-8 px-4 md:px-10 lg:px-40">
+                <div class="max-w-[1440px] mx-auto flex flex-col gap-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-text-main dark:text-white">Lotus Spa</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Mang đến vẻ đẹp và sự tự tin cho bạn mỗi ngày với các dịch vụ chuyên nghiệp nhất.
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-text-main dark:text-white">Dịch vụ</h4>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Chăm sóc tóc</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Spa &amp; Massage</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Làm móng nghệ thuật</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Trang điểm dự tiệc</a>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-text-main dark:text-white">Hỗ trợ</h4>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Bảng giá</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Liên hệ</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Chính sách bảo mật</a>
+                            <a class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary transition-colors" href="#">Điều khoản sử dụng</a>
+                        </div>
+                        <div class="flex flex-col gap-4">
+                            <h4 class="font-bold text-text-main dark:text-white">Giờ mở cửa</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Thứ 2 - Thứ 6: 9:00 - 20:00</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Thứ 7 - CN: 8:00 - 21:00</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-center justify-between border-t border-pink-100 dark:border-pink-900 pt-8 gap-4">
+                        <div class="flex items-center gap-2 text-text-main dark:text-white">
+                            <div class="size-6 text-primary">
+                                <svg class="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                            <span class="font-bold">Lotus Spa</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-500 ml-2">© 2024 Lotus Spa Inc.</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <a class="text-gray-400 dark:text-gray-400 hover:text-primary transition-colors" href="#">
+                                <span class="sr-only">Facebook</span>
+                                <svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path clip-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                            <a class="text-gray-400 dark:text-gray-400 hover:text-primary transition-colors" href="#">
+                                <span class="sr-only">Instagram</span>
+                                <svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path clip-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772 4.902 4.902 0 011.772-1.153c.636-.247 1.363-.416 2.427-.465 1.067-.047 1.409-.06 3.809-.06h.63zm1.673 5.381c-1.112 0-2.029.916-2.029 2.028 0 1.113.917 2.029 2.029 2.029 1.113 0 2.028-.916 2.028-2.029 0-1.112-.915-2.028-2.028-2.028zm-4.368 4.143h-2.92v2.92h2.92v-2.92z" fill-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                            <a class="text-gray-400 dark:text-gray-400 hover:text-primary transition-colors" href="#">
+                                <span class="sr-only">Twitter</span>
+                                <svg aria-hidden="true" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <!-- Load Custom JS -->
+    <script src="~/ClientAssets/js/script.js"></script>
+</body>
+</html>
