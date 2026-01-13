@@ -47,7 +47,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             {
                 if (string.IsNullOrEmpty(Password))
                 {
-                    ModelState.AddModelError("Password", "Mật khẩu là bắt buộc.");
+                    ModelState.AddModelError("Password", "Password is required.");
                     return View(user);
                 }
 
@@ -56,7 +56,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 {
                     return RedirectToAction(nameof(Index));
                 }
-                ModelState.AddModelError("", "Không thể tạo tài khoản. Email có thể đã tồn tại hoặc mật khẩu không đủ mạnh.");
+                ModelState.AddModelError("", "Cannot create account. Email may already exist or password is not strong enough.");
             }
             return View(user);
         }
@@ -84,7 +84,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 {
                     return RedirectToAction(nameof(Index));
                 }
-                ModelState.AddModelError("", "Không thể cập nhật thông tin khách hàng.");
+                ModelState.AddModelError("", "Cannot update customer information.");
             }
             return View(user);
         }

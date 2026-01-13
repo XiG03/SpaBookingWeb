@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace SpaBookingWeb.Services.Manager
 {
@@ -24,13 +26,13 @@ namespace SpaBookingWeb.Services.Manager
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // ... Các hàm cũ (GetServiceDashboardAsync, GetServiceForEditAsync, Create, Update) giữ nguyên ...
-        // Tôi sẽ rút gọn các hàm cũ để tập trung vào hàm mới thêm vào
+        // ... Old methods (GetServiceDashboardAsync, GetServiceForEditAsync, Create, Update) kept as is ...
+        // I will condense old methods to focus on the newly added method
 
         public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync()
         {
             var services = await _context.Services.ToListAsync();
-            // Lấy tất cả chi tiết đơn hàng mà (Đã hoàn thành HOẶC Đã đặt cọc)
+            // Get all appointment details that are (Completed OR Deposit Paid)
             var relevantDetails = await _context.AppointmentDetails
                 .Include(ad => ad.Appointment)
                 .Where(ad => ad.ServiceId != null && !ad.IsDeleted
@@ -43,10 +45,10 @@ namespace SpaBookingWeb.Services.Manager
                 var detailsForService = relevantDetails.Where(x => x.ServiceId == service.ServiceId).ToList();
 
                 // Logic:
-                // 1. Lượt sử dụng: Chỉ tính những đơn đã Complete
+                // 1. Usage Count: Only count Completed appointments
                 var usageCount = detailsForService.Count(x => x.Appointment.Status == "Completed");
 
-                // 2. Doanh thu: Tính tổng giá trị booking của (Completed + Đã cọc)
+                // 2. Revenue: Calculate total booking value of (Completed + Deposit Paid)
                 var revenue = detailsForService.Sum(x => x.PriceAtBooking);
 
                 stats.Add(new ServiceStatisticDto
@@ -98,7 +100,7 @@ namespace SpaBookingWeb.Services.Manager
                 }).ToList()
             };
 
-            // Load danh sách sản phẩm để chọn
+            // Load product list for selection
             model.AvailableProducts = await _context.Products
                 .Include(p => p.Unit)
                 .Where(p => !p.IsDeleted && p.IsForSale)
@@ -118,7 +120,7 @@ namespace SpaBookingWeb.Services.Manager
             };
         }
 
-        // --- HÀM MỚI ---
+        // --- NEW METHOD ---
         public async Task<Service?> GetServiceByIdAsync(int id)
         {
             return await _context.Services.FirstOrDefaultAsync(s => s.ServiceId == id);
@@ -143,7 +145,7 @@ namespace SpaBookingWeb.Services.Manager
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
 
-            // Lưu định mức tiêu hao
+            // Save consumables
             if (model.Consumables != null && model.Consumables.Any())
             {
                 foreach (var item in model.Consumables)
@@ -166,7 +168,7 @@ namespace SpaBookingWeb.Services.Manager
         public async Task UpdateServiceAsync(ServiceViewModel model)
         {
             var service = await _context.Services.FindAsync(model.ServiceId);
-            if (service == null) throw new Exception("Dịch vụ không tồn tại");
+            if (service == null) throw new Exception("Service not found");
 
             if (model.ImageFile != null) service.Image = await SaveImageAsync(model.ImageFile);
 
@@ -177,24 +179,46 @@ namespace SpaBookingWeb.Services.Manager
             service.IsActive = model.IsActive;
             service.RequiresDeposit = model.RequiresDeposit;
 
-            // Cập nhật ServiceConsumables: Xóa cũ (Hard delete vì đây là bảng cấu hình)
-            var existingConsumables = await _context.ServiceConsumables.Where(sc => sc.ServiceId == model.ServiceId).ToListAsync();
-            _context.ServiceConsumables.RemoveRange(existingConsumables);
+            // Update ServiceConsumables logic specific to handle key tracking conflicts
+            var existingConsumables = await _context.ServiceConsumables
+                .Where(sc => sc.ServiceId == model.ServiceId)
+                .ToListAsync();
 
-            if (model.Consumables != null && model.Consumables.Any())
+            var inputConsumables = model.Consumables?.Where(c => c.Quantity > 0).ToList() ?? new List<ServiceConsumableDto>();
+
+            // 1. Remove items that are not in the new list
+            var toRemove = existingConsumables
+                .Where(e => !inputConsumables.Any(i => i.ProductId == e.ProductId))
+                .ToList();
+
+            if (toRemove.Any())
             {
-                foreach (var item in model.Consumables)
+                _context.ServiceConsumables.RemoveRange(toRemove);
+            }
+
+            // 2. Update existing items
+            foreach (var existing in existingConsumables)
+            {
+                var input = inputConsumables.FirstOrDefault(i => i.ProductId == existing.ProductId);
+                if (input != null)
                 {
-                    if (item.Quantity > 0)
-                    {
-                        _context.ServiceConsumables.Add(new ServiceConsumable
-                        {
-                            ServiceId = service.ServiceId,
-                            ProductId = item.ProductId,
-                            Quantity = item.Quantity
-                        });
-                    }
+                    existing.Quantity = input.Quantity;
                 }
+            }
+
+            // 3. Add new items
+            var toAdd = inputConsumables
+                .Where(i => !existingConsumables.Any(e => e.ProductId == i.ProductId))
+                .ToList();
+
+            foreach (var item in toAdd)
+            {
+                _context.ServiceConsumables.Add(new ServiceConsumable
+                {
+                    ServiceId = service.ServiceId,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity
+                });
             }
 
             _context.Services.Update(service);
@@ -218,10 +242,13 @@ namespace SpaBookingWeb.Services.Manager
             string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "services");
             if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
             string filePath = Path.Combine(uploadFolder, uniqueFileName);
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+
+            using (var image = await Image.LoadAsync(imageFile.OpenReadStream()))
             {
-                await imageFile.CopyToAsync(fileStream);
+                image.Mutate(x => x.Resize(300, 300));
+                await image.SaveAsync(filePath);
             }
+
             return "/images/services/" + uniqueFileName;
         }
     }

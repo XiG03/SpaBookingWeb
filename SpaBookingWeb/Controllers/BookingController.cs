@@ -19,7 +19,7 @@ namespace SpaBookingWeb.Controllers
     {
         private readonly IBookingService _bookingService;
         private readonly ISystemSettingService _systemSettingService;
-        private readonly UserManager<ApplicationUser> _userManager; // [MỚI] Khai báo UserManager
+        private readonly UserManager<ApplicationUser> _userManager; // [NEW] Declare UserManager
 
         private readonly MomoService _momoService;
 
@@ -27,7 +27,7 @@ namespace SpaBookingWeb.Controllers
 
         private readonly ApplicationDbContext _context;
 
-        // [MỚI] Inject UserManager vào Constructor
+        // [NEW] Inject UserManager into Constructor
         public BookingController(
             IBookingService bookingService,
             ISystemSettingService systemSettingService,
@@ -46,14 +46,14 @@ namespace SpaBookingWeb.Controllers
         }
 
 
-        // --- STEP 1: CHỌN LOẠI LỊCH ---
+        // --- STEP 1: CHOOSE BOOKING TYPE ---
         [HttpGet]
         public IActionResult Index()
         {
             try
             {
                 // _bookingService.ClearSession();
-                // Step 1 không cần model phức tạp, truyền null hoặc object rỗng
+                // Step 1 doesn't need complex model, pass null or empty object
                 return View("Step1_Type");
             }
             catch (Exception ex)
@@ -75,7 +75,7 @@ namespace SpaBookingWeb.Controllers
                         new BookingMember 
                         { 
                             MemberIndex = 1, 
-                            Name = "Tôi",
+                            Name = "Me",
                             SelectedServiceIds = new List<int> { id } 
                         } 
                     }
@@ -85,28 +85,28 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi BookService id={Id}", id);
+                _logger.LogError(ex, "Error when BookService id={Id}", id);
                 return RedirectToAction("Index");
             }
         }
 
-        // [MỚI] Action nhận booking COMBO -> Lấy hết service con -> Đi thẳng Step 2
+        // [NEW] Action to receive COMBO booking -> Get all child services -> Go straight to Step 2
          [HttpGet]
         public async Task<IActionResult> BookCombo(int id)
         {
             try 
             {
-                // Kiểm tra Combo tồn tại
+                // Check if Combo exists
                 var combo = await _context.Combos.FirstOrDefaultAsync(c => c.ComboId == id && !c.IsDeleted);
 
                 if (combo == null)
                 {
-                    TempData["ErrorMessage"] = "Combo không tồn tại.";
+                    TempData["ErrorMessage"] = "Combo does not exist.";
                     return RedirectToAction("Index", "Services");
                 }
 
-                // Thay vì lấy list service con, ta lấy chính ID combo và đổi dấu thành âm
-                // Ví dụ: Combo ID 1 -> SelectedServiceId = -1
+                // Instead of getting child services list, take Combo ID and negate it
+                // Example: Combo ID 1 -> SelectedServiceId = -1
                 var comboItemId = -id;
 
                 var session = new BookingSessionModel
@@ -117,8 +117,8 @@ namespace SpaBookingWeb.Controllers
                         new BookingMember 
                         { 
                             MemberIndex = 1, 
-                            Name = "Tôi",
-                            SelectedServiceIds = new List<int> { comboItemId } // Lưu ID âm
+                            Name = "Me",
+                            SelectedServiceIds = new List<int> { comboItemId } // Save negative ID
                         } 
                     }
                 };
@@ -128,7 +128,7 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi BookCombo id={Id}", id);
+                _logger.LogError(ex, "Error when BookCombo id={Id}", id);
                 return RedirectToAction("Index", "Services");
             }
         }
@@ -141,15 +141,15 @@ namespace SpaBookingWeb.Controllers
                 var session = new BookingSessionModel
                 {
                     IsGroupBooking = (type == "group"),
-                    Members = new List<BookingMember> { new BookingMember { MemberIndex = 1, Name = "Tôi" } }
+                    Members = new List<BookingMember> { new BookingMember { MemberIndex = 1, Name = "Me" } }
                 };
 
-                // [MỚI] Kiểm tra xem có dịch vụ nào được chọn trước từ trang Services không
+                // [NEW] Check if any service is pre-selected from Services page
                 if (TempData["PreSelectedServiceId"] is int serviceId)
                 {
                     session.Members[0].SelectedServiceIds.Add(serviceId);
                     
-                    // Giữ lại TempData cho request tiếp theo (đề phòng) hoặc để hiển thị thông báo
+                    // Keep TempData for next request (precaution) or to display message
                     TempData.Keep("PreSelectedServiceId"); 
                 }
 
@@ -158,12 +158,12 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "An error occurred: " + ex.Message;
                 return RedirectToAction("Index");
             }
         }
 
-        // --- STEP 2: CHỌN DỊCH VỤ ---
+        // --- STEP 2: SELECT SERVICES ---
         [HttpGet]
         public async Task<IActionResult> Step2_Services()
         {
@@ -174,7 +174,7 @@ namespace SpaBookingWeb.Controllers
 
                 var data = await _bookingService.GetBookingPageDataAsync();
 
-                // ĐẢM BẢO TRUYỀN ĐÚNG Step2ViewModel
+                // ENSURE CORRECT Step2ViewModel PASSED
                 var model = new Step2ViewModel
                 {
                     IsGroup = session.IsGroupBooking,
@@ -198,10 +198,10 @@ namespace SpaBookingWeb.Controllers
             session.Members.Add(new BookingMember
             {
                 MemberIndex = newIndex,
-                Name = $"Khách {newIndex}"
+                Name = $"Guest {newIndex}"
             });
 
-            // Nếu chuyển từ cá nhân -> nhóm, cập nhật cờ
+            // If switching from personal -> group, update flag
             if (!session.IsGroupBooking) session.IsGroupBooking = true;
 
             _bookingService.SaveSession(session);
@@ -214,13 +214,13 @@ namespace SpaBookingWeb.Controllers
             var session = _bookingService.GetSession();
             if (session == null) return RedirectToAction("Index");
 
-            // Không cho xóa thành viên số 1
+            // Do not allow deleting member 1
             if (index > 1)
             {
                 var member = session.Members.FirstOrDefault(m => m.MemberIndex == index);
                 if (member != null) session.Members.Remove(member);
 
-                // Reset lại index cho đẹp nếu cần, hoặc giữ nguyên
+                // Reset index if needed, or keep as is
                 if (session.Members.Count == 1) session.IsGroupBooking = false;
 
                 _bookingService.SaveSession(session);
@@ -240,7 +240,7 @@ namespace SpaBookingWeb.Controllers
 
                 if (member == null)
                 {
-                    member = new BookingMember { MemberIndex = memberIndex, Name = $"Khách {memberIndex}" };
+                    member = new BookingMember { MemberIndex = memberIndex, Name = $"Guest {memberIndex}" };
                     session.Members.Add(member);
                 }
                 member.SelectedServiceIds = serviceIds;
@@ -249,7 +249,7 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest("Lỗi cập nhật dịch vụ: " + ex.Message);
+                return BadRequest("Error updating service: " + ex.Message);
             }
         }
 
@@ -259,7 +259,7 @@ namespace SpaBookingWeb.Controllers
             return RedirectToAction("Step3_Staff");
         }
 
-        // --- STEP 3: CHỌN KTV ---
+        // --- STEP 3: SELECT TECHNICIAN ---
          [HttpGet]
         public async Task<IActionResult> Step3_Staff()
         {
@@ -280,11 +280,11 @@ namespace SpaBookingWeb.Controllers
                         var item = allServices.FirstOrDefault(s => s.Id == id);
                         if (item == null) continue;
 
-                        // Add chính item đó (Combo hoặc Dịch vụ lẻ) vào list để View hiển thị
+                        // Add exactly that item (Combo or Odd Service) to list for View to display
                         member.SelectedServices.Add(item);
 
-                        // QUAN TRỌNG: Khởi tạo key trong Map cho các dịch vụ con nếu là Combo
-                        // Điều này giúp View có thể binding dữ liệu KTV cho từng child
+                        // IMPORTANT: Initialize key in Map for child services if Combo
+                        // This helps View to bind Technician data for each child
                         if (item.Id < 0 && item.ChildServices != null)
                         {
                             foreach (var child in item.ChildServices)
@@ -295,7 +295,7 @@ namespace SpaBookingWeb.Controllers
                                 }
                             }
                         }
-                        // Nếu là dịch vụ lẻ
+                        // If odd service
                         else if (item.Id > 0)
                         {
                             if (!member.ServiceStaffMap.ContainsKey(item.Id))
@@ -310,7 +310,7 @@ namespace SpaBookingWeb.Controllers
                 int duration = 0;
                 foreach (var m in session.Members)
                 {
-                    // Tính tổng tiền dựa trên item gốc (Combo tính giá Combo, Dịch vụ tính giá dịch vụ)
+                    // Calculate total amount based on original item (Combo uses Combo price, Service uses service price)
                     foreach (var s in m.SelectedServices)
                     {
                          total += s.Price;
@@ -331,7 +331,7 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi Step3");
+                _logger.LogError(ex, "Error Step3");
                 return RedirectToAction("Index");
             }
         }
@@ -347,7 +347,7 @@ namespace SpaBookingWeb.Controllers
                 var member = session.Members.FirstOrDefault(m => m.MemberIndex == memberIndex);
                 if (member != null)
                 {
-                    // Cập nhật nhân viên cho dịch vụ cụ thể
+                    // Update staff for specific service
                     if (member.ServiceStaffMap.ContainsKey(serviceId))
                     {
                         member.ServiceStaffMap[serviceId] = staffId;
@@ -369,7 +369,7 @@ namespace SpaBookingWeb.Controllers
         [HttpPost]
         public IActionResult SetStaffAll(int memberIndex, int? staffId)
         {
-            // Hàm tiện ích nếu muốn chọn 1 người cho tất cả (Option mở rộng)
+            // Utility function if want to select 1 person for all (Extended option)
             try
             {
                 var session = _bookingService.GetSession();
@@ -389,7 +389,7 @@ namespace SpaBookingWeb.Controllers
             catch { return BadRequest(); }
         }
 
-        // --- STEP 4: CHỌN GIỜ ---
+        // --- STEP 4: SELECT TIME ---
         [HttpGet]
         public async Task<IActionResult> Step4_Time(DateTime? date)
         {
@@ -398,25 +398,25 @@ namespace SpaBookingWeb.Controllers
                 var session = _bookingService.GetSession();
                 if (session == null) return RedirectToAction("Index");
 
-                // Mặc định là ngày đã chọn hoặc hôm nay
+                // Default is selected date or today
                 var selectedDate = date ?? session.SelectedDate ?? DateTime.Today;
-                session.SelectedDate = selectedDate; // Tạm lưu ngày đang xem
+                session.SelectedDate = selectedDate; // Temporarily save viewing date
                 _bookingService.SaveSession(session);
 
-                // 1. Lấy Slots theo logic 15p
+                // 1. Get Slots by 15min logic
                 var slots = await _bookingService.GetAvailableTimeSlotsAsync(selectedDate, session);
 
-                // 2. Lấy dữ liệu Service & Staff để hiển thị Sidebar
+                // 2. Get Service & Staff data to display Sidebar
                 var pageData = await _bookingService.GetBookingPageDataAsync();
                 var allServices = pageData.ServiceCategories.SelectMany(c => c.Services).ToList();
 
-                // 3. Tính toán lại chi tiết cho View
+                // 3. Recalculate details for View
                 decimal totalAmount = 0;
                 int totalDuration = 0;
 
                 foreach (var member in session.Members)
                 {
-                    // Map lại Service Detail để lấy tên & giá
+                    // Remap Service Detail to get name & price
                     member.SelectedServices = allServices
                         .Where(s => member.SelectedServiceIds.Contains(s.Id))
                         .ToList();
@@ -425,14 +425,14 @@ namespace SpaBookingWeb.Controllers
                     totalDuration += member.SelectedServices.Sum(s => s.DurationMinutes);
                 }
 
-                // 4. Lấy giờ mở cửa (để hiển thị UI nếu cần)
+                // 4. Get opening hours (to display UI if needed)
                 var settings = await _systemSettingService.GetCurrentSettingsAsync();
 
                 var model = new Step4ViewModel
                 {
                     CurrentSession = session,
                     AvailableTimeSlots = slots,
-                    Staffs = pageData.Staffs, // Truyền list nhân viên sang để tra cứu tên
+                    Staffs = pageData.Staffs, // Pass staff list to lookup name
                     TotalAmount = totalAmount,
                     TotalDuration = totalDuration,
                     OpenTimeStr = settings.OpenTime.ToString(@"hh\:mm"),
@@ -463,11 +463,11 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest("Lỗi chọn giờ: " + ex.Message);
+                return BadRequest("Error selecting time: " + ex.Message);
             }
         }
 
-        // --- STEP 5: XÁC NHẬN ---
+        // --- STEP 5: CONFIRM ---
         [HttpGet]
         public async Task<IActionResult> Step5_Confirm()
         {
@@ -479,18 +479,18 @@ namespace SpaBookingWeb.Controllers
                 if (!User.Identity.IsAuthenticated)
                     return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Step5_Confirm", "Booking") });
 
-                // Nếu là đơn hàng cũ (Resume), không cần tính toán lại quá nhiều để tránh sai lệch
-                // Tuy nhiên, để hiển thị đầy đủ thông tin dịch vụ, vẫn cần load lại Staff/Service info từ DB
+                // If old order (Resume), no need to recalculate too much to avoid discrepancies
+                // However, to display full service info, still need to reload Staff/Service info from DB
                 var data = await _bookingService.GetBookingPageDataAsync();
                 var allSvcs = data.ServiceCategories.SelectMany(c => c.Services).ToList();
 
                 foreach (var mem in session.Members)
                 {
-                    // Map lại chi tiết dịch vụ để hiển thị tên, giá trên UI
+                    // Remap service detail to display name, price on UI
                     mem.SelectedServices = allSvcs.Where(s => mem.SelectedServiceIds.Contains(s.Id)).ToList();
                 }
 
-                // Nếu là đơn mới, tính lại tiền. Nếu đơn cũ, giữ nguyên TotalAmount từ Session (đã load từ DB)
+                // If new order, recalculate price. If old order, keep TotalAmount from Session (already loaded from DB)
                 if (!session.ExistingAppointmentId.HasValue)
                 {
                     decimal total = 0;
@@ -515,7 +515,7 @@ namespace SpaBookingWeb.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có lỗi khi tải trang xác nhận.";
+                TempData["ErrorMessage"] = "Error loading confirmation page.";
                 return RedirectToAction("Index");
             }
         }
@@ -528,12 +528,12 @@ namespace SpaBookingWeb.Controllers
                 var session = _bookingService.GetSession();
                 if (session == null) return RedirectToAction("Index");
 
-                // Validate lại lần cuối
+                // Validate one last time
                 if (!ModelState.IsValid)
                 {
                     var data = await _bookingService.GetBookingPageDataAsync();
                     var settings = await _systemSettingService.GetCurrentSettingsAsync();
-                    // Load lại data cho View Step 5
+                    // Reload data for Step 5 View
                     return View("Step5_Confirm", new Step5ViewModel
                     {
                         CurrentSession = session,
@@ -546,88 +546,88 @@ namespace SpaBookingWeb.Controllers
                 session.CustomerInfo = info;
                 _bookingService.SaveSession(session);
 
-                // 1. LƯU BOOKING VÀO DB TRƯỚC (Trạng thái Unpaid/Pending)
-                // Phải lưu trước để có AppointmentId (OrderId) gửi sang MoMo
+                // 1. SAVE BOOKING TO DB FIRST (Status Unpaid/Pending)
+                // Must save first to get AppointmentId (OrderId) to send to MoMo
                 var appointmentId = await _bookingService.SaveBookingAsync(session);
 
-                // 2. ĐIỀU HƯỚNG THANH TOÁN
+                // 2. REDIRECT TO PAYMENT
                 if (payment_method == "momo")
                 {
                     var orderId = $"ORDER_{appointmentId}_{DateTime.Now.Ticks}";
-                    // Lấy số tiền cọc (đã tính ở Step 5)
+                    // Get deposit amount (calculated in Step 5)
                     long amount = (long)session.DepositAmount;
-                    string orderInfo = $"Dat coc lich hen #{appointmentId} tai SpaBookingWeb";
+                    string orderInfo = $"Appointment Deposit #{appointmentId}";
 
-                    // Tạo URL Callback: Khi thanh toán xong MoMo sẽ gọi về đây
+                    // Create Callback URL: When payment finishes, MoMo will call back here
                     var redirectUrl = Url.Action("PaymentCallback", "Booking", null, Request.Scheme);
-                    var ipnUrl = "http://localhost:5329/Booking/PaymentCallback"; // URL này cần public (host thật) mới nhận được IPN
+                    var ipnUrl = "http://localhost:5329/Booking/PaymentCallback"; // This URL needs to be public (real host) to receive IPN
 
-                    // Gọi service Momo để lấy URL thanh toán
+                    // Call Momo service to get payment URL
                     var payUrl = await _momoService.CreatePaymentAsync(orderId, amount, orderInfo, redirectUrl, ipnUrl);
 
                     if (string.IsNullOrWhiteSpace(payUrl))
                     {
-                        _logger.LogError("MoMo trả về payUrl NULL hoặc rỗng. AppointmentId: {Id}", appointmentId);
-                        return BadRequest("Không tạo được link thanh toán MoMo.");
+                        _logger.LogError("MoMo returned NULL or empty payUrl. AppointmentId: {Id}", appointmentId);
+                        return BadRequest("Cannot create MoMo payment link.");
                     }
 
-                    // Xóa session booking vì đã lưu vào DB
+                    // Delete booking session because saved to DB
                     // _bookingService.ClearSession();
 
-                    // Chuyển hướng người dùng sang trang MoMo
+                    // Redirect user to MoMo page
                     return Redirect(payUrl);
                 }
                 else
                 {
-                    // Thanh toán sau (Tại quầy) -> Chuyển thẳng tới trang thành công
+                    // Pay later (At counter) -> Redirect straight to Success page
                     _bookingService.ClearSession();
                     return RedirectToAction("Step6_Success", new { id = appointmentId });
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Dữ liệu truyền sang MoMo không hợp lệ");
-                TempData["ErrorMessage"] = "Lỗi khi xử lý: " + ex.Message;
+                _logger.LogError(ex, "Invalid MoMo data");
+                TempData["ErrorMessage"] = "Error processing: " + ex.Message;
                 return RedirectToAction("Step5_Confirm");
             }
         }
 
-        // --- NHẬN KẾT QUẢ TỪ MOMO (Action này Momo sẽ gọi khi xong) ---
+        // --- RECEIVE RESULT FROM MOMO (Momo calls this Action when done) ---
         [HttpGet]
         public async Task<IActionResult> PaymentCallback(string partnerCode, string accessKey, string requestId, long amount, string orderId, string orderInfo,
                                                         string orderType, long transId, string message, string localMessage, string responseTime, int errorCode,
                                                         string payType, string extraData, string signature)
         {
-            // Momo trả về các tham số qua QueryString
+            // Momo returns parameters via QueryString
             // var collection = Request.Query;
-            // string resultCode = collection["errorCode"]; // 0 = Thành công
-            // string orderId = collection["orderId"]; // Chính là appointmentId mình gửi đi
+            // string resultCode = collection["errorCode"]; // 0 = Success
+            // string orderId = collection["orderId"]; // This is appointmentId we sent
             // string orderInfo = collection["orderInfo"];
             string transid = transId.ToString();
 
 
-            if (errorCode == 0) // Giao dịch thành công
+            if (errorCode == 0) // Transaction successful
             {
                 if (TryParseAppointmentId(orderId, out int appId))
                 {
-                    // Cập nhật trạng thái đã thanh toán cọc trong DB
+                    // Update deposit status in DB
                     await _bookingService.UpdateDepositStatusAsync(appId, transid); // Send Email
 
                     _bookingService.ClearSession();
 
-                    // Chuyển đến trang thành công
+                    // Redirect to success page
                     return RedirectToAction("Step6_Success", new { id = appId });
                 }
             }
 
             TempData["ErrorMessage"] = !string.IsNullOrEmpty(localMessage) 
-                                        ? $"Thanh toán thất bại: {localMessage}" 
-                                        : "Giao dịch bị hủy hoặc thất bại. Vui lòng thử lại.";
+                                        ? $"Payment failed: {localMessage}" 
+                                        : "Transaction cancelled or failed. Please try again.";
 
-            // Giao dịch thất bại hoặc bị hủy
-            TempData["ErrorMessage"] = $"Thanh toán thất bại";
+            // Transaction failed or cancelled
+            TempData["ErrorMessage"] = $"Payment failed";
 
-            // Redirect về trang chủ hoặc trang quản lý lịch sử (vì đơn hàng đã tạo rồi nhưng chưa cọc)
+            // Redirect to home or history (since order created but not deposited)
             return RedirectToAction("Step5_Confirm");
         }
 
@@ -647,12 +647,12 @@ namespace SpaBookingWeb.Controllers
             return int.TryParse(parts[1], out appointmentId);
         }
 
-        // --- STEP 6: THÀNH CÔNG ---
+        // --- STEP 6: SUCCESS ---
         public async Task<IActionResult> Step6_Success(int id)
         {
             if (id <= 0) return RedirectToAction("Index");
 
-            // Lấy lại thông tin từ DB để hiển thị
+            // Retrieve info from DB to display
             var model = await _bookingService.GetAppointmentSuccessInfoAsync(id);
 
             if (model == null) return RedirectToAction("Index");
@@ -664,14 +664,14 @@ namespace SpaBookingWeb.Controllers
         public async Task<IActionResult> CheckVoucher(string code)
         {
             var session = _bookingService.GetSession();
-            if (session == null) return Json(new { isValid = false, message = "Phiên làm việc hết hạn." });
+            if (session == null) return Json(new { isValid = false, message = "Session expired." });
 
             // 1. Validate Voucher
             var result = await _bookingService.ValidateVoucherAsync(code, session.TotalAmount);
             
             if (result.IsValid && result.Voucher != null)
             {
-                // 2. Tính toán số tiền giảm (Chỉ để hiển thị)
+                // 2. Calculate discount (For display only)
                 decimal discount = 0;
                 if (result.Voucher.DiscountType == "Percent")
                 {
@@ -687,25 +687,25 @@ namespace SpaBookingWeb.Controllers
                     discount = result.Voucher.MaxDiscountAmount.Value;
                 }
 
-                // 3. Tính toán số tiền ước tính còn lại phải trả tại quầy
-                // Công thức UI: Tổng - Cọc - Giảm giá = Còn lại (Hiển thị cho khách vui)
+                // 3. Calculate estimated remaining amount to pay at counter
+                // UI Formula: Total - Deposit - Discount = Remaining (Show for guest)
                 decimal remainingUI = session.TotalAmount - session.DepositAmount - discount;
                 if (remainingUI < 0) remainingUI = 0;
 
-                // LƯU Ý: KHÔNG GỌI _bookingService.SaveSession(session) ĐỂ LƯU VOUCHER
+                // NOTE: DO NOT CALL _bookingService.SaveSession(session) TO SAVE VOUCHER
 
                 return Json(new { 
                     isValid = true, 
                     message = result.Message,
                     discountAmount = discount,
-                    remainingAmount = remainingUI, // Số tiền hiển thị trên UI (Đã trừ voucher)
+                    remainingAmount = remainingUI, // Amount displayed on UI (Discount deducted)
                     totalAmount = session.TotalAmount,
                     depositAmount = session.DepositAmount
                 });
             }
             else
             {
-                // Tính lại remaining mặc định (Tổng - Cọc)
+                // Recalculate default remaining (Total - Deposit)
                 decimal remainingDefault = session.TotalAmount - session.DepositAmount;
 
                 return Json(new { 
@@ -719,7 +719,7 @@ namespace SpaBookingWeb.Controllers
             }
         }
 
-        // Class DTO nhận dữ liệu từ Client
+        // DTO Class to receive data from Client
         public class VoucherCheckRequest
         {
             public string Code { get; set; }

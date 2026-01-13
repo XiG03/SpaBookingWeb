@@ -5,24 +5,24 @@ namespace SpaBookingWeb.Services.Manager
 {
     public interface ISystemSettingService
     {
-        // 1. Cấu hình chung
+        // 1. General Configuration
         Task<SystemSettingViewModel> GetCurrentSettingsAsync();
         Task UpdateSettingsAsync(SystemSettingViewModel model);
 
-        // 2. Quản lý Đơn vị tính (Units)
+        // 2. Unit Management
         Task AddUnitAsync(string unitName);
         Task DeleteUnitAsync(int id);
         
-        // 3. Quản lý Vai trò (Roles)
+        // 3. Role Management
 
 
 
 
-        // 4. Quản lý Quy tắc đặt cọc (Deposit Rules)
+        // 4. Deposit Rule Management
         Task AddDepositRuleAsync(SystemSettingViewModel model); 
         Task DeleteDepositRuleAsync(int id);
 
-        // 5. Nâng quyền Khách hàng -> Nhân viên
+        // 5. Promote Customer -> Employee
         Task PromoteCustomerAsync(int customerId);
     }
 }

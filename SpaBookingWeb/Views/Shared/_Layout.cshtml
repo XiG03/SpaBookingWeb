@@ -4,7 +4,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 <!DOCTYPE html>
-<html class="light" lang="vi">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,7 +42,7 @@
     </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-         /* Animation cho Dropdown */
+         /* Dropdown Animation */
         .animation-fade-in-down { animation: fadeInDown 0.2s ease-out; }
         @@keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -66,19 +66,19 @@
             <!-- NAV MENU & BUTTONS -->
             <div class="hidden md:flex flex-1 justify-end gap-8 items-center">
                 <div class="flex items-center gap-6 lg:gap-9">
-                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Services" asp-action="Index">Dịch vụ</a>
-                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Combos" asp-action="Index">Combo</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Services" asp-action="Index">Services</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Combos" asp-action="Index">Combos</a>
                     <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" asp-controller="Posts" asp-action="Index">Blog</a>
-                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Về chúng tôi</a>
-                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Liên hệ</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">About Us</a>
+                    <a class="text-gray-900 dark:text-gray-200 text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Contact</a>
                     @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
                     {
-                         <a class="text-primary font-bold text-sm hover:underline" asp-area="Manager" asp-controller="Home" asp-action="Index">Quản lý</a>
+                         <a class="text-primary font-bold text-sm hover:underline" asp-area="Manager" asp-controller="Home" asp-action="Index">Management</a>
                     }
                 </div>
                 
                 <button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary-dark transition-colors shadow-md shadow-pink-200 dark:shadow-none">
-                     <a class="truncate" asp-area="" asp-controller="Booking" asp-action="Index">Đặt lịch ngay</a>
+                     <a class="truncate" asp-area="" asp-controller="Booking" asp-action="Index">Book Now</a>
                 </button>
 
                 <!-- USER PROFILE BUTTON -->
@@ -98,7 +98,7 @@
                             }
                             <div class="flex flex-col items-start hidden lg:block">
                                 <span class="text-sm font-bold text-gray-900 dark:text-white leading-none">@(user?.FullName ?? "User")</span>
-                                <span class="text-[10px] text-gray-500 font-medium">Thành viên</span>
+                                <span class="text-[10px] text-gray-500 font-medium">Member</span>
                             </div>
                             <span class="material-symbols-outlined text-gray-400 text-sm hidden lg:block group-hover:text-primary transition-colors">expand_more</span>
                         </button>
@@ -112,16 +112,16 @@
                                 </div>
                                 <div class="py-1">
                                     <a asp-controller="Profile" asp-action="Appointments" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
-                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">person</span> Hồ sơ cá nhân
+                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">person</span> My Profile
                                     </a>
                                     <a asp-controller="Profile" asp-action="History" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-900/30 hover:text-primary transition-colors">
-                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">history</span> Lịch sử đặt hẹn
+                                        <span class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary">history</span> Booking History
                                     </a>
                                 </div>
                                 <div class="border-t border-gray-100 dark:border-pink-900/50 py-1">
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="w-full">
                                         <button type="submit" class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                            <span class="material-symbols-outlined text-[20px]">logout</span> Đăng xuất
+                                            <span class="material-symbols-outlined text-[20px]">logout</span> Logout
                                         </button>
                                     </form>
                                 </div>
@@ -133,7 +133,7 @@
                 {
                     <a asp-controller="Account" asp-action="Login" class="ml-6 flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[20px]">login</span> 
-                        <span class="hidden lg:inline">Đăng nhập</span>
+                        <span class="hidden lg:inline">Login</span>
                     </a>
                 }
             </div>
@@ -156,21 +156,21 @@
                 <div class="flex flex-col gap-4">
                     <h4 class="font-bold text-gray-900 dark:text-white">Spa & Salon</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Mang đến vẻ đẹp và sự tự tin cho bạn mỗi ngày.
+                        Bringing beauty and confidence to you every day.
                     </p>
                 </div>
                 <div class="flex flex-col gap-4">
-                    <h4 class="font-bold text-gray-900 dark:text-white">Dịch vụ</h4>
+                    <h4 class="font-bold text-gray-900 dark:text-white">Services</h4>
                     <a class="text-sm text-gray-500 hover:text-primary" href="#">Spa & Massage</a>
-                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Chăm sóc da</a>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Skincare</a>
                 </div>
                  <div class="flex flex-col gap-4">
-                    <h4 class="font-bold text-gray-900 dark:text-white">Hỗ trợ</h4>
-                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Liên hệ</a>
-                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Chính sách</a>
+                    <h4 class="font-bold text-gray-900 dark:text-white">Support</h4>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Contact</a>
+                    <a class="text-sm text-gray-500 hover:text-primary" href="#">Policy</a>
                 </div>
                  <div class="flex flex-col gap-4">
-                    <h4 class="font-bold text-gray-900 dark:text-white">Liên hệ</h4>
+                    <h4 class="font-bold text-gray-900 dark:text-white">Contact</h4>
                     <p class="text-sm text-gray-500">Hotline: 1900 xxxx</p>
                 </div>
             </div>

@@ -37,7 +37,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _serviceService.CreateServiceAsync(model);
-                TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
+                TempData["SuccessMessage"] = "Service added successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
@@ -58,15 +58,15 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _serviceService.UpdateServiceAsync(model);
-                TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
+                TempData["SuccessMessage"] = "Service updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
         }
 
-        // --- CẬP NHẬT PHẦN DELETE ---
+        // --- UPDATE DELETE SECTION ---
 
-        // GET: Hiển thị trang xác nhận xóa
+        // GET: Show delete confirmation page
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -75,13 +75,13 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             return View(service);
         }
 
-        // POST: Thực hiện xóa (Soft Delete)
+        // POST: Execute Delete (Soft Delete)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _serviceService.DeleteServiceAsync(id);
-            TempData["SuccessMessage"] = "Đã ngưng hoạt động dịch vụ thành công.";
+            TempData["SuccessMessage"] = "Service deactivated successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

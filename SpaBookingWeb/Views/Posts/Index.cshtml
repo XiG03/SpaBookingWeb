@@ -2,7 +2,7 @@
 
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Tin tức & Sự kiện";
+    ViewData["Title"] = "News & Events";
 }
 
 <style>
@@ -23,8 +23,8 @@
 <!-- Banner -->
 <div class="relative w-full h-[300px] flex items-center justify-center bg-cover bg-center" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://lh3.googleusercontent.com/aida-public/AB6AXuDcFza3h2cyamQGHdHNhShHZnbtimS1qV6GQfPU3fmL2jEcP9iYY6h2D7GeR9ZfD9Qg62bGTGXmOOePiKxMgVRPPUGsw6UHkkBR8JLnB_NRTDIQRR7Lm7SPB7TgaTq29zc_FcVAMgefUgU2dFGg0dZPw2dX2Tj54AVioEzqhlJkalMcPAYHkS2bpTcnINGgeWrmThBXuR53jVfq-m7Zv2b6Rn2Dij-iGPP4zFPlEY9W4w6jMiUoGy2HmCdlzAgq5g5Un-rBb_ABX_0');">
     <div class="text-center text-white z-10 px-4">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Blog Làm Đẹp & Sức Khỏe</h1>
-        <p class="text-lg md:text-xl text-gray-200">Chia sẻ kiến thức, bí quyết và xu hướng mới nhất</p>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Beauty & Health Blog</h1>
+        <p class="text-lg md:text-xl text-gray-200">Sharing knowledge, tips, and the latest trends</p>
     </div>
 </div>
 
@@ -35,9 +35,9 @@
         <aside class="w-full lg:w-80 shrink-0 space-y-8">
             <!-- Search -->
             <div class="bg-white dark:bg-[#2f1b25] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Tìm kiếm</h3>
+                <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Search</h3>
                 <form method="get" action="/Posts" class="relative">
-                    <input type="text" name="search" value="@Model.CurrentSearch" placeholder="Nhập từ khóa..." 
+                    <input type="text" name="search" value="@Model.CurrentSearch" placeholder="Enter keywords..." 
                            class="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:ring-primary focus:border-primary transition-all">
                     <button type="submit" class="absolute right-3 top-3 text-gray-400 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined">search</span>
@@ -47,11 +47,11 @@
 
             <!-- Categories -->
             <div class="bg-white dark:bg-[#2f1b25] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Danh mục</h3>
+                <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Categories</h3>
                 <ul class="space-y-2">
                     <li>
                         <a href="/Posts" class="flex items-center justify-between p-3 rounded-xl transition-colors @(!Model.CurrentCategoryId.HasValue ? "bg-primary text-white" : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300")">
-                            <span>Tất cả</span>
+                            <span>All</span>
                         </a>
                     </li>
                     @foreach (var cat in Model.Categories)
@@ -98,7 +98,7 @@
                                 </p>
                                 <div class="pt-3 mt-auto">
                                     <a href="/Posts/Detail/@post.Id" class="inline-flex items-center text-sm font-bold text-primary hover:underline gap-1">
-                                        Đọc tiếp <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                        Read more <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                     </a>
                                 </div>
                             </div>
@@ -126,8 +126,8 @@
             {
                 <div class="flex flex-col items-center justify-center py-20 text-center">
                     <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">article</span>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy bài viết nào</h3>
-                    <p class="text-gray-500">Thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác.</p>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">No posts found</h3>
+                    <p class="text-gray-500">Try searching with different keywords or select another category.</p>
                 </div>
             }
         </div>

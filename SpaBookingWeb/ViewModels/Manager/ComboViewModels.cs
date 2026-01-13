@@ -27,24 +27,24 @@ namespace SpaBookingWeb.ViewModels.Manager
     {
         public int ComboId { get; set; }
 
-        [Display(Name = "Tên Combo")]
-        [Required(ErrorMessage = "Vui lòng nhập tên combo")]
+        [Display(Name = "Combo Name")]
+        [Required(ErrorMessage = "Please enter combo name")]
         public string ComboName { get; set; } = string.Empty;
 
-        [Display(Name = "Giá Combo (VNĐ)")]
-        [Required(ErrorMessage = "Vui lòng nhập giá combo")]
+        [Display(Name = "Combo Price (VND)")]
+        [Required(ErrorMessage = "Please enter combo price")]
         public decimal Price { get; set; }
 
-        [Display(Name = "Mô tả")]
+        [Display(Name = "Description")]
         public string Description { get; set; } = string.Empty;
 
-        [Display(Name = "Hình ảnh")]
+        [Display(Name = "Image")]
         public IFormFile? ImageFile { get; set; }
         public string? ExistingImage { get; set; }
 
         // --- Phần quan trọng: Chọn Dịch vụ ---
-        [Display(Name = "Các dịch vụ trong Combo")]
-        [Required(ErrorMessage = "Vui lòng chọn ít nhất một dịch vụ")]
+        [Display(Name = "Services in Combo")]
+        [Required(ErrorMessage = "Please select at least one service")]
         public List<int> SelectedServiceIds { get; set; } = new List<int>();
 
         // Danh sách để đổ dữ liệu vào Dropdown (Select2)

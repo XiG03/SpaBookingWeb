@@ -5,63 +5,63 @@ namespace SpaBookingWeb.ViewModels.Manager
 {
     public class ServiceDashboardViewModel
     {
-        // Danh sách chi tiết các dịch vụ để hiển thị bảng
+        // List of service details for display in table
         public List<ServiceStatisticDto> Services { get; set; } = new List<ServiceStatisticDto>();
 
-        // Thống kê tổng quan
-        public int TotalActiveServices { get; set; } // Số lượng service có thể sử dụng
+        // Overview statistics
+        public int TotalActiveServices { get; set; } // Number of usable services
         public int TotalServices { get; set; }
 
-        // Dữ liệu cho biểu đồ (Arrays để chuyển sang JS)
-        public List<string> ChartLabels { get; set; } = new List<string>(); // Tên dịch vụ
-        public List<int> ChartUsageCount { get; set; } = new List<int>();   // Số lượt dùng
-        public List<decimal> ChartRevenue { get; set; } = new List<decimal>(); // Doanh thu
+        // Chart data (Arrays for JS conversion)
+        public List<string> ChartLabels { get; set; } = new List<string>(); // Service Names
+        public List<int> ChartUsageCount { get; set; } = new List<int>();   // Usage Count
+        public List<decimal> ChartRevenue { get; set; } = new List<decimal>(); // Revenue
     }
 
-    // Class DTO được định nghĩa ngay tại đây thay vì tách file
+    // DTO class defined here instead of separate file
     public class ServiceStatisticDto
     {
         public int ServiceId { get; set; }
         public string ServiceName { get; set; } = string.Empty;
         public decimal Price { get; set; }
-        public int UsageCount { get; set; }      // Số lần được đặt
-        public decimal TotalRevenue { get; set; } // Tổng doanh thu từ dịch vụ này
+        public int UsageCount { get; set; }      // Number of times booked
+        public decimal TotalRevenue { get; set; } // Total revenue from this service
         public bool IsActive { get; set; }
     }
     public class ServiceViewModel
     {
         public int ServiceId { get; set; }
 
-        [Display(Name = "Tên dịch vụ")]
-        [Required(ErrorMessage = "Vui lòng nhập tên dịch vụ")]
-        [StringLength(200, ErrorMessage = "Tên dịch vụ không quá 200 ký tự")]
+        [Display(Name = "Service Name")]
+        [Required(ErrorMessage = "Please enter service name")]
+        [StringLength(200, ErrorMessage = "Service name cannot exceed 200 characters")]
         public string ServiceName { get; set; } = string.Empty;
 
-        [Display(Name = "Giá tiền (VNĐ)")]
-        [Required(ErrorMessage = "Vui lòng nhập giá tiền")]
-        [Range(0, double.MaxValue, ErrorMessage = "Giá tiền phải lớn hơn hoặc bằng 0")]
+        [Display(Name = "Price (VND)")]
+        [Required(ErrorMessage = "Please enter price")]
+        [Range(0, double.MaxValue, ErrorMessage = "Price must be greater than or equal to 0")]
         public decimal Price { get; set; }
 
-        [Display(Name = "Thời lượng (phút)")]
-        [Required(ErrorMessage = "Vui lòng nhập thời lượng")]
-        [Range(1, 1440, ErrorMessage = "Thời lượng từ 1 phút đến 24 giờ")]
+        [Display(Name = "Duration (minutes)")]
+        [Required(ErrorMessage = "Please enter duration")]
+        [Range(1, 1440, ErrorMessage = "Duration must be between 1 minute and 24 hours")]
         public int DurationMinutes { get; set; }
 
-        [Display(Name = "Mô tả")]
+        [Display(Name = "Description")]
         public string Description { get; set; } = string.Empty;
 
-        [Display(Name = "Hình ảnh")]
-        public IFormFile? ImageFile { get; set; } // File ảnh upload lên
+        [Display(Name = "Image")]
+        public IFormFile? ImageFile { get; set; } // Uploaded image file
 
-        public string? ExistingImage { get; set; } // Đường dẫn ảnh cũ (dùng khi edit)
+        public string? ExistingImage { get; set; } // Old image path (used when editing)
 
-        [Display(Name = "Trạng thái hoạt động")]
+        [Display(Name = "Active Status")]
         public bool IsActive { get; set; } = true;
 
-        [Display(Name = "Yêu cầu đặt cọc")]
+        [Display(Name = "Requires Deposit")]
         public bool RequiresDeposit { get; set; }
 
-        // --- MỚI: Quản lý tiêu hao ---
+        // --- NEW: Consumable Management ---
         public List<ServiceConsumableDto> Consumables { get; set; } = new List<ServiceConsumableDto>();
         public List<SpaBookingWeb.Models.Product>? AvailableProducts { get; set; }
     }

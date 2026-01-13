@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.Models.Voucher
 
 @{
-    ViewData["Title"] = "Xóa Voucher";
+    ViewData["Title"] = "Delete Voucher";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,53 +9,52 @@
     <div class="row justify-content-center">
         <div class="col-12 col-md-8">
             <div class="alert alert-warning" role="alert">
-                <h4 class="alert-heading">Cảnh báo!</h4>
-                <p>Bạn có chắc chắn muốn xóa voucher này? Hành động này sẽ ẩn voucher khỏi danh sách và ngừng kích hoạt
-                    nó.</p>
+                <h4 class="alert-heading">Warning!</h4>
+                <p>Are you sure you want to delete this voucher? This action will hide the voucher from the list and deactivate it.</p>
             </div>
 
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title text-danger">Thông tin Voucher sẽ xóa</strong>
+                    <strong class="card-title text-danger">Voucher Information to Delete</strong>
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-4">Tên Voucher</dt>
+                        <dt class="col-sm-4">Voucher Name</dt>
                         <dd class="col-sm-8">@Model.Name</dd>
 
-                        <dt class="col-sm-4">Mã Code</dt>
+                        <dt class="col-sm-4">Code</dt>
                         <dd class="col-sm-8"><span class="badge badge-light border text-uppercase">@Model.Code</span>
                         </dd>
 
-                        <dt class="col-sm-4">Mô Tả</dt>
+                        <dt class="col-sm-4">Description</dt>
                         <dd class="col-sm-8">@Model.Description</dd>
 
-                        <dt class="col-sm-4">Mức Giảm</dt>
+                        <dt class="col-sm-4">Discount</dt>
                         <dd class="col-sm-8">
                             @if (Model.DiscountType == "Percent")
                             {
-                                <span>Giảm @Model.DiscountValue.ToString("0.#")%</span>
+                                <span>Discount @Model.DiscountValue.ToString("0.#")%</span>
                                 @if (Model.MaxDiscountAmount.HasValue)
                                 {
-                                    <div class="small text-muted">(Tối đa @Model.MaxDiscountAmount.Value.ToString("N0") VNĐ)
+                                    <div class="small text-muted">(Max @Model.MaxDiscountAmount.Value.ToString("N0") VND)
                                     </div>
                                 }
                             }
                             else
                             {
-                                <span>Giảm @Model.DiscountValue.ToString("N0") VNĐ</span>
+                                <span>Discount @Model.DiscountValue.ToString("N0") VND</span>
                             }
                         </dd>
 
-                        <dt class="col-sm-4">Đã Sử Dụng</dt>
-                        <dd class="col-sm-8">@Model.UsageCount lượt</dd>
+                        <dt class="col-sm-4">Used</dt>
+                        <dd class="col-sm-8">@Model.UsageCount times</dd>
                     </dl>
 
                     <form asp-action="Delete">
                         <input type="hidden" asp-for="VoucherId" />
                         <div class="mt-4 pt-3 border-top d-flex justify-content-end">
-                            <a asp-action="Index" class="btn btn-secondary mr-2">Hủy Bỏ</a>
-                            <button type="submit" class="btn btn-danger">Xác Nhận Xóa</button>
+                            <a asp-action="Index" class="btn btn-secondary mr-2">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Confirm Delete</button>
                         </div>
                     </form>
                 </div>

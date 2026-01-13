@@ -25,14 +25,14 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             var start = fromDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var end = toDate ?? start.AddMonths(1).AddDays(-1);
 
-            // 1. Tính tồn đầu kỳ
+            // 1. Calculate opening balance
             var preIncome = await _context.Transactions
                .Where(t => t.Date < start && t.IsIncome).SumAsync(t => t.Amount);
             var preExpense = await _context.Transactions
                .Where(t => t.Date < start && !t.IsIncome).SumAsync(t => t.Amount);
             decimal openingBalance = preIncome - preExpense;
 
-            // 2. Lấy dữ liệu trong kỳ: Include TransactionCategory
+            // 2. Get data in period: Include TransactionCategory
             var query = _context.Transactions
                .Include(t => t.TransactionCategory)
                .Where(t => t.Date >= start && t.Date <= end)
@@ -41,10 +41,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             var transactionsList = await query.Select(t => new TransactionViewModel {
                 Id = t.Id,
                 Date = t.Date,
-                Type = t.IsIncome ? "Thu" : "Chi",
+                Type = t.IsIncome ? "Income" : "Expense",
                 Amount = t.Amount,
-                // Lấy tên danh mục, xử lý null nếu giao dịch không có danh mục
-                CategoryName = t.TransactionCategory != null ? t.TransactionCategory.Name : "Khác", 
+                // Get category name, handle null if transaction has no category
+                CategoryName = t.TransactionCategory != null ? t.TransactionCategory.Name : "Other", 
                 Description = t.Description,
                 ReferenceCode = t.ReferenceCode
             }).ToListAsync();
@@ -54,8 +54,8 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 FromDate = start,
                 ToDate = end,
                 OpeningBalance = openingBalance,
-                TotalIncome = transactionsList.Where(t => t.Type == "Thu").Sum(t => t.Amount),
-                TotalExpense = transactionsList.Where(t => t.Type == "Chi").Sum(t => t.Amount),
+                TotalIncome = transactionsList.Where(t => t.Type == "Income").Sum(t => t.Amount),
+                TotalExpense = transactionsList.Where(t => t.Type == "Expense").Sum(t => t.Amount),
                 Transactions = transactionsList
             };
 
@@ -74,7 +74,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                     Date = model.Date,
                     IsIncome = model.IsIncome,
                     Amount = model.Amount,
-                    // Map CategoryId từ ViewModel sang TransactionCategoryId của Entity
+                    // Map CategoryId from ViewModel to TransactionCategoryId of Entity
                     TransactionCategoryId = model.CategoryId > 0 ? model.CategoryId : (int?)null,
                     Description = model.Description,
                     CreatedBy = User.Identity.Name ?? "Admin",
@@ -84,7 +84,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 _context.Add(transaction);
                 await _context.SaveChangesAsync();
                 
-                TempData["SuccessMessage"] = "Đã tạo phiếu giao dịch thành công!";
+                TempData["SuccessMessage"] = "Transaction created successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return RedirectToAction(nameof(Index));

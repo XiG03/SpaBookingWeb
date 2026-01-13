@@ -2,7 +2,7 @@
 @model Step2ViewModel
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Chọn Dịch vụ";
+    ViewData["Title"] = "Select Services";
     // Serialize dữ liệu Services ra JSON (bao gồm cả Consumables mới thêm)
     var allServices = Model.ServiceCategories.SelectMany(c => c.Services).ToList();
     var servicesJson = Newtonsoft.Json.JsonConvert.SerializeObject(allServices);
@@ -60,7 +60,7 @@
                 <a asp-action="Index" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg shadow-pink-200 transition-transform group-hover:scale-110">
                     <span class="material-symbols-outlined text-lg">check</span>
                 </a>
-                <span class="text-xs font-semibold text-gray-500">Dịch vụ</span>
+                <span class="text-xs font-semibold text-gray-500">Services</span>
             </div>
             
             <!-- Step 2 (Active) -->
@@ -68,7 +68,7 @@
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-primary text-white flex items-center justify-center font-bold text-lg shadow-xl shadow-pink-300 ring-4 ring-white">
                     2
                 </div>
-                <span class="text-sm font-bold text-primary">Gói & Combo</span>
+                <span class="text-sm font-bold text-primary">Packages & Combos</span>
             </div>
 
             <!-- Step 3 -->
@@ -76,7 +76,7 @@
                 <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm">
                     3
                 </div>
-                <span class="text-xs font-semibold text-gray-400">Kỹ thuật viên</span>
+                <span class="text-xs font-semibold text-gray-400">Technician</span>
             </div>
 
             <!-- Step 4 -->
@@ -84,7 +84,7 @@
                 <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-300 text-gray-400 flex items-center justify-center font-bold text-sm">
                     4
                 </div>
-                <span class="text-xs font-semibold text-gray-400">Thời gian</span>
+                <span class="text-xs font-semibold text-gray-400">Time</span>
             </div>
         </div>
     </div>
@@ -98,7 +98,7 @@
             @if (Model.IsGroup)
             {
                 <div class="bg-white dark:bg-[#29151b] rounded-2xl p-4 shadow-sm border border-pink-100 dark:border-[#4a2630]">
-                    <h3 class="text-sm font-bold text-text-muted uppercase mb-3">Đang chọn dịch vụ cho:</h3>
+                    <h3 class="text-sm font-bold text-text-muted uppercase mb-3">Selecting services for:</h3>
                     <div class="flex gap-3 flex-wrap items-center" id="member-tabs-container">
                         @foreach (var member in Model.CurrentSession.Members)
                         {
@@ -114,7 +114,7 @@
                                 {
                                     <form asp-action="RemoveMember" method="post" class="absolute -top-2 -right-2 z-10 delete-btn-wrapper">
                                         <input type="hidden" name="index" value="@member.MemberIndex" />
-                                        <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa @member.Name?');"
+                                        <button type="submit" onclick="return confirm('Are you sure you want to remove @member.Name?');"
                                             class="w-6 h-6 rounded-full bg-white text-gray-400 border border-gray-200 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all shadow-sm">
                                             <span class="material-symbols-outlined text-[14px] font-bold">close</span>
                                         </button>
@@ -141,14 +141,14 @@
                         </span>
                         <input id="service-search-input" onkeyup="searchServices()"
                             class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-white dark:bg-[#29151b] border border-pink-100 dark:border-[#4a2630] text-sm text-text-main dark:text-white placeholder-text-muted focus:ring-2 focus:ring-primary shadow-sm"
-                            placeholder="Tìm kiếm dịch vụ..." type="text" />
+                            placeholder="Search services..." type="text" />
                     </div>
                 </div>
                 
                 <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                     <button onclick="filterCategory('all')"
                         class="category-btn active px-5 py-2.5 rounded-full bg-primary text-white text-sm font-bold whitespace-nowrap shadow-md">
-                        Tất cả
+                        All
                     </button>
                     @foreach (var cat in Model.ServiceCategories)
                     {
@@ -188,7 +188,7 @@
                                                     <!-- [MỚI] NÚT CHI TIẾT -->
                                                     <button type="button" onclick="event.stopPropagation(); openServiceDetail(@service.Id)" 
                                                             class="text-gray-400 hover:text-primary hover:bg-pink-50 p-1 rounded-full transition-colors" 
-                                                            title="Xem chi tiết">
+                                                            title="View Details">
                                                         <span class="material-symbols-outlined text-[18px]">info</span>
                                                     </button>
                                                 </div>
@@ -196,7 +196,7 @@
                                                 <p class="text-sm text-text-muted mt-1 line-clamp-1">@service.Description</p>
                                                 <p class="text-sm text-text-muted mt-2 flex items-center gap-1">
                                                     <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                                    @service.DurationMinutes phút
+                                                    @service.DurationMinutes mins
                                                 </p>
                                             </div>
                                         </div>
@@ -214,7 +214,7 @@
                 }
                 <div id="no-result-message" class="hidden text-center py-8 text-text-muted">
                     <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
-                    <p>Không tìm thấy dịch vụ nào phù hợp.</p>
+                    <p>No matching services found.</p>
                 </div>
             </section>
 
@@ -223,13 +223,13 @@
             {
                 <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-6 border border-pink-100 flex items-center justify-between">
                     <div>
-                        <h4 class="font-bold text-text-main text-lg">Đi cùng bạn bè?</h4>
-                        <p class="text-sm text-text-muted">Thêm người để đặt lịch cùng nhau.</p>
+                        <h4 class="font-bold text-text-main text-lg">Going with friends?</h4>
+                        <p class="text-sm text-text-muted">Add people to book together.</p>
                     </div>
                     <form asp-action="AddNewMember" method="post">
                         <button type="submit"
                             class="bg-white text-primary border border-primary/20 hover:bg-primary hover:text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm">
-                            + Thêm người
+                            + Add Person
                         </button>
                     </form>
                 </div>
@@ -240,18 +240,18 @@
         <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
             <div class="bg-white dark:bg-[#29151b] rounded-2xl p-6 shadow-xl border border-pink-100 dark:border-[#4a2630]">
                 <h3 class="text-lg font-bold text-text-main dark:text-white mb-6 flex items-center gap-2">
-                    Chi tiết đặt lịch
+                    Booking Details
                 </h3>
                 <div id="cart-items-container" class="space-y-4 mb-6 relative min-h-[100px]"></div>
                 <div class="border-t border-dashed border-gray-200 dark:border-[#4a2630] my-4"></div>
                 <div class="space-y-2 mb-6">
                     <div class="flex justify-between items-end pt-2">
                         <div>
-                            <span class="block text-sm text-text-muted mb-1">Tổng thời gian</span>
-                            <span class="text-base font-semibold text-text-main dark:text-white" id="total-duration">0 phút</span>
+                            <span class="block text-sm text-text-muted mb-1">Total Duration</span>
+                            <span class="text-base font-semibold text-text-main dark:text-white" id="total-duration">0 mins</span>
                         </div>
                         <div class="text-right">
-                            <span class="block text-sm text-text-muted mb-1">Tổng tiền tạm tính</span>
+                            <span class="block text-sm text-text-muted mb-1">Estimated Total</span>
                             <span class="text-2xl font-black text-primary-dark" id="total-price">0 đ</span>
                         </div>
                     </div>
@@ -259,7 +259,7 @@
                 <form id="next-step-form" asp-action="CompleteStep2" method="post" onsubmit="return validateForm()">
                     <button id="btn-next-step" type="submit"
                         class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Tiếp tục <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        Continue <span class="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
                 </form>
             </div>
@@ -273,7 +273,7 @@
         <!-- Header -->
         <div class="bg-primary/10 px-6 py-4 border-b border-primary/10 flex items-start justify-between">
             <div>
-                <h3 class="text-xl font-bold text-primary dark:text-white" id="modal-service-name">Tên Dịch Vụ</h3>
+                <h3 class="text-xl font-bold text-primary dark:text-white" id="modal-service-name">Service Name</h3>
                 <p class="text-sm text-text-muted mt-1" id="modal-service-price">0 đ</p>
             </div>
             <button onclick="closeServiceDetail()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
@@ -286,7 +286,7 @@
             <!-- Mô tả -->
             <div>
                 <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-lg">description</span> Mô tả
+                    <span class="material-symbols-outlined text-primary text-lg">description</span> Description
                 </h4>
                 <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed" id="modal-service-desc">...</p>
             </div>
@@ -294,27 +294,27 @@
             <!-- Thời gian -->
             <div>
                 <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-lg">schedule</span> Thời gian thực hiện
+                    <span class="material-symbols-outlined text-primary text-lg">schedule</span> Duration
                 </h4>
-                <p class="text-sm text-gray-600 dark:text-gray-300" id="modal-service-duration">... phút</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300" id="modal-service-duration">... mins</p>
             </div>
 
             <!-- Sản phẩm sử dụng -->
             <div>
                 <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-lg">inventory_2</span> Sản phẩm sử dụng
+                    <span class="material-symbols-outlined text-primary text-lg">inventory_2</span> Products Used
                 </h4>
                 <ul class="space-y-2" id="modal-service-consumables">
                     <!-- List items will be injected here -->
                 </ul>
-                <p id="modal-no-consumables" class="text-xs text-gray-400 italic hidden">Không có thông tin sản phẩm.</p>
+                <p id="modal-no-consumables" class="text-xs text-gray-400 italic hidden">No product information.</p>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-end">
             <button onclick="closeServiceDetail()" class="px-5 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-100 transition-colors shadow-sm">
-                Đóng
+                Close
             </button>
         </div>
     </div>
@@ -345,8 +345,8 @@
         // Populate data
         document.getElementById('modal-service-name').textContent = service.Name;
         document.getElementById('modal-service-price').textContent = service.Price.toLocaleString() + ' đ';
-        document.getElementById('modal-service-desc').textContent = service.Description || "Chưa có mô tả chi tiết.";
-        document.getElementById('modal-service-duration').textContent = service.DurationMinutes + ' phút';
+        document.getElementById('modal-service-desc').textContent = service.Description || "No detailed description available.";
+        document.getElementById('modal-service-duration').textContent = service.DurationMinutes + ' mins';
 
         const consumablesList = document.getElementById('modal-service-consumables');
         const noConsumablesMsg = document.getElementById('modal-no-consumables');
@@ -385,7 +385,7 @@
         if(searchInput) searchInput.value = '';
 
         document.querySelectorAll('.category-btn').forEach(btn => {
-            if (btn.textContent.trim() === catName || (catName === 'all' && btn.textContent.trim() === 'Tất cả')) {
+            if (btn.textContent.trim() === catName || (catName === 'all' && btn.textContent.trim() === 'All')) {
                 btn.classList.add('bg-primary', 'text-white');
                 btn.classList.remove('bg-white', 'text-text-main');
             } else {
@@ -415,8 +415,8 @@
 
         if (filter === "") {
             const activeBtn = document.querySelector('.category-btn.bg-primary');
-            const activeCatName = activeBtn ? activeBtn.textContent.trim() : 'Tất cả';
-            filterCategory(activeBtn && activeCatName !== 'Tất cả' ? activeCatName : 'all');
+            const activeCatName = activeBtn ? activeBtn.textContent.trim() : 'All';
+            filterCategory(activeBtn && activeCatName !== 'All' ? activeCatName : 'all');
             return;
         }
 
@@ -515,23 +515,23 @@
                                     <p class="text-sm font-semibold text-text-main dark:text-white">${service.Name}</p>
                                     ${isGroup ? `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 rounded text-gray-500">${data.name}</span>` : ''}
                                 </div>
-                                <p class="text-xs text-text-muted mt-0.5">${service.DurationMinutes} phút</p>
+                                <p class="text-xs text-text-muted mt-0.5">${service.DurationMinutes} mins</p>
                             </div>
                             <span class="text-sm font-medium text-text-main dark:text-white">${service.Price.toLocaleString()}</span>
                         </div>
-                        <button onclick="removeService(${mIdx}, ${sId})" class="text-xs text-red-500 hover:text-red-700 mt-1 font-medium hover:underline">Xóa</button>
+                        <button onclick="removeService(${mIdx}, ${sId})" class="text-xs text-red-500 hover:text-red-700 mt-1 font-medium hover:underline">Remove</button>
                     </div>
                 `;
             });
         }
 
         if (!hasItems) {
-            htmlContent += `<p id="empty-cart-msg" class="text-sm text-text-muted italic pl-6">Chưa có dịch vụ nào được chọn.</p>`;
+            htmlContent += `<p id="empty-cart-msg" class="text-sm text-text-muted italic pl-6">No services selected.</p>`;
         }
 
         container.innerHTML = htmlContent;
         document.getElementById('total-price').textContent = totalPrice.toLocaleString() + ' đ';
-        document.getElementById('total-duration').textContent = totalDuration + ' phút';
+        document.getElementById('total-duration').textContent = totalDuration + ' mins';
 
         const btnNext = document.getElementById('btn-next-step');
         if (btnNext) {
@@ -555,7 +555,7 @@
     function validateForm() {
         let totalServices = 0;
         for (const [mIdx, data] of Object.entries(membersData)) { totalServices += data.selectedIds.length; }
-        if (totalServices === 0) { alert("Vui lòng chọn ít nhất một dịch vụ để tiếp tục."); return false; }
+        if (totalServices === 0) { alert("Please select at least one service to continue."); return false; }
         return true;
     }
 

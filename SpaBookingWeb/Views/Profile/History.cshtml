@@ -2,9 +2,9 @@
 @using System.Globalization
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Lịch sử của tôi";
+    ViewData["Title"] = "My History";
     var culture = new CultureInfo("vi-VN");
-    var userName = ViewData["UserName"] as string ?? "Khách hàng";
+    var userName = ViewData["UserName"] as string ?? "Customer";
     var userEmail = ViewData["UserEmail"] as string ?? "email@example.com";
 
     var completed = Model.Where(a => a.Status == "Completed").ToList();
@@ -17,7 +17,7 @@
                 var cultureLocal = new System.Globalization.CultureInfo("vi-VN");
                 var isCompleted = item.Status == "Completed";
                 var color = isCompleted ? "green" : "red";
-                var statusText = isCompleted ? "Đã hoàn thành" : "Đã hủy";
+                var statusText = isCompleted ? "Completed" : "Cancelled";
             }
             <div class="flex flex-col md:flex-row gap-6">
                 <div class="w-full md:w-48 h-48 md:h-auto shrink-0 bg-center bg-cover rounded-lg" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmWpri3RdDR93Yykk06mNYWqb1ICvgIbEcStuS591ITya2f99D3OONUrTbtFmLUiIfs65G2u4CTgN0xIV3Tp4FokKqEfDnM2KiUrI5wTAgCusejOD9LIFvAgfAxNEmRgthlcc2A37Z8K17tLwBXd3ldhEhZ5gCk23NuQnHOABJvM1j0POiEr5muTKjuncuu_hTrMKdIcyGZmKTHqiDissWulZlwCTwPynrtiOi7y31CApexkOEjjFp5adOr7qcpJJ0FqmnlgqE5f0");'></div>
@@ -34,7 +34,7 @@
                         <div class="flex flex-wrap items-center gap-y-2 gap-x-6 mt-2 text-sm text-gray-900 dark:text-gray-200">
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-gray-400 text-[20px]">spa</span>
-                                <span class="font-medium">@(item.Services.FirstOrDefault()?.ServiceName ?? "Dịch vụ")</span>
+                                <span class="font-medium">@(item.Services.FirstOrDefault()?.ServiceName ?? "Service")</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-gray-400 text-[20px]">event</span>
@@ -50,20 +50,20 @@
                         @if (isCompleted)
                         {
                             <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">rate_review</span> Viết đánh giá
+                                <span class="material-symbols-outlined text-[18px]">rate_review</span> Write Review
                             </button>
                         }
                         else 
                         {
                             <button class="flex-1 md:flex-none h-10 px-5 rounded-lg bg-pink-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-semibold hover:bg-pink-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2" onclick="openDetail(@item.AppointmentId)">
-                                <span class="material-symbols-outlined text-[18px]">visibility</span> Xem chi tiết
+                                <span class="material-symbols-outlined text-[18px]">visibility</span> View Details
                             </button>
                         }
                         
                         <form asp-action="Rebook" method="post" class="flex-1 md:flex-none">
                             <input type="hidden" name="id" value="@item.AppointmentId" />
                             <button type="submit" class="w-full h-10 px-5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm flex items-center justify-center gap-2">
-                                <span class="material-symbols-outlined text-[18px]">cached</span> Đặt lại
+                                <span class="material-symbols-outlined text-[18px]">cached</span> Rebook
                             </button>
                         </form>
                     </div>
@@ -115,24 +115,24 @@
         <nav class="flex flex-col gap-2">
             <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" asp-controller="Profile" asp-action="Appointments">
                 <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">calendar_month</span>
-                <span class="text-sm font-medium group-hover:text-primary">Lịch hẹn của tôi</span>
+                <span class="text-sm font-medium group-hover:text-primary">My Appointments</span>
             </a>
             <a class="group flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary dark:text-primary transition-all duration-200" href="#">
                 <span class="material-symbols-outlined">history</span>
-                <span class="text-sm font-semibold">Lịch sử</span>
+                <span class="text-sm font-semibold">History</span>
             </a>
             <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
                 <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">favorite</span>
-                <span class="text-sm font-medium group-hover:text-primary">Yêu thích</span>
+                <span class="text-sm font-medium group-hover:text-primary">Favorites</span>
             </a>
             <div class="h-px bg-pink-100 dark:bg-gray-800 my-2"></div>
             <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
                 <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">settings</span>
-                <span class="text-sm font-medium group-hover:text-primary">Cài đặt tài khoản</span>
+                <span class="text-sm font-medium group-hover:text-primary">Account Settings</span>
             </a>
             <a class="group flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-800 transition-all duration-200" href="#">
                 <span class="material-symbols-outlined text-gray-400 group-hover:text-primary">credit_card</span>
-                <span class="text-sm font-medium group-hover:text-primary">Phương thức thanh toán</span>
+                <span class="text-sm font-medium group-hover:text-primary">Payment Methods</span>
             </a>
         </nav>
     </aside>
@@ -141,15 +141,15 @@
     <main class="flex-1 p-0 lg:p-0 bg-transparent min-h-screen">
         <div class="flex flex-col gap-8">
             <div class="flex flex-col gap-2">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Lịch sử đặt chỗ</h1>
-                <p class="text-gray-500 dark:text-gray-400 text-base">Xem lại các combo và dịch vụ bạn đã sử dụng hoặc đã hủy.</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Booking History</h1>
+                <p class="text-gray-500 dark:text-gray-400 text-base">Review past combos and services you have used or cancelled.</p>
             </div>
 
             <!-- TABS -->
             <div class="flex gap-4 border-b border-pink-100 dark:border-gray-800 pb-1 overflow-x-auto">
-                <button onclick="switchTab('all')" id="btn-all" class="tab-btn active px-2 py-3 border-b-2 border-primary text-gray-900 dark:text-white font-semibold text-sm whitespace-nowrap">Tất cả</button>
-                <button onclick="switchTab('completed')" id="btn-completed" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hoàn thành</button>
-                <button onclick="switchTab('cancelled')" id="btn-cancelled" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Đã hủy</button>
+                <button onclick="switchTab('all')" id="btn-all" class="tab-btn active px-2 py-3 border-b-2 border-primary text-gray-900 dark:text-white font-semibold text-sm whitespace-nowrap">All</button>
+                <button onclick="switchTab('completed')" id="btn-completed" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Completed</button>
+                <button onclick="switchTab('cancelled')" id="btn-cancelled" class="tab-btn px-2 py-3 border-b-2 border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300 font-medium text-sm whitespace-nowrap transition-colors">Cancelled</button>
             </div>
 
             <div class="flex flex-col gap-6">
@@ -162,7 +162,7 @@
                         }
                     }
                     else {
-                        @RenderEmptyState("Lịch sử trống.")
+                        @RenderEmptyState("History is empty.")
                     }
                 </div>
 
@@ -175,7 +175,7 @@
                         }
                     }
                     else {
-                        @RenderEmptyState("Chưa có dịch vụ nào hoàn thành.")
+                        @RenderEmptyState("No completed services.")
                     }
                 </div>
 
@@ -188,7 +188,7 @@
                         }
                     }
                     else {
-                        @RenderEmptyState("Chưa có dịch vụ nào bị hủy.")
+                        @RenderEmptyState("No cancelled services.")
                     }
                 </div>
 
@@ -196,10 +196,10 @@
                     <div class="bg-white dark:bg-pink-900 p-3 rounded-full shadow-sm">
                         <span class="material-symbols-outlined text-primary text-3xl">add_business</span>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Bạn muốn trải nghiệm thêm dịch vụ mới?</h3>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm max-w-sm">Khám phá hàng ngàn combo và sản phẩm chất lượng cao đang chờ bạn.</p>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Want to try new services?</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm max-w-sm">Discover thousands of high-quality combos and products waiting for you.</p>
                     <button class="mt-2 h-10 px-6 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#db2766] transition-colors shadow-sm cursor-pointer" onclick="window.location.href='/'">
-                        <a asp-controller="Home" asp-action="HomeClient">Khám phá ngay</a>
+                        <a asp-controller="Home" asp-action="HomeClient">Explore Now</a>
                     </button>
                 </div>
             </div>
@@ -211,7 +211,7 @@
 <div id="detailModal" class="modal">
     <div class="modal-content bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
         <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Chi tiết Lịch sử</h3>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">History Details</h3>
             <button onclick="closeModal()" class="text-gray-500 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined">close</span>
             </button>
@@ -222,7 +222,7 @@
             </div>
         </div>
          <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
-            <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white font-medium hover:bg-white transition-colors">Đóng</button>
+            <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-white font-medium hover:bg-white transition-colors">Close</button>
         </div>
     </div>
 </div>
@@ -244,20 +244,20 @@
             </div>
         </div>
         <div>
-            <h5 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Dịch vụ</h5>
+            <h5 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">Service</h5>
             <div class="space-y-4" id="serviceListPlaceholder"></div>
         </div>
         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between text-sm mb-2">
-                <span class="text-gray-500">Tổng tiền</span>
+                <span class="text-gray-500">Total Amount</span>
                 <span class="font-bold text-gray-900 dark:text-white">{total}</span>
             </div>
             <div class="flex justify-between text-sm mb-2">
-                <span class="text-gray-500">Đã cọc</span>
+                <span class="text-gray-500">Deposit Paid</span>
                 <span class="text-primary font-medium">-{deposit}</span>
             </div>
             <div class="border-t border-dashed border-gray-200 dark:border-gray-600 my-2 pt-2 flex justify-between">
-                <span class="font-bold text-gray-900 dark:text-white">Còn lại</span>
+                <span class="font-bold text-gray-900 dark:text-white">Remaining</span>
                 <span class="text-lg font-black text-primary">{remaining}</span>
             </div>
         </div>
@@ -296,7 +296,7 @@
                 renderModalData(data);
             })
             .catch(err => {
-                modalBody.innerHTML = '<p class="text-center text-red-500">Lỗi tải dữ liệu.</p>';
+                modalBody.innerHTML = '<p class="text-center text-red-500">Error loading data.</p>';
             });
     }
 
@@ -310,9 +310,9 @@
         const fmt = (n) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
         let color = 'gray';
-        let statusText = 'Chờ xử lý';
-        if (data.status === 'Completed') { color = 'green'; statusText = 'Đã hoàn thành'; }
-        else if (data.status === 'Cancelled') { color = 'red'; statusText = 'Đã hủy'; }
+        let statusText = 'Pending';
+        if (data.status === 'Completed') { color = 'green'; statusText = 'Completed'; }
+        else if (data.status === 'Cancelled') { color = 'red'; statusText = 'Cancelled'; }
 
         html = html.replace('{spaName}', data.spaName)
                    .replace('{spaAddress}', data.spaAddress)

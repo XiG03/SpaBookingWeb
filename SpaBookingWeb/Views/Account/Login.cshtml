@@ -1,6 +1,6 @@
 ﻿@model SpaBookingWeb.ViewModels.LoginViewModels
 @{
-    ViewData["Title"] = "Đăng nhập";
+    ViewData["Title"] = "Login";
     Layout = null;
 }
 
@@ -59,9 +59,9 @@
                 <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">Spa &amp; Salon</h2>
             </a>
             <div class="flex items-center gap-6">
-                <span class="hidden md:block text-sm font-medium text-[#8a6d75]">Bạn chưa có tài khoản?</span>
+                <span class="hidden md:block text-sm font-medium text-[#8a6d75]">Don't have an account?</span>
                 <a class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-transparent border border-[#ebdbe0] dark:border-[#4a2c35] hover:bg-[#fceef5] dark:hover:bg-[#331d23] text-[#29181d] dark:text-white text-sm font-bold leading-normal transition-colors" asp-action="Register">
-                    <span class="truncate">Đăng ký</span>
+                    <span class="truncate">Register</span>
                 </a>
             </div>
         </div>
@@ -73,9 +73,9 @@
             <div class="hidden md:flex w-1/2 relative flex-col justify-end p-10 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCGapK66eFEzrPZFJQVXP_l0i9qGHfLXsaozxcuFLcS92GmMcjuNisWaEs29JkdzCMaMKfP53ojgA8PhKxN8C5_1mvENekb0RWh6ixB__U5YtVecKUNNy1pPokxopxcFQRF-_IQvLz5c3yCReH7jYLwrCspn5lJA08ZGdtVZohv4ak9Wq4MCBZ1NC1QCLPmXp-tbBhH0fxyySzuYnyiHtGTPmA1IXU0xQl-SJDJEpPDM_4cWjuFgcrW0BKwMw21O_YcPfvFgHvKvUc');">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                 <div class="relative z-10 text-white">
-                    <h2 class="text-3xl font-black mb-3">Vẻ đẹp tự nhiên &amp; Sự thư giãn tuyệt đối</h2>
+                    <h2 class="text-3xl font-black mb-3">Natural Beauty & Absolute Relaxation</h2>
                     <p class="text-white/90 text-sm font-medium leading-relaxed max-w-sm">
-                        Đặt lịch ngay hôm nay để trải nghiệm các combo làm đẹp độc quyền và sản phẩm chăm sóc cao cấp của chúng tôi.
+                        Book today to experience our exclusive beauty combos and premium care products.
                     </p>
                 </div>
             </div>
@@ -86,10 +86,10 @@
                     
                     <div class="mb-6">
                         <h1 class="text-[#29181d] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] mb-2">
-                            Đăng nhập
+                            Login
                         </h1>
                         <p class="text-[#8a6d75] text-sm font-medium">
-                            Chào mừng bạn đến với Spa & Salon
+                            Welcome to Spa & Salon
                         </p>
                     </div>
 
@@ -116,12 +116,12 @@
 
                             <div class="flex flex-col gap-2">
                                 <div class="flex justify-between items-center">
-                                    <label class="text-[#29181d] dark:text-white text-sm font-bold leading-normal" asp-for="Password">Mật khẩu</label>
-                                    <a class="text-xs font-bold text-primary hover:text-[#d63384] transition-colors" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                                    <label class="text-[#29181d] dark:text-white text-sm font-bold leading-normal" asp-for="Password">Password</label>
+                                    <a class="text-xs font-bold text-primary hover:text-[#d63384] transition-colors" asp-action="ForgotPassword">Forgot Password?</a>
                                 </div>
                                 <div class="relative flex items-center">
                                     <span class="material-symbols-outlined absolute left-4 text-[#8a6d75] pointer-events-none" style="font-size: 20px;">lock</span>
-                                    <input asp-for="Password" type="password" class="form-input flex w-full rounded-xl border border-[#ebdbe0] dark:border-[#4a2c35] bg-[#fffbfd] dark:bg-[#331d23] h-12 pl-11 pr-11 text-base text-[#29181d] dark:text-white placeholder:text-[#8a6d75]/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Nhập mật khẩu" />
+                                    <input asp-for="Password" type="password" class="form-input flex w-full rounded-xl border border-[#ebdbe0] dark:border-[#4a2c35] bg-[#fffbfd] dark:bg-[#331d23] h-12 pl-11 pr-11 text-base text-[#29181d] dark:text-white placeholder:text-[#8a6d75]/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter password" />
                                     <button class="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-[#8a6d75] hover:text-[#29181d] dark:hover:text-white transition-colors" type="button" onclick="togglePassword(this)">
                                         <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                                     </button>
@@ -129,7 +129,7 @@
                             </div>
 
                             <button type="submit" class="mt-4 flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-primary hover:bg-[#ff7eb5] active:bg-[#ff69a9] text-[#29181d] text-base font-bold leading-normal tracking-[0.015em] transition-all shadow-sm hover:shadow-md">
-                                <span class="truncate">Đăng nhập</span>
+                                <span class="truncate">Login</span>
                             </button>
                         </form>
                     </div>
@@ -138,7 +138,7 @@
                     <div id="social-section" class="social-section block">
                         <div class="relative flex items-center py-6">
                             <div class="flex-grow border-t border-[#ebdbe0] dark:border-[#4a2c35]"></div>
-                            <span class="flex-shrink-0 mx-4 text-xs font-medium text-[#8a6d75]">Hoặc đăng nhập với</span>
+                            <span class="flex-shrink-0 mx-4 text-xs font-medium text-[#8a6d75]">Or login with</span>
                             <div class="flex-grow border-t border-[#ebdbe0] dark:border-[#4a2c35]"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -164,8 +164,8 @@
                     </div>
 
                     <div class="mt-8 text-center md:hidden">
-                        <span class="text-sm text-[#8a6d75]">Chưa có tài khoản? </span>
-                        <a class="text-sm font-bold text-primary" asp-action="Register">Đăng ký ngay</a>
+                        <span class="text-sm text-[#8a6d75]">Don't have an account? </span>
+                        <a class="text-sm font-bold text-primary" asp-action="Register">Register now</a>
                     </div>
                 </div>
             </div>

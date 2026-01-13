@@ -5,10 +5,10 @@ namespace SpaBookingWeb.Services.Manager
 {
     public interface IReviewService
     {
-        // Lấy danh sách review và thống kê
+        // Get review list and statistics
         Task<ReviewDashboardViewModel> GetReviewDashboardAsync();
         
-        // Xóa review (nếu vi phạm)
+        // Delete review (if violated)
         Task DeleteReviewAsync(int id);
     }
 }

@@ -7,13 +7,13 @@ namespace SpaBookingWeb.Services.Manager
 {
     public interface IDashboardService
     {
-        // Lấy dữ liệu tổng quan cho trang Dashboard
+        // Get overview data for Dashboard page
         Task<DashboardViewModel> GetDashboardDataAsync(DateTime date);
 
-        // Lấy dữ liệu cho FullCalendar (theo khoảng thời gian start-end)
+        // Get data for FullCalendar (by start-end range)
         Task<List<CalendarEventViewModel>> GetCalendarEventsAsync(DateTime start, DateTime end);
 
-        // MỚI: Lấy chi tiết lịch hẹn cho Modal
+        // NEW: Get appointment detail for Modal
         Task<AppointmentDetailViewModel> GetAppointmentDetailAsync(int id);
     }
 }

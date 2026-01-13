@@ -3,16 +3,16 @@
 @model Step5ViewModel
 @{
     Layout = "_Layout";
-    ViewData["Title"] = "Xác nhận Đặt lịch & Thanh toán";
+    ViewData["Title"] = "Confirm Booking & Payment";
     var session = Model.CurrentSession;
     var culture = new CultureInfo("vi-VN");
     var initialRemaining = session.TotalAmount - Model.DepositAmount;
 
     string GetStaffName(int? staffId)
     {
-        if (staffId == null) return "Bất kỳ ai";
+        if (staffId == null) return "Anyone";
         var staff = Model.Staffs?.FirstOrDefault(s => s.Id == staffId);
-        return staff != null ? staff.Name : "Bất kỳ ai";
+        return staff != null ? staff.Name : "Anyone";
     }
 
     string GetStaffAvatar(int? staffId)
@@ -40,12 +40,12 @@
     <div class="mb-8">
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-pink-100 dark:border-gray-800 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
             <div>
-                <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-2">Xác nhận Đặt lịch</h2>
+                <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-2">Confirm Booking</h2>
                 <div class="flex items-center gap-4 text-gray-500 text-sm flex-wrap">
-                    <span class="flex items-center gap-1 bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100 px-2 py-0.5 rounded-md font-semibold">Bước 5/5</span>
+                    <span class="flex items-center gap-1 bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100 px-2 py-0.5 rounded-md font-semibold">Step 5/5</span>
                     <span class="flex items-center gap-1 text-primary font-medium">
                         <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                        Kiểm tra thông tin &amp; Thanh toán cọc
+                        Review Information & Deposit Payment
                     </span>
                 </div>
             </div>
@@ -63,7 +63,7 @@
                             <span class="material-symbols-outlined text-lg">check</span>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Dịch vụ đã chọn</h3>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Selected Services</h3>
                             <div class="text-sm text-gray-500 mt-1">
                                 @foreach(var mem in session.Members)
                                 {
@@ -72,7 +72,7 @@
                             </div>
                         </div>
                     </div>
-                    <a asp-action="Step2_Services" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Sửa</a>
+                    <a asp-action="Step2_Services" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Edit</a>
                 </div>
             </section>
 
@@ -83,11 +83,11 @@
                             <span class="material-symbols-outlined text-lg">check</span>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Thời gian</h3>
+                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Time</h3>
                             <p class="text-sm text-gray-500">@session.SelectedTime?.ToString(@"hh\:mm") - @session.SelectedDate?.ToString("dddd, dd/MM/yyyy", culture)</p>
                         </div>
                     </div>
-                    <a asp-action="Step4_Time" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Sửa</a>
+                    <a asp-action="Step4_Time" class="text-sm font-bold text-primary hover:text-primary-dark underline decoration-2 underline-offset-2">Edit</a>
                 </div>
             </section>
 
@@ -96,7 +96,7 @@
                 <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md shadow-pink-300">4</div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Thông tin &amp; Thanh toán cọc</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Information & Deposit Payment</h3>
                 </div>
 
                 <form asp-action="SubmitBooking" method="post" id="bookingForm">
@@ -106,7 +106,7 @@
                         <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start gap-3 animate-fade-in-up">
                             <span class="material-symbols-outlined text-2xl shrink-0 mt-0.5">error</span>
                             <div>
-                                <h4 class="font-bold">Đã xảy ra lỗi</h4>
+                                <h4 class="font-bold">An error occurred</h4>
                                 <p class="text-sm">@TempData["ErrorMessage"]</p>
                             </div>
                         </div>
@@ -119,20 +119,20 @@
 
                     <div class="grid md:grid-cols-2 gap-5 mb-8">
                         <div class="space-y-1">
-                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Họ và tên *</label>
-                            <input asp-for="CurrentSession.CustomerInfo.FullName" name="FullName" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="Nhập họ tên" required/>
+                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Full Name *</label>
+                            <input asp-for="CurrentSession.CustomerInfo.FullName" name="FullName" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="Enter full name" required/>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Số điện thoại *</label>
+                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Phone Number *</label>
                             <input asp-for="CurrentSession.CustomerInfo.Phone" name="Phone" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="09xxxxxxxx" required/>
                         </div>
                         <div class="space-y-1 md:col-span-2">
-                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Email (Nhận vé điện tử)</label>
+                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Email (Receive e-ticket)</label>
                             <input asp-for="CurrentSession.CustomerInfo.Email" name="Email" type="email" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary font-medium" placeholder="email@example.com"/>
                         </div>
                         <div class="space-y-1 md:col-span-2">
-                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Ghi chú (Tùy chọn)</label>
-                            <textarea asp-for="CurrentSession.CustomerInfo.Note" name="Note" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary resize-none" placeholder="Bạn có yêu cầu đặc biệt nào không?" rows="2"></textarea>
+                            <label class="text-sm font-semibold text-gray-900 dark:text-gray-300">Notes (Optional)</label>
+                            <textarea asp-for="CurrentSession.CustomerInfo.Note" name="Note" class="w-full rounded-xl border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-primary focus:border-primary resize-none" placeholder="Do you have any special requests?" rows="2"></textarea>
                         </div>
                     </div>
                     
@@ -140,12 +140,12 @@
                     <div class="mb-8 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                          <label class="text-sm font-bold text-gray-900 dark:text-white mb-2 block flex items-center gap-2">
                             <span class="material-symbols-outlined text-primary text-lg">local_activity</span>
-                            Mã giảm giá / Voucher
+                            Discount Code / Voucher
                         </label>
                         <div class="flex gap-2">
-                            <input type="text" id="voucherCodeInput" name="VoucherCode" class="flex-1 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-primary focus:border-primary uppercase placeholder:normal-case" placeholder="Nhập mã voucher (nếu có)">
+                            <input type="text" id="voucherCodeInput" name="VoucherCode" class="flex-1 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-primary focus:border-primary uppercase placeholder:normal-case" placeholder="Enter voucher code (if any)">
                             <button type="button" onclick="checkVoucher()" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors whitespace-nowrap">
-                                Áp dụng
+                                Apply
                             </button>
                         </div>
                         <div id="voucherMessage" class="mt-2 text-sm hidden"></div>
@@ -155,9 +155,9 @@
 
                     <!-- PAYMENT -->
                     <div>
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Phương thức thanh toán cọc</h4>
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Deposit Payment Method</h4>
                         <p class="text-sm text-gray-500 mb-6">
-                            Để giữ chỗ, vui lòng thanh toán trước khoản cọc <span class="font-bold text-primary">@Model.DepositAmount.ToString("N0") đ (@Model.DepositPercent%)</span>. 
+                            To reserve your spot, please pay a deposit of <span class="font-bold text-primary">@Model.DepositAmount.ToString("N0") đ (@Model.DepositPercent%)</span> in advance. 
                         </p>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -167,7 +167,7 @@
                                     <div class="w-12 h-12 rounded-lg bg-[#a50064] flex items-center justify-center text-white shadow-md mb-1">
                                         <span class="font-bold text-[10px]">MOMO</span>
                                     </div>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Ví MoMo</span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm">MoMo Wallet</span>
                                     <div class="check-icon absolute top-2 right-2 text-primary opacity-0 transform scale-50 transition-all duration-300">
                                         <span class="material-symbols-outlined">check_circle</span>
                                     </div>
@@ -180,7 +180,7 @@
                                     <div class="w-12 h-12 rounded-lg bg-gray-500 flex items-center justify-center text-white shadow-md mb-1">
                                         <span class="material-symbols-outlined">storefront</span>
                                     </div>
-                                    <span class="font-bold text-gray-900 dark:text-white text-sm">Tại quầy</span>
+                                    <span class="font-bold text-gray-900 dark:text-white text-sm">At Counter</span>
                                     <div class="check-icon absolute top-2 right-2 text-gray-600 opacity-0 transform scale-50 transition-all duration-300">
                                         <span class="material-symbols-outlined">check_circle</span>
                                     </div>
@@ -196,7 +196,7 @@
         <aside class="w-full lg:w-96 shrink-0 lg:sticky lg:top-24 h-fit">
             <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl border border-pink-100 dark:border-gray-800">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                    Tóm tắt đơn hàng
+                    Order Summary
                 </h3>
                 
                 <div class="space-y-4 mb-6 relative">
@@ -210,7 +210,7 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <p class="text-sm font-semibold text-gray-900 dark:text-white">@s.Name</p>
-                                        <p class="text-xs text-gray-500 mt-0.5">@s.DurationMinutes phút</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">@s.DurationMinutes mins</p>
                                         @if(session.IsGroupBooking) { <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-1 rounded text-gray-500">@mem.Name</span> }
                                     </div>
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">@s.Price.ToString("N0") đ</span>
@@ -224,39 +224,39 @@
                 
                 <div class="space-y-2 mb-6">
                     <div class="flex justify-between text-sm text-gray-500">
-                        <span>Tạm tính</span>
+                        <span>Subtotal</span>
                         <span id="ui-total">@session.TotalAmount.ToString("N0") đ</span>
                     </div>
                     
                     <div id="ui-discount-row" class="flex justify-between text-sm text-green-600 font-medium hidden">
-                        <span>Voucher giảm giá</span>
+                        <span>Voucher Discount</span>
                         <span id="ui-discount-amount">-0 đ</span>
                     </div>
                     
                     <div class="flex justify-between items-end pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-                        <span class="text-base font-bold text-gray-900 dark:text-white">Tổng cộng</span>
+                        <span class="text-base font-bold text-gray-900 dark:text-white">Total</span>
                         <span class="text-xl font-black text-gray-900 dark:text-white" id="ui-final-total">@session.TotalAmount.ToString("N0") đ</span>
                     </div>
                 </div>
 
                 <div class="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-4 mb-4 border border-pink-100 dark:border-pink-800/50">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-semibold text-primary-dark dark:text-pink-300">Cần thanh toán ngay (Cọc)</span>
+                        <span class="text-sm font-semibold text-primary-dark dark:text-pink-300">Pay Now (Deposit)</span>
                         <span class="text-lg font-black text-primary" id="ui-deposit">@Model.DepositAmount.ToString("N0") đ</span>
                     </div>
                     <div class="flex justify-between items-center text-xs text-gray-500">
-                        <span>Thanh toán tại Spa</span>
+                        <span>Pay at Spa</span>
                         <span id="ui-remaining">@initialRemaining.ToString("N0") đ</span>
                     </div>
                 </div>
 
                 <button type="button" onclick="document.getElementById('bookingForm').submit()" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] mb-3 flex items-center justify-center gap-2">
-                    <span>Thanh toán &amp; Đặt lịch</span>
+                    <span>Pay & Book</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
                 
                 <p class="text-center text-xs text-gray-500">
-                    Bằng việc xác nhận, bạn đồng ý với <a class="underline text-primary" href="#">Điều khoản dịch vụ</a>.
+                    By confirming, you agree to the <a class="underline text-primary" href="#">Terms of Service</a>.
                 </p>
             </div>
         </aside>
@@ -274,12 +274,12 @@
         const remainingVal = document.getElementById('ui-remaining');
         
         if (!code) {
-            messageDiv.innerHTML = '<span class="text-red-500 text-sm">Vui lòng nhập mã voucher.</span>';
+            messageDiv.innerHTML = '<span class="text-red-500 text-sm">Please enter a voucher code.</span>';
             messageDiv.classList.remove('hidden');
             return;
         }
 
-        messageDiv.innerHTML = '<span class="text-gray-500 flex items-center gap-1 text-sm"><span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Đang xử lý...</span>';
+        messageDiv.innerHTML = '<span class="text-gray-500 flex items-center gap-1 text-sm"><span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Processing...</span>';
         messageDiv.classList.remove('hidden');
 
         fetch('/Booking/CheckVoucher?code=' + encodeURIComponent(code), { method: 'POST' })
@@ -290,7 +290,7 @@
                     <div class="flex items-start gap-2 bg-green-50 text-green-700 p-3 rounded-lg border border-green-200 mt-2">
                         <span class="material-symbols-outlined text-lg mt-0.5">check_circle</span>
                         <div>
-                            <p class="font-bold text-sm">Áp dụng thành công!</p>
+                            <p class="font-bold text-sm">Applied successfully!</p>
                             <p class="text-xs mt-1 text-green-800">${data.message}</p>
                         </div>
                     </div>
@@ -320,7 +320,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            messageDiv.innerHTML = '<span class="text-red-500 text-sm">Lỗi kết nối server.</span>';
+            messageDiv.innerHTML = '<span class="text-red-500 text-sm">Server connection error.</span>';
         });
     }
 

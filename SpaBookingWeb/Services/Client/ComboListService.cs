@@ -32,9 +32,9 @@ namespace SpaBookingWeb.Services.Client
                 CurrentPage = page
             };
 
-            // 1. Lấy danh mục để hiển thị bộ lọc
+            // 1. Get categories to display filter
             model.Categories = await _context.Categories
-                .Where(c => c.Type == "Service" && !c.Services.All(s => s.IsDeleted)) // Chỉ lấy category có dịch vụ
+                .Where(c => c.Type == "Service" && !c.Services.All(s => s.IsDeleted)) // Only get categories with services
                 .Select(c => new ClientCategoryViewModel
                 {
                     Id = c.CategoryId,
@@ -48,19 +48,19 @@ namespace SpaBookingWeb.Services.Client
                 .Include(c => c.ComboDetails).ThenInclude(cd => cd.Service).ThenInclude(s => s.Category)
                 .Where(c => !c.IsDeleted);
 
-            // 3. Lọc theo từ khóa
+            // 3. Filter by keyword
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(c => c.ComboName.Contains(search) || c.Description.Contains(search));
             }
 
-            // 4. Lọc theo danh mục (Combo chứa dịch vụ thuộc danh mục đó)
+            // 4. Filter by category (Combo contains service belonging to that category)
             if (categoryId.HasValue)
             {
                 query = query.Where(c => c.ComboDetails.Any(cd => cd.Service.CategoryId == categoryId));
             }
 
-            // 5. Sắp xếp
+            // 5. Sort
             switch (sortOrder)
             {
                 case "price_asc":
@@ -73,11 +73,11 @@ namespace SpaBookingWeb.Services.Client
                     query = query.OrderByDescending(c => c.ComboId);
                     break;
                 default: // popular
-                    query = query.OrderBy(c => c.ComboId); // Tạm thời default
+                    query = query.OrderBy(c => c.ComboId); // Temporarily default
                     break;
             }
 
-            // 6. Phân trang & Map dữ liệu
+            // 6. Pagination & Data Mapping
             model.TotalItems = await query.CountAsync();
             model.TotalPages = (int)Math.Ceiling(model.TotalItems / (double)pageSize);
 
@@ -88,15 +88,15 @@ namespace SpaBookingWeb.Services.Client
                 {
                     Id = c.ComboId,
                     Name = c.ComboName,
-                    // Tạo mô tả từ danh sách dịch vụ nếu mô tả trống
+                    // Create description from service list if description is empty
                     Description = !string.IsNullOrEmpty(c.Description) ? c.Description : string.Join(" + ", c.ComboDetails.Select(cd => cd.Service.ServiceName)),
                     Price = c.Price,
-                    // Tính giá gốc từ tổng giá dịch vụ con
+                    // Calculate original price from child services sum
                     OriginalPrice = c.ComboDetails.Sum(cd => cd.Service.Price),
                     DurationMinutes = c.ComboDetails.Sum(cd => cd.Service.DurationMinutes),
                     ImageUrl = string.IsNullOrEmpty(c.Image) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBOWoiZ3GQ5WjeKEosSAO4jhVKq4YDyjUKosHqWeOXFxud_ATIyG1fvTOLBYt7m3VTipdp8fBzyscW-F_3tJFiZh18KsSwxVj1EbZXNCa5CHUNq6AFZOv_nzFs-9YlzMnyaPAGyuEouKSR_aTnp4fPso4p-x5leDhjMfK9eO-UAtSZg6fZP_OwlOE33ihdTBL5RtqI79c7M42zugRJzJ4IRVBb58wGZ4op7MruYzcAnNDgdtqQfiXCoNmECcQ2Ht3aE1gjbCfB3vRc" : c.Image,
-                    // Logic gắn nhãn (Ví dụ: Giảm giá > 20% là Hot Deal)
-                    StatusText = (c.ComboDetails.Sum(cd => cd.Service.Price) - c.Price) / c.ComboDetails.Sum(cd => cd.Service.Price) > 0.2m ? "Tiết kiệm lớn" : "Phổ biến"
+                    // Labeling logic (Example: Discount > 20% is Hot Deal)
+                    StatusText = (c.ComboDetails.Sum(cd => cd.Service.Price) - c.Price) / c.ComboDetails.Sum(cd => cd.Service.Price) > 0.2m ? "Big Savings" : "Popular"
                 })
                 .ToListAsync();
 
@@ -108,7 +108,7 @@ namespace SpaBookingWeb.Services.Client
             var combo = await _context.Combos
                 .Include(c => c.ComboDetails)
                     .ThenInclude(cd => cd.Service)
-                        .ThenInclude(s => s.ServiceConsumables) // Include định mức tiêu hao
+                        .ThenInclude(s => s.ServiceConsumables) // Include consumable norms
                             .ThenInclude(sc => sc.Product)
                                 .ThenInclude(p => p.Unit)
                 .Include(c => c.ComboDetails)
@@ -127,7 +127,7 @@ namespace SpaBookingWeb.Services.Client
                 ImageUrl = string.IsNullOrEmpty(combo.Image) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBOWoiZ3GQ5WjeKEosSAO4jhVKq4YDyjUKosHqWeOXFxud_ATIyG1fvTOLBYt7m3VTipdp8fBzyscW-F_3tJFiZh18KsSwxVj1EbZXNCa5CHUNq6AFZOv_nzFs-9YlzMnyaPAGyuEouKSR_aTnp4fPso4p-x5leDhjMfK9eO-UAtSZg6fZP_OwlOE33ihdTBL5RtqI79c7M42zugRJzJ4IRVBb58wGZ4op7MruYzcAnNDgdtqQfiXCoNmECcQ2Ht3aE1gjbCfB3vRc" : combo.Image
             };
 
-            // 1. Tính toán Dịch vụ con & Tổng giá gốc
+            // 1. Calculate Child Services & Original Price
             decimal originalPrice = 0;
             int totalDuration = 0;
 
@@ -141,12 +141,12 @@ namespace SpaBookingWeb.Services.Client
                 {
                     Id = service.ServiceId,
                     Name = service.ServiceName,
-                    Description = service.Description ?? $"{service.DurationMinutes} phút • Liệu trình tiêu chuẩn",
+                    Description = service.Description ?? $"{service.DurationMinutes} mins • Standard Procedure",
                     DurationMinutes = service.DurationMinutes,
                     ImageUrl = string.IsNullOrEmpty(service.Image) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuClZ50FHPxm-eLF4YYnQ6KjwwINbe6eNbntTCx2Gxu5KZg9XdM4tLHpTit2qkpyZMtiRbW0Cu9FOgGwygBnXQQHShpMAPW6Amt_OizoV99J7k-Fu51gQQfWaOKe5C9x3y1yrOBBRk5oEKlKUz5gBQburOfMrswY7CS4rXPEWjyn4g-G8Im20N8uvbL-Qq2m7ABi_VZ0ObK4AgD-QpoBsbXKNvTsUQNlH3k2KUZ5ga2CQ8ulfFY1OWsrd6Zqy7vGlS0yMKpEVJIFsiM" : service.Image
                 });
 
-                // 2. Tổng hợp Nguyên liệu tiêu hao (Consumables)
+                // 2. Aggregate Consumables
                 if (service.ServiceConsumables != null)
                 {
                     foreach (var sc in service.ServiceConsumables.Where(x => !x.IsDeleted))
@@ -154,16 +154,16 @@ namespace SpaBookingWeb.Services.Client
                         var existing = model.Consumables.FirstOrDefault(c => c.ProductName == sc.Product.ProductName);
                         if (existing != null)
                         {
-                            existing.Quantity += sc.Quantity; // Cộng dồn nếu trùng sản phẩm
+                            existing.Quantity += sc.Quantity; // Accumulate if product duplicates
                         }
                         else
                         {
                             model.Consumables.Add(new ProductConsumableItem
                             {
                                 ProductName = sc.Product.ProductName,
-                                UnitName = sc.Product.Unit?.UnitName ?? "đơn vị",
+                                UnitName = sc.Product.Unit?.UnitName ?? "unit",
                                 Quantity = sc.Quantity,
-                                UsageContext = service.Category?.CategoryName ?? "Dịch vụ",
+                                UsageContext = service.Category?.CategoryName ?? "Service",
                                 ImageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAPYzC1614Sa5JBWpUZAYcZ1AbECiEMTEC0l-hieHvZ5L5-W6WeuBXHfD68HXxRxo-Mik6hXQMRZQkM9-gAUiWfAPwQuB8cGQJhmJVgQR_Wz81JCWcZqBBaiIWaGpBCJSt6q8-4IJUpEn0YpsbesGfuY1OWSyluxA5kSYro8eroOhRShEZOhQM4nLdROdQCJ1M7vqLlcPP5kIAqUM9GzrE8C7AyEO9Rnlzv-ULeG0ufFQ4HBNpPN4SjHmFCm_jc0NgezguzmdF4k-o" // Placeholder
                             });
                         }
@@ -174,7 +174,7 @@ namespace SpaBookingWeb.Services.Client
             model.OriginalPrice = originalPrice;
             model.DurationMinutes = totalDuration;
 
-            // 3. Lấy Đánh giá (Tìm các Appointment có chứa Combo này)
+            // 3. Get Reviews (Find Appointments containing this Combo)
             // Logic: Appointment -> AppointmentDetail -> ComboId
             var reviews = await _context.Reviews
                 .Include(r => r.Appointment)
@@ -187,7 +187,7 @@ namespace SpaBookingWeb.Services.Client
                 .Select(r => new ReviewItem
                 {
                     CustomerName = r.Appointment.Customer.FullName,
-                    CustomerAvatar = "", // Có thể random màu hoặc lấy avatar thật
+                    CustomerAvatar = "", // Can random color or get real avatar
                     Rating = r.Rating,
                     Comment = r.Comment,
                     TimeAgo = r.CreatedDate.ToString("dd/MM/yyyy")
@@ -196,7 +196,7 @@ namespace SpaBookingWeb.Services.Client
 
             model.Reviews = reviews;
             
-            // Tính rating trung bình (nếu chưa có thì fake nhẹ cho đẹp hoặc để 0)
+            // Calculate average rating (if none, fake lightly for beauty or set 0)
             if (reviews.Any())
             {
                 model.AverageRating = reviews.Average(r => r.Rating);
@@ -204,7 +204,7 @@ namespace SpaBookingWeb.Services.Client
             }
             else
             {
-                model.AverageRating = 5.0; // Mặc định 5 sao cho sản phẩm mới
+                model.AverageRating = 5.0; // Default 5 stars for new products
                 model.TotalReviews = 0;
             }
 

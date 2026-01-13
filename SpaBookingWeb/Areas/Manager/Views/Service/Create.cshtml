@@ -1,76 +1,76 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ServiceViewModel
 
 @{
-    ViewData["Title"] = "Thêm Dịch vụ mới";
+    ViewData["Title"] = "Add New Service";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10 col-xl-8">
-            <h2 class="h3 mb-4 page-title">Thêm Dịch vụ mới</h2>
+            <h2 class="h3 mb-4 page-title">Add New Service</h2>
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title">Thông tin dịch vụ</strong>
+                    <strong class="card-title">Service Information</strong>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="ServiceName">Tên dịch vụ *</label>
+                                <label asp-for="ServiceName">Service Name *</label>
                                 <input asp-for="ServiceName" class="form-control" />
                                 <span asp-validation-for="ServiceName" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-6">
-                                <label asp-for="Price">Giá tiền (VNĐ) *</label>
+                                <label asp-for="Price">Price (VND) *</label>
                                 <input asp-for="Price" class="form-control" type="number" />
                                 <span asp-validation-for="Price" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="DurationMinutes">Thời lượng (Phút) *</label>
+                                <label asp-for="DurationMinutes">Duration (Minutes) *</label>
                                 <input asp-for="DurationMinutes" class="form-control" type="number" />
                                 <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-6">
-                                <label asp-for="ImageFile">Hình ảnh</label>
+                                <label asp-for="ImageFile">Image</label>
                                 <div class="custom-file">
                                     <input asp-for="ImageFile" class="custom-file-input" id="customFile" accept="image/*">
-                                    <label class="custom-file-label" for="customFile">Chọn ảnh...</label>
+                                    <label class="custom-file-label" for="customFile">Choose image...</label>
                                 </div>
                                 <span asp-validation-for="ImageFile" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label asp-for="Description">Mô tả chi tiết</label>
+                            <label asp-for="Description">Detailed Description</label>
                             <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" asp-for="IsActive" id="customSwitch1" checked>
-                                <label class="custom-control-label" for="customSwitch1">Kích hoạt ngay</label>
+                                <label class="custom-control-label" for="customSwitch1">Activate Immediately</label>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" asp-for="RequiresDeposit" id="customCheck2">
-                                <label class="custom-control-label" for="customCheck2">Yêu cầu đặt cọc</label>
+                                <label class="custom-control-label" for="customCheck2">Require Deposit</label>
                             </div>
 
 
                         <hr />
-                        <h5 class="mb-3">Định mức tiêu hao (Nguyên liệu)</h5>
+                        <h5 class="mb-3">Consumables (Materials)</h5>
                         <div id="consumables-container">
                             <!-- Rows will be added here -->
                         </div>
                         <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="btnAddConsumable">
-                            <i class="fas fa-plus"></i> Thêm nguyên liệu
+                            <i class="fas fa-plus"></i> Add Material
                         </button>
                         <hr />
                         
-                        <button type="submit" class="btn btn-primary">Lưu dịch vụ</button>
-                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                        <button type="submit" class="btn btn-primary">Save Service</button>
+                        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
             </div>
@@ -92,7 +92,7 @@
 
         function addConsumableRow() {
             var index = $("#consumables-container .consumable-row").length;
-            var options = '<option value="">-- Chọn nguyên liệu --</option>';
+            var options = '<option value="">-- Select Material --</option>';
             if(availableProducts) {
                 availableProducts.forEach(function(p) {
                     var unitName = p.unit ? p.unit.unitName : '';
@@ -103,18 +103,18 @@
             var html = `
                 <div class="form-row consumable-row mb-2 align-items-end" id="row-${index}">
                     <div class="form-group col-md-6 mb-0">
-                        <label>Nguyên liệu</label>
+                        <label>Material</label>
                         <select name="Consumables[${index}].ProductId" class="form-control" required>
                             ${options}
                         </select>
                     </div>
                     <div class="form-group col-md-4 mb-0">
-                        <label>Số lượng</label>
+                        <label>Quantity</label>
                         <input type="number" name="Consumables[${index}].Quantity" class="form-control" value="1" min="1" required />
                     </div>
                     <div class="form-group col-md-2 mb-0">
-                        <button type="button" class="btn btn-outline-danger btn-block font-weight-bold" onclick="removeRow(${index})" title="Xóa nguyên liệu này">
-                            <i class="fas fa-trash-alt mr-1"></i> Xóa
+                        <button type="button" class="btn btn-outline-danger btn-block font-weight-bold" onclick="removeRow(${index})" title="Remove this material">
+                            <i class="fas fa-trash-alt mr-1"></i> Delete
                         </button>
                     </div>
                 </div>`;

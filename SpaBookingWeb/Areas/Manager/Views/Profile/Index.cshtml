@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ProfileViewModel
 
 @{
-    ViewData["Title"] = "Hồ sơ cá nhân";
+    ViewData["Title"] = "My Profile";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -35,7 +35,7 @@
                             <i class="ni business_briefcase-24 mr-2"></i>@Model.Role
                         </div>
                         <div>
-                            <i class="ni education_hat mr-2"></i>Thành viên từ: @Model.JoinDate.ToString("dd/MM/yyyy")
+                            <i class="ni education_hat mr-2"></i>Member since: @Model.JoinDate.ToString("dd/MM/yyyy")
                         </div>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
                 <div class="card-header bg-white border-0">
                     <div class="row align-items-center">
                         <div class="col-8">
-                            <h3 class="mb-0">Tài khoản của tôi</h3>
+                            <h3 class="mb-0">My Account</h3>
                         </div>
                     </div>
                 </div>
@@ -63,13 +63,13 @@
                             </div>
                         }
 
-                        <h6 class="heading-small text-muted mb-4">Thông tin người dùng</h6>
+                        <h6 class="heading-small text-muted mb-4">User Information</h6>
                         <div class="pl-lg-4">
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label" asp-for="FullName">Họ và tên</label>
-                                        <input type="text" asp-for="FullName" class="form-control form-control-alternative" placeholder="Họ tên đầy đủ">
+                                        <label class="form-control-label" asp-for="FullName">Full Name</label>
+                                        <input type="text" asp-for="FullName" class="form-control form-control-alternative" placeholder="Full Name">
                                         <span asp-validation-for="FullName" class="text-danger"></span>
                                     </div>
                                 </div>
@@ -83,14 +83,14 @@
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label" asp-for="PhoneNumber">Số điện thoại</label>
+                                        <label class="form-control-label" asp-for="PhoneNumber">Phone Number</label>
                                         <input type="text" asp-for="PhoneNumber" class="form-control form-control-alternative" placeholder="09xxxxxxx">
                                         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group">
-                                        <label class="form-control-label" asp-for="Role">Chức vụ</label>
+                                        <label class="form-control-label" asp-for="Role">Role</label>
                                         <input type="text" asp-for="Role" class="form-control form-control-alternative" readonly>
                                     </div>
                                 </div>
@@ -98,13 +98,13 @@
                         </div>
                         <hr class="my-4" />
                         <!-- Address -->
-                        <h6 class="heading-small text-muted mb-4">Thông tin liên hệ</h6>
+                        <h6 class="heading-small text-muted mb-4">Contact Information</h6>
                         <div class="pl-lg-4">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label class="form-control-label" asp-for="Address">Địa chỉ</label>
-                                        <input asp-for="Address" class="form-control form-control-alternative" placeholder="Địa chỉ nhà" type="text">
+                                        <label class="form-control-label" asp-for="Address">Address</label>
+                                        <input asp-for="Address" class="form-control form-control-alternative" placeholder="Home Address" type="text">
                                         <span asp-validation-for="Address" class="text-danger"></span>
                                     </div>
                                 </div>
@@ -112,7 +112,7 @@
                         </div>
                         
                         <div class="pl-lg-4 mt-4">
-                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
                         </div>
                     </form>
                 </div>

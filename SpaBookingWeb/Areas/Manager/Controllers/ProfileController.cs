@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    [Authorize] // Ai đăng nhập cũng xem được profile của mình
+    [Authorize] // Anyone logged in can view their own profile
     public class ProfileController : Controller
     {
         private readonly IProfileService _profileService;
@@ -41,7 +41,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _profileService.UpdateUserProfileAsync(userId, model);
 
-            TempData["Success"] = "Cập nhật hồ sơ thành công!";
+            TempData["Success"] = "Profile updated successfully!";
             return RedirectToAction(nameof(Index));
         }
     }

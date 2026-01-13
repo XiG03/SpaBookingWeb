@@ -1,15 +1,15 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.EmployeeViewModel
 
 @{
-    ViewData["Title"] = "Thêm nhân viên";
+    ViewData["Title"] = "Add Employee";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Thêm nhân viên mới</h1>
+        <h1 class="h3 mb-0 text-gray-800">Add New Employee</h1>
         <a asp-action="Index" class="btn btn-secondary btn-sm shadow-sm">
-            <i class="fas fa-arrow-left"></i> Quay lại
+            <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
 
@@ -18,18 +18,18 @@
             <form asp-action="Create" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 
-                <h6 class="heading-small text-muted mb-4">Thông tin tài khoản & Cá nhân</h6>
+                <h6 class="heading-small text-muted mb-4">Account & Personal Info</h6>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="FullName" class="control-label">Họ và tên <span class="text-danger">*</span></label>
-                            <input asp-for="FullName" class="form-control" placeholder="Nhập họ tên đầy đủ" />
+                            <label asp-for="FullName" class="control-label">Full Name <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
                             <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="Email" class="control-label">Email (Tên đăng nhập) <span class="text-danger">*</span></label>
+                            <label asp-for="Email" class="control-label">Email (Username) <span class="text-danger">*</span></label>
                             <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
@@ -39,48 +39,48 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="PhoneNumber" class="control-label">Số điện thoại</label>
+                            <label asp-for="PhoneNumber" class="control-label">Phone Number</label>
                             <input asp-for="PhoneNumber" class="form-control" />
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label asp-for="Gender" class="control-label">Giới tính</label>
+                            <label asp-for="Gender" class="control-label">Gender</label>
                             <select asp-for="Gender" class="form-control">
-                                <option value="Nữ">Nữ</option>
-                                <option value="Nam">Nam</option>
-                                <option value="Khác">Khác</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label asp-for="DateOfBirth" class="control-label">Ngày sinh</label>
+                            <label asp-for="DateOfBirth" class="control-label">Date of Birth</label>
                             <input asp-for="DateOfBirth" class="form-control" type="date" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Address" class="control-label">Địa chỉ</label>
+                    <label asp-for="Address" class="control-label">Address</label>
                     <textarea asp-for="Address" class="form-control" rows="2"></textarea>
                 </div>
 
                 <hr class="my-4" />
-                <h6 class="heading-small text-muted mb-4">Thông tin công việc</h6>
+                <h6 class="heading-small text-muted mb-4">Job Information</h6>
                 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="BaseSalary" class="control-label">Lương cơ bản (VND)</label>
+                            <label asp-for="BaseSalary" class="control-label">Base Salary (VND)</label>
                             <input asp-for="BaseSalary" class="form-control" type="number" />
                             <span asp-validation-for="BaseSalary" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="HireDate" class="control-label">Ngày vào làm</label>
+                            <label asp-for="HireDate" class="control-label">Hire Date</label>
                             <input asp-for="HireDate" class="form-control" type="date" />
                         </div>
                     </div>
@@ -90,9 +90,9 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="SelectedRoleId" class="control-label font-weight-bold">Vai trò trong hệ thống</label>
+                            <label asp-for="SelectedRoleId" class="control-label font-weight-bold">System Role</label>
                             <select asp-for="SelectedRoleId" asp-items="Model.Roles" class="form-control" id="RoleSelect">
-                                <option value="">-- Chọn vai trò --</option>
+                                <option value="">-- Select Role --</option>
                             </select>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
 
                 <!-- SERVICES SELECTION (Hidden by default, shown via JS) -->
                 <div class="form-group mt-3" id="ServiceSelectionArea" style="display:none;">
-                    <label class="control-label font-weight-bold">Chọn dịch vụ kỹ thuật viên có thể thực hiện:</label>
+                    <label class="control-label font-weight-bold">Select services explicitly performed by technician:</label>
                     <div class="card p-3 bg-light">
                         <div class="row">
                             @foreach (var service in Model.Services)
@@ -121,8 +121,8 @@
                 </div>
                 
                 <div class="form-group mt-3">
-                    <button type="submit" class="btn btn-primary px-4">Lưu nhân viên</button>
-                    <a asp-action="Index" class="btn btn-light ml-2">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4">Save Employee</button>
+                    <a asp-action="Index" class="btn btn-light ml-2">Cancel</a>
                 </div>
             </form>
         </div>

@@ -25,11 +25,11 @@ namespace SpaBookingWeb.ViewModels.Manager
     {
         public int EmployeeId { get; set; }
 
-        [Required(ErrorMessage = "Họ tên không được để trống")]
+        [Required(ErrorMessage = "Full Name is required")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email không được để trống")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email")]
         public string Email { get; set; } = string.Empty;
 
         public string PhoneNumber { get; set; } = string.Empty;
@@ -49,11 +49,11 @@ namespace SpaBookingWeb.ViewModels.Manager
 
         // --- MỚI: PHÂN QUYỀN & DỊCH VỤ ---
         
-        [Display(Name = "Vai trò hệ thống")]
+        [Display(Name = "System Role")]
         public string SelectedRoleId { get; set; }
         public List<SelectListItem> Roles { get; set; } = new List<SelectListItem>();
 
-        [Display(Name = "Dịch vụ đảm nhận (Dành cho KTV)")]
+        [Display(Name = "Assigned Services (For Technicians)")]
         public List<int> SelectedServiceIds { get; set; } = new List<int>();
         public List<SelectListItem> Services { get; set; } = new List<SelectListItem>();
     }

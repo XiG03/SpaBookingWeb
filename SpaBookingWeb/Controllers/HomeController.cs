@@ -54,7 +54,7 @@ namespace SpaBookingWeb.Controllers
             // Test data
             var orderId = $"ORDER_{DateTime.Now.Ticks}";
             long amount = 10000; // 10.000 VNĐ
-            var orderInfo = "Test thanh toán MoMo SpaBooking";
+            var orderInfo = "Test MoMo Payment SpaBooking";
 
             // URL return & IPN
             var redirectUrl = "http://localhost:5329/Payment/PaymentReturn";
@@ -73,19 +73,19 @@ namespace SpaBookingWeb.Controllers
         }
 
         /// <summary>
-        /// MoMo redirect về sau khi thanh toán
+        /// MoMo redirects back after payment
         /// </summary>
         [HttpGet]
         public IActionResult PaymentReturn()
         {
-            // MoMo sẽ gửi các query string về đây
+            // MoMo will send query strings here
             var query = Request.Query;
 
-            return View(query); // hoặc return Json(query);
+            return View(query); // or return Json(query);
         }
 
         /// <summary>
-        /// IPN MoMo gọi ngầm (server to server)
+        /// MoMo IPN background call (server to server)
         /// </summary>
         [HttpPost]
         public IActionResult Notify()

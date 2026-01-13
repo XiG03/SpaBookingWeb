@@ -28,7 +28,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(SystemSettingViewModel model)
         {
-            // Bỏ qua validate các field tạo mới (vì chúng có thể null khi chỉ save setting)
+            // Ignore validate new creation fields (as they can be null when just saving settings)
             ModelState.Remove("NewUnitName");
 
             ModelState.Remove("NewRuleName");
@@ -40,12 +40,12 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             ModelState.Remove("NewTargetServiceId");
             ModelState.Remove("NewTargetMembershipTypeId");
             
-            // LogoFile và LogoUrl không bắt buộc phải có giá trị mới khi update
+            // LogoFile and LogoUrl are not required to have new values when updating
             ModelState.Remove("LogoFile");
             ModelState.Remove("LogoUrl");
 
-            // --- SỬA LỖI VALIDATION DANH SÁCH ---
-            // Các danh sách này chỉ dùng để hiển thị (View), không submit về nên bị null -> Remove lỗi
+            // --- FIX LIST VALIDATION ERROR ---
+            // These lists are only for display (View), not submitted back so they are null -> Remove error
             ModelState.Remove("AvailableServices");
             ModelState.Remove("AvailableMembershipTypes");
             ModelState.Remove("Units");
@@ -56,7 +56,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             if (ModelState.IsValid)
             {
                 await _systemSettingService.UpdateSettingsAsync(model);
-                TempData["SuccessMessage"] = "Đã lưu cấu hình chung!";
+                TempData["SuccessMessage"] = "General settings saved!";
                 return RedirectToAction(nameof(Index));
             }
             else
@@ -66,13 +66,13 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                             .Select(e => e.ErrorMessage)
                             .ToList();
 
-                // Gán vào TempData để hiển thị ra View (hoặc dùng ViewBag)
-                TempData["ErrorMessage"] = "Lỗi validation: " + string.Join(" | ", errors);
+                // Assign to TempData to display on View (or use ViewBag)
+                TempData["ErrorMessage"] = "Validation error: " + string.Join(" | ", errors);
             }
 
-            // Reload nếu lỗi
+            // Reload if error
             var reloadModel = await _systemSettingService.GetCurrentSettingsAsync();
-            // Merge dữ liệu form để hiển thị lại
+            // Merge form data to re-display
             reloadModel.SpaName = model.SpaName;
             reloadModel.PhoneNumber = model.PhoneNumber;
             reloadModel.Email = model.Email;
@@ -90,7 +90,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> AddUnit(string newUnitName)
         {
             await _systemSettingService.AddUnitAsync(newUnitName);
-            TempData["SuccessMessage"] = "Đã thêm đơn vị tính.";
+            TempData["SuccessMessage"] = "Unit added.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -98,7 +98,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> DeleteUnit(int id)
         {
             await _systemSettingService.DeleteUnitAsync(id);
-            TempData["SuccessMessage"] = "Đã xóa đơn vị tính.";
+            TempData["SuccessMessage"] = "Unit deleted.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -110,7 +110,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> AddDepositRule(SystemSettingViewModel model)
         {
             await _systemSettingService.AddDepositRuleAsync(model);
-            TempData["SuccessMessage"] = "Đã thêm quy tắc đặt cọc mới.";
+            TempData["SuccessMessage"] = "New deposit rule added.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -118,7 +118,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         public async Task<IActionResult> DeleteDepositRule(int id)
         {
             await _systemSettingService.DeleteDepositRuleAsync(id);
-            TempData["SuccessMessage"] = "Đã xóa quy tắc đặt cọc.";
+            TempData["SuccessMessage"] = "Deposit rule deleted.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -129,7 +129,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             try
             {
                 await _systemSettingService.PromoteCustomerAsync(customerId);
-                TempData["SuccessMessage"] = "Đã nâng quyền khách hàng lên nhân viên thành công. Tài khoản mặc định: Email/SĐT, Pass: Password123!";
+                TempData["SuccessMessage"] = "Customer promoted to employee successfully. Default account: Email/Phone, Pass: Password123!";
             }
             catch (System.Exception ex)
             {
@@ -138,7 +138,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 {
                     msg += " | Inner: " + ex.InnerException.Message;
                 }
-                TempData["ErrorMessage"] = "Lỗi: " + msg;
+                TempData["ErrorMessage"] = "Error: " + msg;
             }
             return RedirectToAction(nameof(Index));
         }

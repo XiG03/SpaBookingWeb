@@ -16,7 +16,7 @@ namespace SpaBookingWeb.Services.Manager
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        // Định nghĩa tên Role cho Khách hàng
+        // Define Role name for Customer
         private const string ROLE_CUSTOMER = "Customer";
 
         public CustomerService(ApplicationDbContext context,
@@ -35,25 +35,25 @@ namespace SpaBookingWeb.Services.Manager
             var startOfLastMonth = startOfMonth.AddMonths(-1);
             var endOfLastMonth = startOfMonth.AddDays(-1);
 
-            // 1. LẤY DANH SÁCH KHÁCH HÀNG
-            // Global Query Filter trong ApplicationDbContext sẽ tự động loại bỏ các User có IsDeleted = true
+            // 1. GET CUSTOMER LIST
+            // Global Query Filter in ApplicationDbContext will automatically exclude users with IsDeleted = true
             var allUsersInRole = await _userManager.GetUsersInRoleAsync(ROLE_CUSTOMER);
 
-            // Lưu ý: Logic cũ dùng LockoutEnd để đánh dấu xóa. 
-            // Nếu bạn muốn lọc cả những user bị khóa (banned) vì lý do khác, hãy giữ dòng dưới. 
-            // Nếu chỉ quan tâm đến Xóa Mềm (đã được lọc tự động), có thể bỏ qua check LockoutEnd.
-            // Ở đây mình vẫn giữ check Lockout để đảm bảo tính tương thích.
+            // Note: Old logic used LockoutEnd to mark delete. 
+            // If you want to filter banned users too, keep the line below. 
+            // If only care about Soft Delete (automatically filtered), can skip LockoutEnd check.
+            // Here I keep Lockout check to ensure compatibility.
             var customersList = allUsersInRole
                 .Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.Now)
                 .ToList();
 
             var totalCustomers = customersList.Count;
 
-            // 2. Khách hàng mới trong tháng
+            // 2. New customers in month
             var newCustomersCount = customersList.Count(u => u.CreatedDate >= startOfMonth);
 
-            // 3. Truy vấn bảng Operations (Lịch sử đặt/Giao dịch)
-            // Global Query Filter cũng áp dụng cho Operations (ẩn các giao dịch bị xóa mềm)
+            // 3. Query Operations table (Booking/Transaction History)
+            // Global Query Filter also applies to Operations (hide soft deleted transactions)
             var operationsThisMonth = await _context.Operations
                 .Where(o => o.CreateDate >= startOfMonth)
                 .Include(o => o.User)
@@ -63,17 +63,17 @@ namespace SpaBookingWeb.Services.Manager
                 .Where(o => o.CreateDate >= startOfLastMonth && o.CreateDate <= endOfLastMonth)
                 .ToListAsync();
 
-            // 4. Số lượng lượt ghé (Status = 1: Hoàn thành)
+            // 4. Visit count (Status = 1: Completed)
             var customerIds = customersList.Select(c => c.Id).ToHashSet();
 
             var completedVisits = operationsThisMonth
                 .Count(o => o.Status == 1 && customerIds.Contains(o.UserId));
 
-            // 5. Số lượng hủy (Status = -1)
+            // 5. Cancel count (Status = -1)
             var cancelledOrders = operationsThisMonth
                 .Count(o => o.Status == -1 && customerIds.Contains(o.UserId));
 
-            // 6. Tính tỉ lệ quay lại (Retention Rate)
+            // 6. Calculate Retention Rate
             double returnRateThisMonth = 0;
 
             var customerVisitsThisMonth = operationsThisMonth
@@ -91,7 +91,7 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // Tỉ lệ tháng trước
+            // Rate last month
             double returnRateLastMonth = 0;
             var customerVisitsLastMonth = operationsLastMonth
                 .Where(o => o.Status == 1 && customerIds.Contains(o.UserId))
@@ -108,7 +108,7 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // 7. Tỉ lệ tăng trưởng visits
+            // 7. Visit growth rate
             double growthRate = 0;
             var visitsLastMonthCount = operationsLastMonth.Count(o => o.Status == 1 && customerIds.Contains(o.UserId));
 
@@ -117,7 +117,7 @@ namespace SpaBookingWeb.Services.Manager
                 growthRate = ((double)(completedVisits - visitsLastMonthCount) / visitsLastMonthCount) * 100;
             }
 
-            // Fallback tên
+            // Name fallback
             foreach (var user in customersList)
             {
                 if (string.IsNullOrEmpty(user.FullName)) user.FullName = user.UserName;
@@ -158,7 +158,7 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task<List<ApplicationUser>> GetAllCustomersAsync()
         {
-            // Global Filter của EF Core sẽ tự động lọc bỏ User đã xóa mềm
+            // Global Filter of EF Core will automatically filter out soft deleted Users
             var users = await _userManager.GetUsersInRoleAsync(ROLE_CUSTOMER);
             return users.ToList();
         }
@@ -197,10 +197,10 @@ namespace SpaBookingWeb.Services.Manager
 
             if (!await _userManager.IsInRoleAsync(user, ROLE_CUSTOMER)) return false;
 
-            // --- THAY ĐỔI QUAN TRỌNG: SỬ DỤNG XÓA MỀM ---
-            // Thay vì set Lockout, ta gọi DeleteAsync.
-            // ApplicationDbContext đã được cấu hình để chặn lệnh Delete này và chuyển thành Soft Delete (IsDeleted = true)
-            // AuditLog sẽ ghi nhận hành động này là "Delete".
+            // --- IMPORTANT CHANGE: USE SOFT DELETE ---
+            // Instead of setting Lockout, call DeleteAsync.
+            // ApplicationDbContext is configured to intercept this Delete command and convert to Soft Delete (IsDeleted = true)
+            // AuditLog will record this action as "Delete".
             
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;

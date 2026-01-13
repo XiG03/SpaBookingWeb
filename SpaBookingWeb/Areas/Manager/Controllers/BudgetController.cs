@@ -24,27 +24,27 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             int currentMonth = month ?? DateTime.Now.Month;
             int currentYear = year ?? DateTime.Now.Year;
 
-            // 1. Lấy ngân sách: Include TransactionCategory thay vì Category
+            // 1. Get budget: Include TransactionCategory instead of Category
             var budgets = await _context.Budgets
                .Include(b => b.TransactionCategory) 
                .Where(b => b.Month == currentMonth && b.Year == currentYear)
                .ToListAsync();
 
-            // 2. Lấy chi phí thực tế: Group theo TransactionCategoryId
+            // 2. Get actual expenses: Group by TransactionCategoryId
             var expenses = await _context.Transactions
                .Where(t => !t.IsIncome && t.Date.Month == currentMonth && t.Date.Year == currentYear && t.TransactionCategoryId != null)
                .GroupBy(t => t.TransactionCategoryId)
                .Select(g => new { TransactionCategoryId = g.Key, TotalSpent = g.Sum(t => t.Amount) })
                .ToListAsync();
 
-            // 3. Join dữ liệu
+            // 3. Join data
             var budgetItems = from b in budgets
                               join e in expenses on b.TransactionCategoryId equals e.TransactionCategoryId into gj
                               from subExpense in gj.DefaultIfEmpty()
                               select new BudgetItemViewModel
                               {
                                   Id = b.Id,
-                                  CategoryName = b.TransactionCategory.Name, // Lấy tên từ TransactionCategory
+                                  CategoryName = b.TransactionCategory.Name, // Get name from TransactionCategory
                                   LimitAmount = b.LimitAmount,
                                   ActualAmount = subExpense?.TotalSpent ?? 0
                               };

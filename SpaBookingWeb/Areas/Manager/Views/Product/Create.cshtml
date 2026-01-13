@@ -1,17 +1,17 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ProductViewModel
 
 @{
-    ViewData["Title"] = "Thêm Sản phẩm";
+    ViewData["Title"] = "Add Product";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-10 col-xl-8">
-            <h2 class="h3 mb-4 page-title">Thêm Sản phẩm mới</h2>
+            <h2 class="h3 mb-4 page-title">Add New Product</h2>
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title">Thông tin sản phẩm</strong>
+                    <strong class="card-title">Product Information</strong>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create" method="post">
@@ -20,21 +20,21 @@
                         <!-- Hàng 1: Tên, Danh mục, Đơn vị -->
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label asp-for="ProductName" class="control-label">Tên sản phẩm <span class="text-danger">*</span></label>
-                                <input asp-for="ProductName" class="form-control" placeholder="Nhập tên sản phẩm" />
+                                <label asp-for="ProductName" class="control-label">Product Name <span class="text-danger">*</span></label>
+                                <input asp-for="ProductName" class="form-control" placeholder="Enter product name" />
                                 <span asp-validation-for="ProductName" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-3">
-                                <label asp-for="CategoryId" class="control-label">Danh mục</label>
+                                <label asp-for="CategoryId" class="control-label">Category</label>
                                 <select asp-for="CategoryId" asp-items="Model.Categories" class="form-control">
-                                    <option value="">-- Chọn danh mục --</option>
+                                    <option value="">-- Select Category --</option>
                                 </select>
                                 <span asp-validation-for="CategoryId" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-3">
-                                <label asp-for="UnitId" class="control-label">Đơn vị tính</label>
+                                <label asp-for="UnitId" class="control-label">Unit</label>
                                 <select asp-for="UnitId" asp-items="Model.Units" class="form-control">
-                                    <option value="">-- Chọn đơn vị --</option>
+                                    <option value="">-- Select Unit --</option>
                                 </select>
                                 <span asp-validation-for="UnitId" class="text-danger"></span>
                             </div>
@@ -43,17 +43,17 @@
                         <!-- Hàng 2: Giá nhập, Giá bán, Tồn kho -->
                         <div class="form-row">
                             <div class="form-group col-md-4">
-                                <label asp-for="PurchasePrice" class="control-label">Giá nhập (VNĐ) <span class="text-danger">*</span></label>
+                                <label asp-for="PurchasePrice" class="control-label">Purchase Price (VND) <span class="text-danger">*</span></label>
                                 <input asp-for="PurchasePrice" class="form-control" type="number" placeholder="0" />
                                 <span asp-validation-for="PurchasePrice" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-4">
-                                <label asp-for="SalePrice" class="control-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                                <label asp-for="SalePrice" class="control-label">Sale Price (VND) <span class="text-danger">*</span></label>
                                 <input asp-for="SalePrice" class="form-control" type="number" placeholder="0" />
                                 <span asp-validation-for="SalePrice" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-4">
-                                <label asp-for="StockQuantity" class="control-label">Số lượng tồn kho ban đầu <span class="text-danger">*</span></label>
+                                <label asp-for="StockQuantity" class="control-label">Initial Stock Quantity <span class="text-danger">*</span></label>
                                 <input asp-for="StockQuantity" class="form-control" type="number" placeholder="0" />
                                 <span asp-validation-for="StockQuantity" class="text-danger"></span>
                             </div>
@@ -63,15 +63,15 @@
                         <div class="form-group">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" asp-for="IsForSale" id="customSwitch1">
-                                <label class="custom-control-label" for="customSwitch1">Sản phẩm này có bán lẻ cho khách hàng?</label>
-                                <small class="form-text text-muted">Nếu tắt, sản phẩm chỉ được dùng nội bộ (Consumable) và không hiển thị trên trang bán hàng.</small>
+                                <label class="custom-control-label" for="customSwitch1">Is this product for retail sale?</label>
+                                <small class="form-text text-muted">If disabled, the product is for internal use only (Consumable) and won't be shown on the sales page.</small>
                             </div>
                         </div>
 
                         <!-- Nút hành động (Phần bạn cần hoàn thiện) -->
                         <div class="mt-4 d-flex justify-content-end">
-                            <a asp-action="Index" class="btn btn-secondary mr-2">Hủy bỏ</a>
-                            <button type="submit" class="btn btn-primary">Lưu sản phẩm</button>
+                            <a asp-action="Index" class="btn btn-secondary mr-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Product</button>
                         </div>
                     </form>
                 </div> <!-- /. card-body -->

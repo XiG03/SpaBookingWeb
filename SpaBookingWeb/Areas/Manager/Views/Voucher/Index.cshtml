@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.VoucherDashboardViewModel
 
 @{
-    ViewData["Title"] = "Quản Lý Voucher";
+    ViewData["Title"] = "Voucher Management";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,12 +10,12 @@
         <div class="col-12">
             <div class="row align-items-center mb-4">
                 <div class="col">
-                    <h2 class="h3 page-title">Quản Lý Voucher</h2>
-                    <p class="text-muted">Quản lý các mã giảm giá và chương trình khuyến mãi.</p>
+                    <h2 class="h3 page-title">Voucher Management</h2>
+                    <p class="text-muted">Manage discount codes and promotions.</p>
                 </div>
                 <div class="col-auto">
                     <a asp-action="Create" class="btn btn-primary">
-                        <span class="fe fe-plus fe-16 mr-2"></span>Thêm Voucher Mới
+                        <span class="fe fe-plus fe-16 mr-2"></span>Add New Voucher
                     </a>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Đang hoạt động</p>
+                                    <p class="small text-muted mb-0">Active Vouchers</p>
                                     <span class="h3 mb-0">@Model.ActiveCount</span>
                                 </div>
                             </div>
@@ -49,7 +49,7 @@
                                     </span>
                                 </div>
                                 <div class="col pr-0">
-                                    <p class="small text-muted mb-0">Tổng lượt dùng</p>
+                                    <p class="small text-muted mb-0">Total Uses</p>
                                     <span class="h3 mb-0">@Model.TotalUsed</span>
                                 </div>
                             </div>
@@ -68,12 +68,12 @@
                     <table class="table datatables" id="dataTable-voucher">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Tên / Mã</th>
-                                <th>Mức Giảm</th>
-                                <th>Đơn Tối Thiểu</th>
-                                <th>Sử Dụng (Đã/Tổng)</th>
-                                <th>Hiệu Lực</th>
-                                <th>Trạng Thái</th>
+                                <th>Name / Code</th>
+                                <th>Discount</th>
+                                <th>Min Spend</th>
+                                <th>Usage (Used/Total)</th>
+                                <th>Validity</th>
+                                <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -105,10 +105,10 @@
                                                 <i class="fe fe-more-vertical"></i>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.VoucherId">Sửa</a>
-                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@item.VoucherId">Chi tiết</a>
-                                                <form asp-action="Delete" asp-route-id="@item.VoucherId" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa voucher này?');">
-                                                    <button type="submit" class="dropdown-item text-danger">Xóa</button>
+                                                <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.VoucherId">Edit</a>
+                                                <a class="dropdown-item" asp-action="Details" asp-route-id="@item.VoucherId">Details</a>
+                                                <form asp-action="Delete" asp-route-id="@item.VoucherId" method="post" onsubmit="return confirm('Are you sure you want to delete this voucher?');">
+                                                    <button type="submit" class="dropdown-item text-danger">Delete</button>
                                                 </form>
                                             </div>
                                         </div>

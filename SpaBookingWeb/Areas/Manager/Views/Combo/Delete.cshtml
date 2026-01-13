@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.Models.Combo
 
 @{
-    ViewData["Title"] = "Xóa Combo";
+    ViewData["Title"] = "Delete Combo";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -9,13 +9,13 @@
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
             <div class="alert alert-warning" role="alert">
-                <h4 class="alert-heading"><i class="fe fe-alert-triangle mr-2"></i>Cảnh báo!</h4>
-                <p>Bạn đang thực hiện thao tác xóa Combo. Hành động này không thể hoàn tác và Combo này sẽ bị xóa vĩnh viễn khỏi hệ thống.</p>
+                <h4 class="alert-heading"><i class="fe fe-alert-triangle mr-2"></i>Warning!</h4>
+                <p>You are about to delete a Combo. This action cannot be undone and will permanently remove this Combo from the system.</p>
             </div>
 
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title">Chi tiết Combo cần xóa</strong>
+                    <strong class="card-title">Combo Details</strong>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -28,7 +28,7 @@
                             else
                             {
                                 <div class="bg-light d-flex align-items-center justify-content-center rounded w-100" style="height: 200px;">
-                                    <span class="text-muted"><i class="fe fe-image fe-24 mr-2"></i>Không có ảnh</span>
+                                    <span class="text-muted"><i class="fe fe-image fe-24 mr-2"></i>No Image</span>
                                 </div>
                             }
                         </div>
@@ -39,13 +39,13 @@
                             <h4 class="text-success font-weight-bold mb-3">@Model.Price.ToString("N0") VNĐ</h4>
                             
                             <div class="mb-3">
-                                <strong>Mô tả:</strong>
-                                <p class="text-muted text-justify">@(string.IsNullOrEmpty(Model.Description) ? "Không có mô tả" : Model.Description)</p>
+                                <strong>Description:</strong>
+                                <p class="text-muted text-justify">@(string.IsNullOrEmpty(Model.Description) ? "No description" : Model.Description)</p>
                             </div>
                             
                             <hr />
                             
-                            <h5 class="mb-3">Dịch vụ bao gồm:</h5>
+                            <h5 class="mb-3">Included Services:</h5>
                             @if(Model.ComboDetails != null && Model.ComboDetails.Any())
                             {
                                 <ul class="list-group list-group-flush mb-4 border rounded">
@@ -58,7 +58,7 @@
                                             </span>
                                             @if(detail.Service != null)
                                             {
-                                                <span class="badge badge-light border">@detail.Service.DurationMinutes phút</span>
+                                                <span class="badge badge-light border">@detail.Service.DurationMinutes mins</span>
                                             }
                                         </li>
                                     }
@@ -66,7 +66,7 @@
                             }
                             else
                             {
-                                <p class="text-muted font-italic mb-4">Combo này chưa có dịch vụ nào.</p>
+                                <p class="text-muted font-italic mb-4">This combo has no services.</p>
                             }
 
                             <!-- Form xác nhận xóa -->
@@ -74,10 +74,10 @@
                                 <input type="hidden" asp-for="ComboId" /> <!-- Binding ID cần xóa -->
                                 
                                 <a asp-action="Index" class="btn btn-secondary mr-2">
-                                    <i class="fe fe-x mr-1"></i>Hủy bỏ
+                                    <i class="fe fe-x mr-1"></i>Cancel
                                 </a>
                                 <button type="submit" class="btn btn-danger">
-                                    <i class="fe fe-trash-2 mr-1"></i>Xác nhận Xóa
+                                    <i class="fe fe-trash-2 mr-1"></i>Confirm Delete
                                 </button>
                             </form>
                         </div>

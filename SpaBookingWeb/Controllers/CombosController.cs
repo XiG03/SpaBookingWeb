@@ -23,7 +23,7 @@ namespace SpaBookingWeb.Controllers
             return View(model);
         }
 
-        // Action placeholder cho trang chi tiết (để link hoạt động)
+        // Action placeholder for detail page (to make link work)
         [HttpGet]
         [Route("Detail/{id}")]
         public async Task<IActionResult> Detail(int id)

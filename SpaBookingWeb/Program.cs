@@ -23,22 +23,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// Cấu hình Cookie Policy đơn giản nhất đễ fix lỗi Google login trên Localhost
+// Configure simplest Cookie Policy to fix Google login error on Localhost
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    // Yêu cầu sự đồng ý cookie cơ bản
+    // Require basic cookie consent
     options.CheckConsentNeeded = context => false; 
-    options.MinimumSameSitePolicy = SameSiteMode.None; // QUAN TRỌNG: Cho phép cross-site
-    options.Secure = CookieSecurePolicy.Always; // QUAN TRỌNG: Google yêu cầu HTTPS
+    options.MinimumSameSitePolicy = SameSiteMode.None; // IMPORTANT: Allow cross-site
+    options.Secure = CookieSecurePolicy.Always; // IMPORTANT: Google requires HTTPS
 });
 
-// Cấu hình cụ thể cho Cookie của Identity (External)
+// Specific configuration for Identity Cookie (External)
 builder.Services.ConfigureExternalCookie(options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true; // Bắt buộc cho login
+    options.Cookie.IsEssential = true; // Required for login
 });            
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -53,9 +53,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.SignIn.RequireConfirmedPhoneNumber = false;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddRoles<IdentityRole>() // Thêm dòng này
+    .AddRoles<IdentityRole>() // Add this line
     .AddDefaultTokenProviders();
-// Không ghi đè DefaultSignInScheme để Identity tự quản lý (External vs Application)
+// Do not override DefaultSignInScheme so Identity manages itself (External vs Application)
 builder.Services.AddAuthentication()
 .AddGoogle(options =>
 {
@@ -86,18 +86,18 @@ builder.Services.AddAuthentication()
 
 
 
-// Đã xóa block cũ để tránh trùng lặp
+// Deleted old block to avoid duplication
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.LoginPath = "/Account/Login"; // Đường dẫn đăng nhập
+    options.LoginPath = "/Account/Login"; // Login path
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
-// (Đã xóa block ConfigureApplicationCookie bị lặp)
+// (Deleted duplicated ConfigureApplicationCookie block)
 
 //Services Injection for Manager
 builder.Services.AddScoped<ICustomerService, CustomerService>();
@@ -139,7 +139,7 @@ builder.Services.AddHostedService<BookingCleanupService>();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDistributedMemoryCache(); // BẮT BUỘC
+builder.Services.AddDistributedMemoryCache(); // REQUIRED
 
 builder.Services.AddSession(options =>
 {
@@ -199,7 +199,7 @@ using (var scope = app.Services.CreateScope())
                 if (retryCount >= maxRetries)
                     throw;
 
-                Thread.Sleep(5000); // đợi SQL Server
+                Thread.Sleep(5000); // wait for SQL Server
             }
         }
     }
@@ -213,14 +213,14 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseCookiePolicy(); // Chuyển lên đây
+app.UseCookiePolicy(); // Move up here
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession(); // Session thường để sau cùng hoặc trước Auth tùy nhu cầu, nhưng sau Auth là an toàn cho dữ liệu user.
+app.UseSession(); // Session usually placed last or before Auth depending on need, but after Auth is safe for user data.
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 

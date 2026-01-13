@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.Models.Product
 
 @{
-    ViewData["Title"] = "Xóa Sản phẩm";
+    ViewData["Title"] = "Delete Product";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,45 +10,45 @@
         <div class="col-12 col-xl-6">
             
             <div class="alert alert-warning" role="alert">
-                <h4 class="alert-heading"><i class="fe fe-alert-triangle mr-2"></i>Cảnh báo!</h4>
-                <p>Bạn đang thực hiện thao tác xóa sản phẩm <strong>@Model.ProductName</strong>. Hành động này không thể hoàn tác.</p>
+                <h4 class="alert-heading"><i class="fe fe-alert-triangle mr-2"></i>Warning!</h4>
+                <p>You are about to delete product <strong>@Model.ProductName</strong>. This action cannot be undone.</p>
             </div>
 
             <div class="card shadow mb-4">
                 <div class="card-header">
-                    <strong class="card-title text-danger">Thông tin sản phẩm cần xóa</strong>
+                    <strong class="card-title text-danger">Product Details to Delete</strong>
                 </div>
                 <div class="card-body">
                     <h4 class="mb-3">@Model.ProductName</h4>
                     
                     <dl class="row">
-                        <dt class="col-sm-4">Mã sản phẩm</dt>
+                        <dt class="col-sm-4">Product ID</dt>
                         <dd class="col-sm-8">#@Model.ProductId</dd>
 
-                        <dt class="col-sm-4">Danh mục</dt>
-                        <dd class="col-sm-8">@(Model.Category?.CategoryName ?? "Không có")</dd>
+                        <dt class="col-sm-4">Category</dt>
+                        <dd class="col-sm-8">@(Model.Category?.CategoryName ?? "None")</dd>
 
-                        <dt class="col-sm-4">Đơn vị tính</dt>
-                        <dd class="col-sm-8">@(Model.Unit?.UnitName ?? "Cái")</dd>
+                        <dt class="col-sm-4">Unit</dt>
+                        <dd class="col-sm-8">@(Model.Unit?.UnitName ?? "Item")</dd>
 
-                        <dt class="col-sm-4">Giá nhập</dt>
-                        <dd class="col-sm-8">@Model.PurchasePrice.ToString("N0") VNĐ</dd>
+                        <dt class="col-sm-4">Purchase Price</dt>
+                        <dd class="col-sm-8">@Model.PurchasePrice.ToString("N0") VND</dd>
 
-                        <dt class="col-sm-4">Giá bán</dt>
-                        <dd class="col-sm-8 text-success font-weight-bold">@Model.SalePrice.ToString("N0") VNĐ</dd>
+                        <dt class="col-sm-4">Sale Price</dt>
+                        <dd class="col-sm-8 text-success font-weight-bold">@Model.SalePrice.ToString("N0") VND</dd>
 
-                        <dt class="col-sm-4">Tồn kho hiện tại</dt>
+                        <dt class="col-sm-4">Current Stock</dt>
                         <dd class="col-sm-8">@Model.StockQuantity</dd>
 
-                        <dt class="col-sm-4">Trạng thái</dt>
+                        <dt class="col-sm-4">Status</dt>
                         <dd class="col-sm-8">
                             @if (Model.IsForSale)
                             {
-                                <span class="badge badge-success">Đang bán lẻ</span>
+                                <span class="badge badge-success">For Sale</span>
                             }
                             else
                             {
-                                <span class="badge badge-secondary">Chỉ dùng nội bộ</span>
+                                <span class="badge badge-secondary">Internal Use Only</span>
                             }
                         </dd>
                     </dl>
@@ -59,10 +59,10 @@
                         <input type="hidden" name="id" value="@Model.ProductId" />
                         
                         <a asp-action="Index" class="btn btn-secondary mr-2">
-                            <i class="fe fe-x mr-1"></i>Hủy bỏ
+                            <i class="fe fe-x mr-1"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-danger">
-                            <i class="fe fe-trash-2 mr-1"></i>Xác nhận Xóa vĩnh viễn
+                            <i class="fe fe-trash-2 mr-1"></i>Confirm Permanently Delete
                         </button>
                     </form>
                 </div>

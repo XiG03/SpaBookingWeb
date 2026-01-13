@@ -6,22 +6,22 @@ namespace SpaBookingWeb.Services.Manager
 {
     public interface IServiceService
     {
-        // Lấy dữ liệu tổng hợp cho trang danh sách Service
+        // Get aggregate data for Service list page
         Task<ServiceDashboardViewModel> GetServiceDashboardAsync();
 
-        // Lấy thông tin chi tiết để hiển thị form Sửa
+        // Get details to display Edit form
         Task<ServiceViewModel?> GetServiceForEditAsync(int id);
 
-        // Tạo mới dịch vụ
+        // Create new service
         Task CreateServiceAsync(ServiceViewModel model);
 
-        // Cập nhật dịch vụ
+        // Update service
         Task UpdateServiceAsync(ServiceViewModel model);
 
-        // Xóa mềm (Chuyển trạng thái hoạt động thành false hoặc xóa nếu có cột IsDeleted)
+        // Soft delete (Change status to false or delete if IsDeleted column exists)
         Task DeleteServiceAsync(int id);
 
-        // Helper cho trang Create
+        // Helper for Create page
         Task<ServiceViewModel> GetServiceForCreateAsync();
 
         Task<Service?> GetServiceByIdAsync(int id);

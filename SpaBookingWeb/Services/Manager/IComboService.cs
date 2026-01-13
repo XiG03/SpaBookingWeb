@@ -8,12 +8,12 @@ namespace SpaBookingWeb.Services.Manager
     {
         Task<ComboDashboardViewModel> GetAllCombosAsync();
         
-        // Hàm này sẽ chuẩn bị cả dữ liệu Combo và danh sách Service để chọn
+        // This function will prepare both Combo data and list of Services to select
         Task<ComboViewModel> GetComboForCreateAsync();
         
         Task<ComboViewModel?> GetComboForEditAsync(int id);
         
-        Task<Combo?> GetComboByIdAsync(int id); // Cho trang Delete/Detail
+        Task<Combo?> GetComboByIdAsync(int id); // For Delete/Detail page
 
         Task CreateComboAsync(ComboViewModel model);
         

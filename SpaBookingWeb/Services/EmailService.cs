@@ -21,19 +21,19 @@ public class EmailService : IEmailService
         email.To.Add(MailboxAddress.Parse(toEmail));
         email.Subject = subject;
 
-        // Nội dung email (có thể dùng HTML)
+        // Email content (HTML supported)
         var builder = new BodyBuilder();
         builder.HtmlBody = message;
         email.Body = builder.ToMessageBody();
 
         using var smtp = new SmtpClient();
-        // Kết nối đến server Gmail
+        // Connect to Gmail server
         await smtp.ConnectAsync(_config["EmailSettings:MailServer"], int.Parse(_config["EmailSettings:MailPort"]), MailKit.Security.SecureSocketOptions.StartTls);
         
-        // Xác thực
+        // Authenticate
         await smtp.AuthenticateAsync(_config["EmailSettings:SenderEmail"], _config["EmailSettings:Password"]);
         
-        // Gửi và ngắt kết nối
+        // Send and disconnect
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
     }

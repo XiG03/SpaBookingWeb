@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.DashboardViewModel
 
 @{
-    ViewData["Title"] = "Bảng điều khiển";
+    ViewData["Title"] = "Dashboard";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,9 +11,9 @@
 <div class="container-fluid">
     <!-- Header -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Tổng quan hôm nay (@DateTime.Today.ToString("dd/MM/yyyy"))</h1>
+        <h1 class="h3 mb-0 text-gray-800">Today's Overview (@DateTime.Today.ToString("dd/MM/yyyy"))</h1>
         <a asp-controller="Appointments" asp-action="Create" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-            <i class="fas fa-plus fa-sm text-white-50"></i> Tạo lịch hẹn mới
+            <i class="fas fa-plus fa-sm text-white-50"></i> Create New Appointment
         </a>
     </div>
 
@@ -25,7 +25,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Lịch hẹn hôm nay</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Appointments Today</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalAppointmentsToday</div>
                         </div>
                         <div class="col-auto">
@@ -42,8 +42,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Doanh thu ước tính</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.EstimatedRevenueToday.ToString("N0") đ</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Estimated Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.EstimatedRevenueToday.ToString("N0") VND</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -59,7 +59,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Chờ thực hiện</div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingAppointments</div>
                         </div>
                         <div class="col-auto">
@@ -76,7 +76,7 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Đã hủy</div>
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Cancelled</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.CancelledAppointments</div>
                         </div>
                         <div class="col-auto">
@@ -94,7 +94,7 @@
             <!-- FullCalendar -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Lịch làm việc tổng quát</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">General Schedule</h6>
                 </div>
                 <div class="card-body">
                     <div id='calendar'></div>
@@ -104,18 +104,18 @@
             <!-- Danh sách chi tiết hôm nay -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Chi tiết lịch hẹn hôm nay</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Today's Appointment Details</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>Giờ</th>
-                                    <th>Khách hàng</th>
-                                    <th>Dịch vụ</th>
-                                    <th>Nhân viên</th>
-                                    <th>Trạng thái</th>
+                                    <th>Time</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Staff</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -137,7 +137,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">Không có lịch hẹn nào hôm nay.</td>
+                                        <td colspan="5" class="text-center text-muted">No appointments today.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -151,9 +151,9 @@
         <div class="col-xl-4 col-lg-5">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Nhân viên trực ca</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Shift Staff</h6>
                     <a asp-controller="Employee" asp-action="Schedule" class="btn btn-sm btn-info">
-                        <i class="fas fa-edit"></i> Quản lý
+                        <i class="fas fa-edit"></i> Manage
                     </a>
                 </div>
                 <div class="card-body">
@@ -176,12 +176,12 @@
                                             @if (emp.IsPresent)
                                             {
                                                 <span class="badge badge-success">
-                                                    <i class="fas fa-check"></i> @(emp.CheckInTime?.ToString("HH:mm") ?? "Đã đến")
+                                                    <i class="fas fa-check"></i> @(emp.CheckInTime?.ToString("HH:mm") ?? "Arrived")
                                                 </span>
                                             }
                                             else
                                             {
-                                                <span class="badge badge-secondary">Chưa đến</span>
+                                                <span class="badge badge-secondary">Not Arrived</span>
                                             }
                                         </li>
                                     }
@@ -189,7 +189,7 @@
                             }
                             else
                             {
-                                <p class="text-muted small font-italic">Chưa có nhân viên phân ca này.</p>
+                                <p class="text-muted small font-italic">No staff assigned to this shift.</p>
                             }
                         </div>
                     }
@@ -199,12 +199,12 @@
     </div>
 </div>
 
-<!-- Modal Chi tiết Lịch hẹn -->
+<!-- Modal Appointment Details -->
 <div class="modal fade" id="appointmentDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Chi tiết lịch hẹn #<span id="modalAppId"></span></h5>
+                <h5 class="modal-title">Appointment Details #<span id="modalAppId"></span></h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -212,55 +212,55 @@
             <div class="modal-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Khách hàng:</strong> <span id="modalCustomerName"></span></p>
-                        <p><strong>SĐT:</strong> <span id="modalCustomerPhone"></span></p>
+                        <p><strong>Customer:</strong> <span id="modalCustomerName"></span></p>
+                        <p><strong>Phone:</strong> <span id="modalCustomerPhone"></span></p>
                     </div>
                     <div class="col-md-6 text-right">
-                        <p><strong>Thời gian:</strong> <span id="modalTime"></span></p>
-                        <p><strong>Trạng thái:</strong> <span id="modalStatus" class="badge"></span></p>
+                        <p><strong>Time:</strong> <span id="modalTime"></span></p>
+                        <p><strong>Status:</strong> <span id="modalStatus" class="badge"></span></p>
                     </div>
                 </div>
                 
                 <div class="alert alert-info d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Đã cọc: </strong> <span id="modalDepositStatus"></span>
+                        <strong>Deposit: </strong> <span id="modalDepositStatus"></span>
                     </div>
                     <div>
-                        <strong>Cần trả thêm: </strong> <span id="modalRemaining" class="font-weight-bold text-danger" style="font-size: 1.1em"></span>
+                        <strong>Remaining: </strong> <span id="modalRemaining" class="font-weight-bold text-danger" style="font-size: 1.1em"></span>
                     </div>
                 </div>
                 
                 <div id="paymentStatusAlert" class="alert alert-success d-none">
-                    <i class="fas fa-check-double"></i> <strong>Đã thanh toán toàn bộ đơn hàng.</strong>
+                    <i class="fas fa-check-double"></i> <strong>Fully Paid.</strong>
                 </div>
                 
-                <h6 class="font-weight-bold border-bottom pb-2">Dịch vụ sử dụng</h6>
+                <h6 class="font-weight-bold border-bottom pb-2">Service Details</h6>
                 <table class="table table-sm table-striped">
                     <thead>
                         <tr>
-                            <th>Dịch vụ</th>
-                            <th>KTV thực hiện</th>
-                            <th class="text-right">Giá</th>
+                            <th>Service</th>
+                            <th>Staff</th>
+                            <th class="text-right">Price</th>
                         </tr>
                     </thead>
                     <tbody id="modalServicesBody">
-                        <!-- JS sẽ điền dữ liệu vào đây -->
+                        <!-- JS fill -->
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-right font-weight-bold">Tổng cộng:</td>
+                            <td colspan="2" class="text-right font-weight-bold">Total:</td>
                             <td class="text-right font-weight-bold text-primary" id="modalTotal"></td>
                         </tr>
                     </tfoot>
                 </table>
                 
                 <div class="mt-3">
-                    <p><strong>Ghi chú:</strong> <span id="modalNote" class="font-italic text-muted"></span></p>
+                    <p><strong>Note:</strong> <span id="modalNote" class="font-italic text-muted"></span></p>
                 </div>
             </div>
             <div class="modal-footer">
-                <a href="#" id="modalLinkDetail" class="btn btn-info">Xem/Sửa đầy đủ</a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <a href="#" id="modalLinkDetail" class="btn btn-info">View/Edit Full</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -269,14 +269,13 @@
 @section Scripts {
     <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/vi.js'></script> <!-- Tiếng Việt -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth', 
-                locale: 'vi',
+                locale: 'en',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -310,7 +309,7 @@
                             statusBadge.className = 'badge badge-' + getStatusColor(data.status);
                             
                             // Note
-                            document.getElementById('modalNote').textContent = data.note || "Không có ghi chú";
+                            document.getElementById('modalNote').textContent = data.note || "No notes";
                             
                             // Services Table
                             var tbody = document.getElementById('modalServicesBody');
@@ -357,19 +356,19 @@
                                 if (isPaid) {
                                     // Đã cọc
                                     depositStatusEl.innerHTML = `<span class="text-success font-weight-bold">
-                                        <i class="fas fa-check-circle"></i> Đã cọc (${fmt(deposit)})
+                                        <i class="fas fa-check-circle"></i> Paid (${fmt(deposit)})
                                     </span>`;
                                 } else {
                                     if (deposit > 0) {
                                         // Có yêu cầu cọc nhưng chưa đóng
                                         depositStatusEl.innerHTML = `<span class="text-danger font-weight-bold">
-                                            <i class="fas fa-times-circle"></i> Chưa cọc
+                                            <i class="fas fa-times-circle"></i> Not Paid
                                         </span> 
-                                        <span class="small text-muted d-block">(Yêu cầu: ${fmt(deposit)})</span>`;
+                                        <span class="small text-muted d-block">(Req: ${fmt(deposit)})</span>`;
                                     } else {
                                         // Không yêu cầu cọc
                                         depositStatusEl.innerHTML = `<span class="text-secondary">
-                                            <i class="fas fa-minus-circle"></i> Không yêu cầu
+                                            <i class="fas fa-minus-circle"></i> Not Required
                                         </span>`;
                                     }
                                 }
@@ -382,7 +381,7 @@
                             // Show Modal (Dùng jQuery theo Bootstrap 4)
                             $('#appointmentDetailModal').modal('show');
                         })
-                        .catch(err => console.error('Lỗi tải chi tiết:', err));
+                        .catch(err => console.error('Error loading details:', err));
                 },
                 eventDidMount: function(info) {
                     info.el.title = info.event.extendedProps.description.replace(/<br\/>/g, '\n'); 

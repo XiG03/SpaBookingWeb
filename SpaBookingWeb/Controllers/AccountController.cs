@@ -33,7 +33,7 @@ namespace SpaBookingWeb.Controllers
             _emailService = emailService;
         }
 
-        // --- ĐĂNG NHẬP ---
+        // --- LOGIN ---
         [HttpGet]
         public IActionResult Login(string returnUrl = null)
         {
@@ -47,7 +47,7 @@ namespace SpaBookingWeb.Controllers
             {
                 var roles = await _userManager.GetRolesAsync(user);
 
-                // Nếu là Manager, Receptionist hoặc Technician thì hiện trang chọn Role
+                // If Manager, Receptionist or Technician, show Role Selection page
                 if (roles.Contains("Manager") || roles.Contains("Receptionist") || roles.Contains("Technician"))
                 {
                     return RedirectToAction("RoleSelection");
@@ -62,7 +62,7 @@ namespace SpaBookingWeb.Controllers
                     return RedirectToAction("Index", "Schedule", new { area = "Staff" });
                 }
 
-                // Kiểm tra returnUrl hợp lệ
+                // Check valid returnUrl
                 if (Url.IsLocalUrl(returnUrl) && returnUrl != "/")
                 {
                     return LocalRedirect(returnUrl);
@@ -82,24 +82,24 @@ namespace SpaBookingWeb.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             returnUrl ??= Url.Content("~/");
 
-            // Validate chung cho tất cả: Chỉ cần Email và Password
+            // Common validation: Only need Email and Password
             ModelState.Remove("StaffId");
             ModelState.Remove("StaffCode");
             ModelState.Remove("LoginType"); 
 
             if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
             {
-                ModelState.AddModelError("", "Vui lòng nhập Email và Mật khẩu.");
+                ModelState.AddModelError("", "Please enter Email and Password.");
             }
 
             if (ModelState.IsValid)
             {
-                // Tìm user bằng Email
+                // Find user by Email
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user != null)
                 {
-                    // Thử đăng nhập bằng Password
-                    // Lưu ý: SignInManager dùng UserName để đăng nhập, nên phải truyền user.UserName
+                    // Try login with Password
+                    // Note: SignInManager uses UserName to login, so must pass user.UserName
                     var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
                     
                     if (result.Succeeded)
@@ -108,15 +108,15 @@ namespace SpaBookingWeb.Controllers
                     }
                 }
 
-                // Nếu failed (sai pass hoặc ko tìm thấy user)
+                // If failed (wrong pass or user not found)
                 if (user != null)
                 {
-                     await CheckLoginAsync(model); // Hàm này sẽ add ModelState error nếu có vấn đề cụ thể
-                     if(ModelState.IsValid) ModelState.AddModelError(string.Empty, "Đăng nhập thất bại. Sai mật khẩu.");
+                     await CheckLoginAsync(model); // This function will add ModelState error if specific issue
+                     if(ModelState.IsValid) ModelState.AddModelError(string.Empty, "Login failed. Incorrect password.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Tài khoản không tồn tại.");
+                    ModelState.AddModelError(string.Empty, "Account does not exist.");
                 }
             }
 
@@ -140,7 +140,7 @@ namespace SpaBookingWeb.Controllers
             if (mode == "Employee")
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                // Logic điều hướng employee cũ
+                // Old employee navigation logic
                 if (roles.Contains("Manager") || roles.Contains("Admin"))
                 {
                     return RedirectToAction("Index", "Home", new { area = "Manager" });
@@ -169,7 +169,7 @@ namespace SpaBookingWeb.Controllers
                 return new LoginCheckResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Tài khoản không tồn tại"
+                    ErrorMessage = "Account does not exist"
                 };
             }
 
@@ -178,7 +178,7 @@ namespace SpaBookingWeb.Controllers
                 return new LoginCheckResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Sai mật khẩu"
+                    ErrorMessage = "Incorrect password"
                 };
             }
 
@@ -187,7 +187,7 @@ namespace SpaBookingWeb.Controllers
                 return new LoginCheckResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Chưa xác nhận email"
+                    ErrorMessage = "Email not confirmed"
                 };
             }
 
@@ -196,7 +196,7 @@ namespace SpaBookingWeb.Controllers
                 return new LoginCheckResult
                 {
                     IsValid = false,
-                    ErrorMessage = "Tài khoản bị khóa"
+                    ErrorMessage = "Account locked"
                 };
             }
 
@@ -208,7 +208,7 @@ namespace SpaBookingWeb.Controllers
         }
 
 
-        // --- ĐĂNG KÝ ---
+        // --- REGISTER ---
         [HttpGet]
         public IActionResult Register(string returnUrl = null)
         {
@@ -225,21 +225,21 @@ namespace SpaBookingWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                // 1. Kiểm tra email tồn tại
+                // 1. Check if email exists
                 var existingUser = await _userManager.FindByEmailAsync(model.Email);
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("Email", "Email này đã được sử dụng.");
+                    ModelState.AddModelError("Email", "This Email is already in use.");
                     return View(model);
                 }
 
                 var existingPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
                 if(existingPhone != null)
                 {
-                    ModelState.AddModelError("PhoneNumber", "Số điện thoại này đã được đăng ký");
+                    ModelState.AddModelError("PhoneNumber", "This Phone Number is already registered");
                     return View(model);
                 }
-                // 2. Tạo User (Chưa active)
+                // 2. Create User (Not active yet)
                 var user = new ApplicationUser 
                 { 
                     UserName = model.Email, 
@@ -254,31 +254,31 @@ namespace SpaBookingWeb.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Tự động tạo role Customer nếu chưa có - Đảm bảo không bao giờ lỗi
+                    // Automatically create Customer role if not exists - Ensure no error
                     if (!await _roleManager.RoleExistsAsync("Customer"))
                     {
                         await _roleManager.CreateAsync(new IdentityRole("Customer"));
                     }
                     await _userManager.AddToRoleAsync(user, "Customer");
 
-                    // 3. Sinh mã xác thực (Token)
-                    // Lưu ý: Token mặc định của Identity khá dài và chứa ký tự đặc biệt, không phù hợp để nhập tay 6 số.
-                    // Để tạo mã 6 số, ta có thể dùng `GenerateTwoFactorTokenAsync` hoặc tự sinh số ngẫu nhiên rồi lưu vào AuthenticationToken.
-                    // Ở đây tôi dùng cách đơn giản: Sinh số ngẫu nhiên và lưu vào User Token (hoặc Claim tạm).
+                    // 3. Generate Verification Code (Token)
+                    // Note: Default Identity Token is too long.
+                    // To generate 6-digit code, we can use `GenerateTwoFactorTokenAsync` or generate random number.
+                    // Here I use simple method: Generate random number and save to User Token (or temporary Claim).
                     
                     var token = new Random().Next(100000, 999999).ToString();
                     
-                    // Lưu mã token này vào DB để đối chiếu sau (Dùng SetAuthenticationTokenAsync)
+                    // Save this token to DB to verify later (Use SetAuthenticationTokenAsync)
                     await _userManager.SetAuthenticationTokenAsync(user, "Default", "EmailConfirmation", token);
 
-                    // 4. Gửi Email thật qua EmailService
-                    string subject = "Mã xác thực đăng ký tài khoản - Lotus Spa";
+                    // 4. Send real Email via EmailService
+                    string subject = "Account Registration Verification Code - Lotus Spa";
                     string message = $@"
-                        <h3>Chào {user.FullName},</h3>
-                        <p>Cảm ơn bạn đã đăng ký tài khoản tại Lotus Spa.</p>
-                        <p>Mã xác thực của bạn là: <strong style='font-size: 24px; color: #ec4899;'>{token}</strong></p>
-                        <p>Vui lòng nhập mã này để kích hoạt tài khoản.</p>
-                        <p>Trân trọng,<br/>Đội ngũ Lotus Spa</p>";
+                        <h3>Hello {user.FullName},</h3>
+                        <p>Thank you for registering at Lotus Spa.</p>
+                        <p>Your verification code is: <strong style='font-size: 24px; color: #ec4899;'>{token}</strong></p>
+                        <p>Please enter this code to activate your account.</p>
+                        <p>Best regards,<br/>Lotus Spa Team</p>";
 
                     bool sentSuccess = false;
                     try 
@@ -288,12 +288,12 @@ namespace SpaBookingWeb.Controllers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Lỗi gửi email: {ex.Message}");
+                        _logger.LogError($"Email send error: {ex.Message}");
                         
-                        // QUAN TRỌNG: Xóa user nếu gửi mail thất bại để cho phép đăng ký lại
+                        // IMPORTANT: Delete user if email fails to allow re-registration
                         await _userManager.DeleteAsync(user);
                         
-                        ModelState.AddModelError(string.Empty, "Không thể gửi email xác thực. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.");
+                        ModelState.AddModelError(string.Empty, "Cannot send verification email. Please check your email address or try again later.");
                         return View(model);
                     }
 
@@ -317,7 +317,7 @@ namespace SpaBookingWeb.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             ViewData["Email"] = email;
             
-            // Return View nhập mã (sẽ tạo ở bước tiếp theo)
+            // Return View to enter code
             return View(); 
         }
 
@@ -327,7 +327,7 @@ namespace SpaBookingWeb.Controllers
             if (string.IsNullOrEmpty(email)) return RedirectToAction("Register");
             ViewData["Email"] = email;
             ViewData["ReturnUrl"] = returnUrl;
-            return View(); // Cần tạo View ConfirmEmailCode.cshtml
+            return View(); // Need to create ConfirmEmailCode.cshtml View
         }
 
         [HttpPost]
@@ -336,47 +336,47 @@ namespace SpaBookingWeb.Controllers
         {
             ViewData["Email"] = email;
             ViewData["ReturnUrl"] = returnUrl;
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl = returnUrl ?? Url.Content("/Home/HomeClient");
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(code))
             {
-                ModelState.AddModelError("", "Vui lòng nhập mã xác thực.");
+                ModelState.AddModelError("", "Please enter verification code.");
                 return View();
             }
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return RedirectToAction("Register");
 
-            // --- KIỂM TRA MÃ OTP TỪ DB ---
-            // Lấy token đã lưu lúc đăng ký
+            // --- CHECK OTP CODE FROM DB ---
+            // Get token saved during registration
             var savedToken = await _userManager.GetAuthenticationTokenAsync(user, "Default", "EmailConfirmation");
             
             bool isCodeValid = (savedToken == code);
 
             if (isCodeValid)
             {
-                // 1. Kích hoạt user
+                // 1. Activate user
                 user.EmailConfirmed = true;
                 await _userManager.UpdateAsync(user);
                 
-                // Xóa token sau khi dùng xong (Optional)
+                // Delete token after use (Optional)
                 await _userManager.RemoveAuthenticationTokenAsync(user, "Default", "EmailConfirmation");
 
-                // 2. Đăng nhập ngay
+                // 2. Login immediately
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
-                  TempData["SuccessMessage"] = "Xác thực tài khoản thành công! Chào mừng bạn đến với SpaBookingWeb";
+                  TempData["SuccessMessage"] = "Account verified successfully! Welcome to SpaBookingWeb";
 
-                // 3. Chuyển hướng
+                // 3. Redirect
                 return await RedirectToRoleAsync(user, returnUrl);
             }
             else
             {
-                ModelState.AddModelError("", "Mã xác thực không chính xác.");
+                ModelState.AddModelError("", "Incorrect verification code.");
                 return View();
             }
         }
-        // --- ĐĂNG XUẤT ---
+        // --- LOGOUT ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -385,7 +385,7 @@ namespace SpaBookingWeb.Controllers
             return RedirectToAction("HomeClient", "Home");
         }
 
-        // --- ĐĂNG NHẬP GOOGLE ---
+        // --- GOOGLE LOGIN ---
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -402,7 +402,7 @@ namespace SpaBookingWeb.Controllers
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
             {
-                ModelState.AddModelError(string.Empty, $"Lỗi từ nhà cung cấp: {remoteError}");
+                ModelState.AddModelError(string.Empty, $"Error from provider: {remoteError}");
                 return View("Login");
             }
 
@@ -410,7 +410,7 @@ namespace SpaBookingWeb.Controllers
             if (info == null)
             {
                 _logger.LogError("ExternalLoginCallback: Info is NULL. RemoteError: {Error}", remoteError);
-                ModelState.AddModelError(string.Empty, "Lỗi tải thông tin đăng nhập từ Google.");
+                ModelState.AddModelError(string.Empty, "Error loading login info from Google.");
                 return View("Login");
             }
 
@@ -420,7 +420,7 @@ namespace SpaBookingWeb.Controllers
             {
                 _logger.LogInformation("User logged in with {Provider} provider.", info.LoginProvider);
                 
-                // Tìm user để redirect theo Role
+                // Find user to redirect by Role
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
                 if (user != null)
                 {
@@ -457,7 +457,7 @@ namespace SpaBookingWeb.Controllers
                         var createResult = await _userManager.CreateAsync(user);
                         if (createResult.Succeeded)
                         {
-                            // Gán role Customer
+                            // Assign Customer role
                             try 
                             { 
                                 if (!await _roleManager.RoleExistsAsync("Customer")) await _roleManager.CreateAsync(new IdentityRole("Customer"));
@@ -515,7 +515,7 @@ namespace SpaBookingWeb.Controllers
                 }
                 else
                 {
-                     ModelState.AddModelError("", "Không tìm thấy Email từ tài khoản Google.");
+                     ModelState.AddModelError("", "Email not found from Google account.");
                 }
 
                 ViewData["ReturnUrl"] = returnUrl;
@@ -523,7 +523,7 @@ namespace SpaBookingWeb.Controllers
             }
         }
 
-        // --- QUÊN MẬT KHẨU & KHÔI PHỤC ---
+        // --- FORGOT PASSWORD & RECOVERY ---
 
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -556,14 +556,14 @@ namespace SpaBookingWeb.Controllers
                 if (result.Succeeded)
                 {
                     // 3. Send Email
-                    string subject = "Cấp lại mật khẩu - Lotus Spa";
+                    string subject = "Password Recovery - Lotus Spa";
                     string message = $@"
-                        <h3>Chào {user.FullName},</h3>
-                        <p>Bạn (hoặc ai đó) đã yêu cầu khôi phục mật khẩu.</p>
-                        <p>Mật khẩu tạm thời của bạn là: <strong style='font-size: 20px; color: #ec4899;'>{tempPassword}</strong></p>
-                        <p>Vui lòng sử dụng mật khẩu này để đăng nhập và đổi sang mật khẩu mới.</p>
-                        <p><a href='{Url.Action("LoginWithRecovery", "Account", new { email = user.Email }, Request.Scheme)}'>Nhấn vào đây để đổi mật khẩu ngay</a></p>
-                        <p>Trân trọng,<br/>Lotus Spa Team</p>";
+                        <h3>Hello {user.FullName},</h3>
+                        <p>You (or someone else) requested a password recovery.</p>
+                        <p>Your temporary password is: <strong style='font-size: 20px; color: #ec4899;'>{tempPassword}</strong></p>
+                        <p>Please use this password to login and change to a new password.</p>
+                        <p><a href='{Url.Action("LoginWithRecovery", "Account", new { email = user.Email }, Request.Scheme)}'>Click here to change password now</a></p>
+                        <p>Best regards,<br/>Lotus Spa Team</p>";
 
                     try
                     {
@@ -572,7 +572,7 @@ namespace SpaBookingWeb.Controllers
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to send recovery email");
-                        ModelState.AddModelError("", "Không thể gửi email. Vui lòng thử lại sau.");
+                        ModelState.AddModelError("", "Cannot send email. Please try again later.");
                         return View(model);
                     }
 
@@ -610,7 +610,7 @@ namespace SpaBookingWeb.Controllers
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                ModelState.AddModelError("", "Tài khoản không tồn tại.");
+                ModelState.AddModelError("", "Account does not exist.");
                 return View(model);
             }
 
@@ -624,16 +624,16 @@ namespace SpaBookingWeb.Controllers
             {
                 // 2. Sign In
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                TempData["SuccessMessage"] = "Đổi mật khẩu thành công!";
+                TempData["SuccessMessage"] = "Password changed successfully!";
                 return await RedirectToRoleAsync(user, null);
             }
             else
             {
                 foreach (var error in result.Errors)
                 {
-                    // Map "Incorrect password" to "Mật khẩu hệ thống cấp không đúng"
+                    // Map "Incorrect password" to "Incorrect system provided password"
                     if (error.Code == "PasswordMismatch")
-                        ModelState.AddModelError("SystemPassword", "Mật khẩu hệ thống cấp không đúng.");
+                        ModelState.AddModelError("SystemPassword", "Incorrect system provided password.");
                     else
                         ModelState.AddModelError("", error.Description);
                 }

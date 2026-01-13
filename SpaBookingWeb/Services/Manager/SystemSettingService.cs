@@ -34,7 +34,7 @@ namespace SpaBookingWeb.Services.Manager
             _userManager = userManager;
         }
 
-        // --- 1. LOGIC CẤU HÌNH CHUNG ---
+        // --- 1. GENERAL CONFIGURATION LOGIC ---
         public async Task<SystemSettingViewModel> GetCurrentSettingsAsync()
         {
             var settings = await _context.SystemSettings.ToListAsync();
@@ -96,7 +96,7 @@ namespace SpaBookingWeb.Services.Manager
         {
             string logoPath = model.LogoUrl;
             
-            // Xử lý upload ảnh nếu có file mới
+            // Handle image upload if new file exists
             if (model.LogoFile != null)
             {
                 logoPath = await SaveImageAsync(model.LogoFile);
@@ -108,7 +108,7 @@ namespace SpaBookingWeb.Services.Manager
                 { "PhoneNumber", model.PhoneNumber },
                 { "Email", model.Email },
                 { "Address", model.Address },
-                { "LogoUrl", logoPath }, // Lưu đường dẫn ảnh
+                { "LogoUrl", logoPath }, // Save image path
                 { "FacebookUrl", model.FacebookUrl },
                 { "OpenTime", model.OpenTime.ToString() },
                 { "CloseTime", model.CloseTime.ToString() },
@@ -120,17 +120,17 @@ namespace SpaBookingWeb.Services.Manager
 
             foreach (var kvp in valuesToUpdate)
             {
-                // Tìm setting theo Key (dùng AsNoTracking để tránh xung đột nếu có)
+                // Find setting by Key (use AsNoTracking to avoid conflict if any)
                 var setting = await _context.SystemSettings.FindAsync(kvp.Key);
                 
                 if (setting == null)
                 {
-                    // Nếu chưa có -> Tạo mới (Add)
+                    // If not exists -> Create new (Add)
                     setting = new SystemSetting 
                     { 
                         SettingKey = kvp.Key, 
                         SettingValue = kvp.Value ?? "", 
-                        Description = $"Cấu hình {kvp.Key}" 
+                        Description = $"Setting {kvp.Key}" 
                     };
                     _context.SystemSettings.Add(setting);
                     hasChanges = true;
@@ -138,11 +138,11 @@ namespace SpaBookingWeb.Services.Manager
                 }
                 else
                 {
-                    // Nếu có rồi -> Kiểm tra khác biệt mới Update
+                    // If exists -> Check difference before Update
                     if (setting.SettingValue != (kvp.Value ?? ""))
                     {
                         setting.SettingValue = kvp.Value ?? "";
-                        _context.SystemSettings.Update(setting); // Đánh dấu update
+                        _context.SystemSettings.Update(setting); // Mark update
                         hasChanges = true;
                         changedKeys.Add(kvp.Key);
                     }
@@ -151,25 +151,25 @@ namespace SpaBookingWeb.Services.Manager
             
             if (hasChanges)
             {
-                // Ghi Activity Log để theo dõi
+                // Record Activity Log for tracking
                 var log = new ActivityLog
                 {
                     Action = "Update",
                     EntityName = "SystemSettings",
                     EntityId = "Global",
-                    Description = "Cập nhật cấu hình chung: " + string.Join(", ", changedKeys),
-                    AffectedColumns = "[]" // Hoặc serialize changedKeys nếu muốn chi tiết
+                    Description = "General settings updated: " + string.Join(", ", changedKeys),
+                    AffectedColumns = "[]" // Or serialize changedKeys if detail needed
                 };
                 _context.ActivityLogs.Add(log);
 
-                // Lưu tất cả vào DB
+                // Save all to DB
                 await _context.SaveChangesAsync();
             }
         }
 
 
 
-        // --- 3. CÁC HÀM CRUD PHỤ TRỢ (Unit, Role, DepositRule) ---
+        // --- 3. HELPER CRUD METHODS (Unit, Role, DepositRule) ---
         public async Task AddUnitAsync(string unitName)
         {
             if (string.IsNullOrWhiteSpace(unitName)) return;
@@ -190,7 +190,7 @@ namespace SpaBookingWeb.Services.Manager
 
 
 
-        // --- 4. LOGIC QUY TẮC ĐẶT CỌC ---
+        // --- 4. DEPOSIT RULE LOGIC ---
         public async Task AddDepositRuleAsync(SystemSettingViewModel model)
         {
             var rule = new DepositRule
@@ -214,11 +214,11 @@ namespace SpaBookingWeb.Services.Manager
 
             _context.DepositRules.Add(rule);
             
-            // Ghi Log
+            // Write Log
             var log = new ActivityLog 
             { 
                 Action = "Create", EntityName = "DepositRules", EntityId = rule.RuleName,
-                Description = $"Tạo quy tắc cọc: {rule.RuleName}", AffectedColumns = "[]"
+                Description = $"Created deposit rule: {rule.RuleName}", AffectedColumns = "[]"
             };
             _context.ActivityLogs.Add(log);
 
@@ -232,11 +232,11 @@ namespace SpaBookingWeb.Services.Manager
             {
                 _context.DepositRules.Remove(rule);
                 
-                // Ghi Log
+                // Write Log
                 var log = new ActivityLog 
                 { 
                     Action = "Delete", EntityName = "DepositRules", EntityId = id.ToString(),
-                    Description = $"Xóa quy tắc cọc: {rule.RuleName}", AffectedColumns = "[]"
+                    Description = $"Deleted deposit rule: {rule.RuleName}", AffectedColumns = "[]"
                 };
                 _context.ActivityLogs.Add(log);
 
@@ -244,20 +244,19 @@ namespace SpaBookingWeb.Services.Manager
             }
         }
 
-        // --- 5. NÂNG QUYỀN KHÁCH HÀNG ---
-        // --- 5. NÂNG QUYỀN KHÁCH HÀNG ---
+        // --- 5. PROMOTE CUSTOMER ---
         public async Task PromoteCustomerAsync(int customerId)
         {
             var customer = await _context.Customers.FindAsync(customerId);
-            if (customer == null) throw new Exception("Không tìm thấy khách hàng.");
+            if (customer == null) throw new Exception("Customer not found.");
 
-            // 1. Kiểm tra User
+            // 1. Check User
             string email = customer.Email;
             string phone = customer.PhoneNumber;
 
             if (string.IsNullOrEmpty(email)) 
             {
-                // Nếu không có email, tạo email giả: phone@spa.system
+                // If no email, create fake email: phone@spa.system
                 email = $"{phone}@spa.system"; 
             }
 
@@ -265,7 +264,7 @@ namespace SpaBookingWeb.Services.Manager
 
             if (user == null)
             {
-                // Tạo User mới
+                // Create new User
                 user = new ApplicationUser
                 {
                     UserName = email,
@@ -273,32 +272,32 @@ namespace SpaBookingWeb.Services.Manager
                     FullName = customer.FullName,
                     PhoneNumber = phone,
                     EmailConfirmed = true,
-                    Address = "Chưa cập nhật", 
+                    Address = "Not updated", 
                     CreatedDate = DateTime.Now
                 };
-                var result = await _userManager.CreateAsync(user, "Password123!"); // Pass mặc định
+                var result = await _userManager.CreateAsync(user, "Password123!"); // Default pass
                 if (!result.Succeeded)
                 {
-                    throw new Exception("Lỗi tạo tài khoản User: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+                    throw new Exception("User account creation error: " + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
             }
 
-            // 2. Tạo Employee
+            // 2. Create Employee
             var existingEmp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == user.Id);
             if (existingEmp != null)
             {
-                // Nếu User đã là Employee -> Bỏ qua hoặc báo lỗi
-                throw new Exception("Tài khoản này (Email/SĐT) đã là nhân viên trong hệ thống.");
+                // If User is already Employee -> Skip or report error
+                throw new Exception("This account (Email/Phone) is already an employee in the system.");
             }
 
-            // Tạo Employee với đầy đủ thông tin mặc định để tránh lỗi database constraint
+            // Create Employee with default full info to avoid database constraint error
             var newEmployee = new Employee
             {
                 IdentityUserId = user.Id,
                 FullName = customer.FullName,
-                Gender = "Khác", // Default gender
+                Gender = "Other", // Default gender
                 DateOfBirth = new DateTime(2000, 1, 1), // Default DOB
-                Address = "Chưa cập nhật",
+                Address = "Not updated",
                 BaseSalary = 5000000, 
                 HireDate = DateTime.Now,
                 IsActive = true,
@@ -306,21 +305,21 @@ namespace SpaBookingWeb.Services.Manager
             };
 
             _context.Employees.Add(newEmployee);
-            await _context.SaveChangesAsync(); // Lưu để sinh EmployeeId
+            await _context.SaveChangesAsync(); // Save to generate EmployeeId
 
-            // 3. Tạo TechnicianDetail mặc định (Quan hệ 1-1, nên có để tránh lỗi ở các module khác)
+            // 3. Create Default TechnicianDetail (1-1 relation, should exist to avoid errors in other modules)
             var techDetail = new TechnicianDetail
             {
                 EmployeeId = newEmployee.EmployeeId,
                 SkillLevel = "Junior",
-                Bio = "Nhân viên mới được thăng cấp từ khách hàng.",
+                Bio = "New employee promoted from customer.",
                 CommissionRate = 0,
                 IsDeleted = false
             };
             _context.TechnicianDetails.Add(techDetail);
             await _context.SaveChangesAsync();
 
-            // 4. Gán quyền "Staff"
+            // 4. Assign "Staff" role
             if (!await _roleManager.RoleExistsAsync("Staff"))
             {
                 await _roleManager.CreateAsync(new IdentityRole("Staff"));
@@ -331,7 +330,7 @@ namespace SpaBookingWeb.Services.Manager
         private async Task<string> SaveImageAsync(IFormFile imageFile)
         {
             string uniqueFileName = "logo_" + Guid.NewGuid().ToString() + "_" + imageFile.FileName;
-            // Lưu vào thư mục wwwroot/images/system
+            // Save to wwwroot/images/system
             string uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "system");
             if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
             

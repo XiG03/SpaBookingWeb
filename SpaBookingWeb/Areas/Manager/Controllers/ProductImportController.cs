@@ -31,15 +31,15 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
             using (var package = new ExcelPackage())
             {
-                var worksheet = package.Workbook.Worksheets.Add("MauNhapSanPham");
+                var worksheet = package.Workbook.Worksheets.Add("ProductImportTemplate");
 
-                // 1. Tạo Header (Tiêu đề cột)
-                worksheet.Cells[1, 1].Value = "Tên sản phẩm (Bắt buộc)";
-                worksheet.Cells[1, 2].Value = "Mã Danh mục (Số)";
-                worksheet.Cells[1, 3].Value = "Mã Đơn vị (Số)";
-                worksheet.Cells[1, 4].Value = "Giá nhập (VNĐ)";
-                worksheet.Cells[1, 5].Value = "Giá bán (VNĐ)";
-                worksheet.Cells[1, 6].Value = "Tồn kho";
+                // 1. Create Header
+                worksheet.Cells[1, 1].Value = "Product Name (Required)";
+                worksheet.Cells[1, 2].Value = "Category ID (Number)";
+                worksheet.Cells[1, 3].Value = "Unit ID (Number)";
+                worksheet.Cells[1, 4].Value = "Purchase Price (VND)";
+                worksheet.Cells[1, 5].Value = "Sale Price (VND)";
+                worksheet.Cells[1, 6].Value = "Stock";
 
                 // 2. Định dạng Header cho đẹp (In đậm)
                 using (var range = worksheet.Cells[1, 1, 1, 6])
@@ -50,10 +50,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                     range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 }
 
-                // 3. Thêm một dòng dữ liệu mẫu ví dụ để người dùng dễ hiểu
-                worksheet.Cells[2, 1].Value = "Mẫu: Kem Dưỡng Da";
-                worksheet.Cells[2, 2].Value = 1; // Giả sử ID danh mục là 1
-                worksheet.Cells[2, 3].Value = 2; // Giả sử ID đơn vị là 2
+                // 3. Add a sample data row for user to understand
+                worksheet.Cells[2, 1].Value = "Sample: Moisturizing Cream";
+                worksheet.Cells[2, 2].Value = 1; // Assume Category ID is 1
+                worksheet.Cells[2, 3].Value = 2; // Assume Unit ID is 2
                 worksheet.Cells[2, 4].Value = 150000;
                 worksheet.Cells[2, 5].Value = 200000;
                 worksheet.Cells[2, 6].Value = 50;
@@ -80,13 +80,13 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         {
             if (file == null || file.Length <= 0)
             {
-                ModelState.AddModelError("", "Vui lòng chọn file Excel.");
+                ModelState.AddModelError("", "Please select an Excel file.");
                 return View("Index");
             }
 
             if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError("", "Chỉ hỗ trợ file Excel (.xlsx).");
+                ModelState.AddModelError("", "Only Excel (.xlsx) files are supported.");
                 return View("Index");
             }
 
@@ -108,7 +108,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                         // Nếu worksheet rỗng hoặc không có dữ liệu, Dimension có thể null
                         if (worksheet.Dimension == null)
                         {
-                            ModelState.AddModelError("", "File Excel rỗng.");
+                            ModelState.AddModelError("", "Empty Excel file.");
                             return View("Index");
                         }
                         
@@ -171,16 +171,16 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 {
                     // _context.Products.AddRange(listProducts);
                     // await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Đã nhập thành công {listProducts.Count} sản phẩm!";
+                    TempData["SuccessMessage"] = $"Successfully imported {listProducts.Count} products!";
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Không tìm thấy dữ liệu hợp lệ trong file.");
+                    ModelState.AddModelError("", "No valid data found in file.");
                 }
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", $"Lỗi khi đọc file: {ex.Message}");
+                ModelState.AddModelError("", $"Error reading file: {ex.Message}");
                 return View("Index");
             }
 

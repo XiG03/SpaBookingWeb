@@ -27,41 +27,41 @@ namespace SpaBookingWeb.ViewModels.Manager
     {
         public int VoucherId { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập tên voucher")]
-        [Display(Name = "Tên Voucher")]
+        [Required(ErrorMessage = "Please enter voucher name")]
+        [Display(Name = "Voucher Name")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập mã voucher")]
-        [StringLength(50, ErrorMessage = "Mã tối đa 50 ký tự")]
-        [Display(Name = "Mã Code")]
+        [Required(ErrorMessage = "Please enter voucher code")]
+        [StringLength(50, ErrorMessage = "Code max 50 characters")]
+        [Display(Name = "Code")]
         public string Code { get; set; }
 
-        [Display(Name = "Mô Tả")]
+        [Display(Name = "Description")]
         public string Description { get; set; }
 
-        [Display(Name = "Loại Giảm Giá")]
+        [Display(Name = "Discount Type")]
         public string DiscountType { get; set; } // Select: "Percent" hoặc "Amount"
 
         [Required]
-        [Range(1, double.MaxValue, ErrorMessage = "Giá trị phải lớn hơn 0")]
-        [Display(Name = "Giá Trị Giảm")]
+        [Range(1, double.MaxValue, ErrorMessage = "Value must be greater than 0")]
+        [Display(Name = "Discount Value")]
         public decimal DiscountValue { get; set; }
 
-        [Display(Name = "Giảm Tối Đa (VNĐ)")]
+        [Display(Name = "Max Discount (VND)")]
         public decimal? MaxDiscountAmount { get; set; }
 
-        [Display(Name = "Đơn Tối Thiểu (VNĐ)")]
+        [Display(Name = "Min Order (VND)")]
         public decimal MinSpend { get; set; }
 
-        [Display(Name = "Giới hạn số lượt dùng")]
+        [Display(Name = "Usage Limit")]
         public int UsageLimit { get; set; } = 100;
 
         [Required]
-        [Display(Name = "Ngày Bắt Đầu")]
+        [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; } = DateTime.Today;
 
         [Required]
-        [Display(Name = "Ngày Kết Thúc")]
+        [Display(Name = "End Date")]
         public DateTime EndDate { get; set; } = DateTime.Today.AddDays(30);
 
         public bool IsActive { get; set; } = true;

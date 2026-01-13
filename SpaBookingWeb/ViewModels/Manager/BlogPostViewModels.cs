@@ -20,17 +20,17 @@ namespace SpaBookingWeb.ViewModels.BlogPosts
     // Dùng cho Form Tạo mới
     public class CreateBlogPostRequest
     {
-        [Required(ErrorMessage = "Vui lòng nhập tiêu đề bài viết")]
-        [MaxLength(200, ErrorMessage = "Tiêu đề không quá 200 ký tự")]
+        [Required(ErrorMessage = "Please enter the post title")]
+        [MaxLength(200, ErrorMessage = "Title cannot exceed 200 characters")]
         public string Title { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập nội dung")]
+        [Required(ErrorMessage = "Please enter the content")]
         public string Content { get; set; }
 
-        [Display(Name = "Ảnh đại diện")]
+        [Display(Name = "Thumbnail")]
         public IFormFile ImageFile { get; set; } // Upload ảnh
 
-        [Display(Name = "Xuất bản ngay")]
+        [Display(Name = "Publish Immediately")]
         public bool IsPublished { get; set; }
     }
 

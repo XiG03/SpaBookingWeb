@@ -27,10 +27,10 @@ namespace SpaBookingWeb.ViewModels.Client
 
         public string SelectedItemId { get; set; } // Item khách chọn trong dropdown (Optional logic)
 
-        [Range(1, 5, ErrorMessage = "Vui lòng chọn số sao (1-5).")]
+        [Range(1, 5, ErrorMessage = "Please select a star rating (1-5).")]
         public int Rating { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập nội dung đánh giá.")]
+        [Required(ErrorMessage = "Please enter your review content.")]
         public string Comment { get; set; }
 
         public bool IsAnonymous { get; set; }

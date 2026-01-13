@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Xác nhận Email - Salon Booking</title>
+    <title>Verify Email - Salon Booking</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
@@ -52,10 +52,10 @@
             </div>
             <div class="flex gap-3">
                 <a class="hidden sm:flex items-center justify-center h-9 px-4 rounded-lg text-sm font-bold text-[#9d5c73] dark:text-[#fbcfe8] hover:bg-pink-50 dark:hover:bg-[#4a2c35] transition-colors" href="#">
-                    Trợ giúp
+                    Help
                 </a>
                 <a asp-controller="Account" asp-action="Login" class="flex items-center justify-center h-9 px-4 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white text-sm font-bold transition-all">
-                    Đăng nhập
+                    Login
                 </a>
             </div>
         </div>
@@ -69,20 +69,20 @@
                     </div>
                     <div class="space-y-3 max-w-[480px]">
                         <h1 class="text-2xl sm:text-3xl font-bold text-[#371b26] dark:text-white leading-tight">
-                            Kiểm tra hộp thư của bạn
+                            Check your email
                         </h1>
                         <p class="text-[#70555e] dark:text-[#fbcfe8] text-base font-normal leading-relaxed">
-                            Chúng tôi đã gửi mã xác nhận đến <span class="font-semibold text-[#371b26] dark:text-white">@email</span>. Vui lòng kiểm tra và nhập mã để kích hoạt tài khoản.
+                            We sent a confirmation code to <span class="font-semibold text-[#371b26] dark:text-white">@email</span>. Please check and enter the code to activate your account.
                         </p>
                     </div>
                     <div class="flex flex-col w-full max-w-[320px] gap-3 pt-4">
                         <!-- [LOGIC MỚI] Nút Mở hộp thư thực hiện 2 hành động -->
                         <button onclick="handleOpenMail()" class="flex w-full items-center justify-center rounded-xl h-12 px-6 bg-primary hover:bg-[#be185d] text-white text-sm font-bold tracking-wide transition-colors shadow-sm ring-4 ring-primary/20">
-                            <span class="truncate">Mở hộp thư & Nhập mã</span>
+                            <span class="truncate">Open Mail & Enter Code</span>
                         </button>
                         
                         <a asp-controller="Account" asp-action="Register" class="flex w-full items-center justify-center h-10 px-4 text-[#9d5c73] dark:text-[#fbcfe8] hover:text-[#371b26] dark:hover:text-white text-sm font-medium transition-colors">
-                            Sai địa chỉ email?
+                            Wrong email address?
                         </a>
                     </div>
                 </div>
@@ -93,12 +93,12 @@
                         <span class="material-symbols-outlined text-[#9d5c73] dark:text-[#fbcfe8]">help</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <p class="text-[#371b26] dark:text-white text-sm font-bold">Bạn không nhận được email?</p>
-                        <p class="text-[#9d5c73] dark:text-[#fbcfe8] text-sm mt-0.5">Vui lòng kiểm tra thư mục Spam hoặc thử lại.</p>
+                        <p class="text-[#371b26] dark:text-white text-sm font-bold">Didn't receive email?</p>
+                        <p class="text-[#9d5c73] dark:text-[#fbcfe8] text-sm mt-0.5">Please check your Spam folder or try again.</p>
                     </div>
                 </div>
                 <button class="shrink-0 flex items-center justify-center rounded-lg h-9 px-4 bg-transparent border border-[#fbcfe8] dark:border-[#5e3a46] text-[#371b26] dark:text-white hover:bg-[#fff1f2] dark:hover:bg-[#4a2c35] text-sm font-bold transition-colors w-full sm:w-auto">
-                    Gửi lại email xác nhận
+                    Resend verification email
                 </button>
             </div>
         </div>
@@ -106,10 +106,10 @@
     <footer class="w-full bg-white dark:bg-[#2d1b22] border-t border-[#fce7f3] dark:border-[#4a2c35] py-8">
         <div class="max-w-[960px] mx-auto px-6 flex flex-col gap-6 text-center">
             <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Trợ giúp</a>
-                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Quyền riêng tư</a>
-                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Điều khoản</a>
-                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Liên hệ</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Help</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Privacy</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Terms</a>
+                <a class="text-[#9d5c73] dark:text-[#fbcfe8] hover:text-primary text-sm font-medium transition-colors" href="#">Contact</a>
             </div>
             <div class="flex items-center justify-center gap-2 text-[#bfa5af] dark:text-[#d6aebc] text-sm">
                 <span>© 2023 Lumina Spa. All rights reserved.</span>

@@ -14,7 +14,7 @@ namespace SpaBookingWeb.Services
     {
         private readonly IHubContext<NotificationHub> _hubContext;
 
-        // Chỉ cần HubContext, không cần Database
+        // Just need HubContext, no Database needed
         public NotificationService(IHubContext<NotificationHub> hubContext)
         {
             _hubContext = hubContext;
@@ -22,14 +22,14 @@ namespace SpaBookingWeb.Services
 
         public async Task NotifyAsync(string title, string content, string icon, string link = "#")
         {
-            // Bắn tín hiệu trực tiếp cho client
+            // Send signal directly to client
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", new 
             {
                 title = title,
                 content = content,
                 icon = icon,
                 link = link,
-                createdAt = DateTime.Now.ToString("HH:mm") // Chỉ hiển thị giờ phút hiện tại
+                createdAt = DateTime.Now.ToString("HH:mm") // Only display current hour and minute
             });
         }
     }

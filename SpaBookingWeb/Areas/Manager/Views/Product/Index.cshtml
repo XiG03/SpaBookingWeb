@@ -1,7 +1,7 @@
 ﻿@model SpaBookingWeb.ViewModels.Manager.ProductDashboardViewModel
 
 @{
-    ViewData["Title"] = "Quản lý Kho Sản phẩm";
+    ViewData["Title"] = "Product Inventory";
     Layout = "~/Areas/Manager/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,11 +10,11 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h2 class="page-title mb-0">Kho Sản phẩm</h2>
-                    <p class="text-muted mb-0">Quản lý nhập xuất, tồn kho và định mức tiêu hao.</p>
+                    <h2 class="page-title mb-0">Product Inventory</h2>
+                    <p class="text-muted mb-0">Manage inventory, stock levels, and consumption.</p>
                 </div>
                 <a asp-action="Create" class="btn btn-primary">
-                    <i class="fe fe-plus-circle mr-2"></i>Thêm Sản phẩm
+                    <i class="fe fe-plus-circle mr-2"></i>Add Product
                 </a>
             </div>
 
@@ -34,14 +34,14 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>#ID</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Danh mục & Đơn vị</th>
-                                <th>Giá nhập / Bán</th>
-                                <th class="text-center">Tồn kho</th>
-                                <th class="text-center" title="Số lượng đã dùng trong dịch vụ">Đã dùng (DV)</th>
-                                <th>Dùng nhiều nhất bởi</th>
-                                <th>Trạng thái</th>
-                                <th>Hành động</th>
+                                <th>Product Name</th>
+                                <th>Category & Unit</th>
+                                <th>Buy / Sell Price</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center" title="Used in services">Used (Svc)</th>
+                                <th>Top Usage By</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -54,16 +54,16 @@
                                     </td>
                                     <td>
                                         <span class="badge badge-light">@item.CategoryName</span>
-                                        <small class="text-muted d-block mt-1">Đơn vị: @item.UnitName</small>
+                                        <small class="text-muted d-block mt-1">Unit: @item.UnitName</small>
                                     </td>
                                     <td>
-                                        <div class="small">Nhập: @item.PurchasePrice.ToString("N0") đ</div>
-                                        <div class="small text-success font-weight-bold">Bán: @item.SalePrice.ToString("N0") đ</div>
+                                        <div class="small">Buy: @item.PurchasePrice.ToString("N0") VND</div>
+                                        <div class="small text-success font-weight-bold">Sell: @item.SalePrice.ToString("N0") VND</div>
                                     </td>
                                     <td class="text-center">
                                         @if(item.StockQuantity <= 10)
                                         {
-                                            <span class="text-danger font-weight-bold" title="Sắp hết hàng!">
+                                            <span class="text-danger font-weight-bold" title="Low Stock!">
                                                 <i class="fe fe-alert-circle mr-1"></i>@item.StockQuantity
                                             </span>
                                         } 
@@ -91,31 +91,31 @@
                                         }
                                         else
                                         {
-                                            <span class="text-muted small font-italic">Chưa có dữ liệu</span>
+                                            <span class="text-muted small font-italic">No Data</span>
                                         }
                                     </td>
                                     <td>
                                         @if (item.IsForSale)
                                         {
-                                            <span class="badge badge-success">Đang bán lẻ</span>
+                                            <span class="badge badge-success">For Sale</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-secondary">Nội bộ</span>
+                                            <span class="badge badge-secondary">Internal Use</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-                                                <span class="text-muted sr-only">Thao tác</span>
+                                                <span class="text-muted sr-only">Action</span>
                                             </button>
                                             <div class="dropdown-menu dropdown-menu-right">
                                                 <a class="dropdown-item" asp-action="Edit" asp-route-id="@item.ProductId">
-                                                    <i class="fe fe-edit-2 mr-2"></i>Sửa
+                                                    <i class="fe fe-edit-2 mr-2"></i>Edit
                                                 </a>
                                                 <div class="dropdown-divider"></div>
                                                 <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.ProductId">
-                                                    <i class="fe fe-trash-2 mr-2"></i>Xóa
+                                                    <i class="fe fe-trash-2 mr-2"></i>Delete
                                                 </a>
                                             </div>
                                         </div>

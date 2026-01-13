@@ -247,21 +247,21 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
             // 1.2 Service Stats
             var serviceStats = appointments.SelectMany(a => a.AppointmentDetails)
-                .GroupBy(ad => ad.Service?.ServiceName ?? "Dịch vụ khác")
+                .GroupBy(ad => ad.Service?.ServiceName ?? "Other Service")
                 .Select(g => new { Name = g.Key, Revenue = g.Sum(x => x.PriceAtBooking), Count = g.Count() })
                 .OrderByDescending(x => x.Revenue)
                 .ToList();
 
             // 1.3 Employee Stats (Main Employee)
             var empStats = appointments
-                .GroupBy(a => a.Employee?.FullName ?? "Chưa phân công")
+                .GroupBy(a => a.Employee?.FullName ?? "Unassigned")
                 .Select(g => new { Name = g.Key, Revenue = g.Sum(x => x.AppointmentDetails.Sum(ad => ad.PriceAtBooking)), Count = g.Count() })
                 .OrderByDescending(x => x.Revenue)
                 .ToList();
 
             // 1.4 Customer Stats
             var cusStats = appointments
-                .GroupBy(a => a.Customer?.FullName ?? "Khách vãng lai")
+                .GroupBy(a => a.Customer?.FullName ?? "Walk-in Guest")
                 .Select(g => new { Name = g.Key, Revenue = g.Sum(x => x.AppointmentDetails.Sum(ad => ad.PriceAtBooking)), Count = g.Count() })
                 .OrderByDescending(x => x.Revenue)
                 .Take(50) // Top 50
@@ -300,10 +300,10 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
             using (var package = new ExcelPackage())
             {
                 // --- SHEET 1: TỔNG QUAN DOANH THU ---
-                var ws1 = package.Workbook.Worksheets.Add("TongHop_DoanhThu");
+                var ws1 = package.Workbook.Worksheets.Add("Revenue_Summary");
                 
                 // Header
-                ws1.Cells["A1"].Value = $"BÁO CÁO DOANH THU ({start:dd/MM/yyyy} - {end:dd/MM/yyyy})";
+                ws1.Cells["A1"].Value = $"REVENUE REPORT ({start:dd/MM/yyyy} - {end:dd/MM/yyyy})";
                 ws1.Cells["A1:D1"].Merge = true;
                 ws1.Cells["A1"].Style.Font.Size = 14;
                 ws1.Cells["A1"].Style.Font.Bold = true;
@@ -311,9 +311,9 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 ws1.Cells["A1"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
                 // Table Header
-                ws1.Cells["A3"].Value = "Ngày";
-                ws1.Cells["B3"].Value = "Số đơn hoàn thành";
-                ws1.Cells["C3"].Value = "Doanh thu (VNĐ)";
+                ws1.Cells["A3"].Value = "Date";
+                ws1.Cells["B3"].Value = "Completed Orders";
+                ws1.Cells["C3"].Value = "Revenue (VND)";
                 ws1.Cells["A3:C3"].Style.Font.Bold = true;
                 ws1.Cells["A3:C3"].Style.Fill.PatternType = ExcelFillStyle.Solid;
                 ws1.Cells["A3:C3"].Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
@@ -329,7 +329,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 }
                 
                 // Total Row
-                ws1.Cells[row, 1].Value = "TỔNG CỘNG";
+                ws1.Cells[row, 1].Value = "TOTAL";
                 ws1.Cells[row, 2].Formula = $"SUM(B4:B{row-1})";
                 ws1.Cells[row, 3].Formula = $"SUM(C4:C{row-1})";
                 ws1.Cells[row, 3].Style.Numberformat.Format = "#,##0";
@@ -338,15 +338,15 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 ws1.Cells.AutoFitColumns();
 
                 // --- SHEET 2: PHÂN TÍCH CHI TIẾT ---
-                var ws2 = package.Workbook.Worksheets.Add("PhanTich_ChiTiet");
+                var ws2 = package.Workbook.Worksheets.Add("Detailed_Analysis");
 
                 // Table 1: Service
-                ws2.Cells["A1"].Value = "DOANH THU THEO DỊCH VỤ";
+                ws2.Cells["A1"].Value = "REVENUE BY SERVICE";
                 ws2.Cells["A1:C1"].Merge = true;
                 ws2.Cells["A1"].Style.Font.Bold = true;
-                ws2.Cells["A2"].Value = "Tên dịch vụ"; ws2.Cells["A2"].Style.Font.Bold = true;
-                ws2.Cells["B2"].Value = "Số lượt"; ws2.Cells["B2"].Style.Font.Bold = true;
-                ws2.Cells["C2"].Value = "Doanh thu"; ws2.Cells["C2"].Style.Font.Bold = true;
+                ws2.Cells["A2"].Value = "Service Name"; ws2.Cells["A2"].Style.Font.Bold = true;
+                ws2.Cells["B2"].Value = "Count"; ws2.Cells["B2"].Style.Font.Bold = true;
+                ws2.Cells["C2"].Value = "Revenue"; ws2.Cells["C2"].Style.Font.Bold = true;
 
                 int rService = 3;
                 foreach(var s in serviceStats)
@@ -359,12 +359,12 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 }
 
                 // Table 2: Employee (Next to it, column E)
-                ws2.Cells["E1"].Value = "DOANH THU THEO NHÂN VIÊN";
+                ws2.Cells["E1"].Value = "REVENUE BY EMPLOYEE";
                 ws2.Cells["E1:G1"].Merge = true;
                 ws2.Cells["E1"].Style.Font.Bold = true;
-                ws2.Cells["E2"].Value = "Tên nhân viên"; ws2.Cells["E2"].Style.Font.Bold = true;
-                ws2.Cells["F2"].Value = "Số đơn"; ws2.Cells["F2"].Style.Font.Bold = true;
-                ws2.Cells["G2"].Value = "Doanh thu"; ws2.Cells["G2"].Style.Font.Bold = true;
+                ws2.Cells["E2"].Value = "Employee Name"; ws2.Cells["E2"].Style.Font.Bold = true;
+                ws2.Cells["F2"].Value = "Orders"; ws2.Cells["F2"].Style.Font.Bold = true;
+                ws2.Cells["G2"].Value = "Revenue"; ws2.Cells["G2"].Style.Font.Bold = true;
 
                 int rEmp = 3;
                 foreach(var e in empStats)
@@ -377,12 +377,12 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 }
 
                 // Table 3: Customer (Next to it, column I)
-                ws2.Cells["I1"].Value = "TOP KHÁCH HÀNG";
+                ws2.Cells["I1"].Value = "TOP CUSTOMERS";
                 ws2.Cells["I1:K1"].Merge = true;
                 ws2.Cells["I1"].Style.Font.Bold = true;
-                ws2.Cells["I2"].Value = "Khách hàng"; ws2.Cells["I2"].Style.Font.Bold = true;
-                ws2.Cells["J2"].Value = "Số đơn"; ws2.Cells["J2"].Style.Font.Bold = true;
-                ws2.Cells["K2"].Value = "Chi tiêu"; ws2.Cells["K2"].Style.Font.Bold = true;
+                ws2.Cells["I2"].Value = "Customer"; ws2.Cells["I2"].Style.Font.Bold = true;
+                ws2.Cells["J2"].Value = "Orders"; ws2.Cells["J2"].Style.Font.Bold = true;
+                ws2.Cells["K2"].Value = "Spent"; ws2.Cells["K2"].Style.Font.Bold = true;
 
                 int rCus = 3;
                 foreach(var c in cusStats)
@@ -397,17 +397,17 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 ws2.Cells.AutoFitColumns();
 
                 // --- SHEET 3: VOUCHER ---
-                var ws3 = package.Workbook.Worksheets.Add("Voucher_KhuyenMai");
-                ws3.Cells["A1"].Value = "HIỆU QUẢ CHƯƠNG TRÌNH KHUYẾN MÃI (VOUCHER)";
+                var ws3 = package.Workbook.Worksheets.Add("Voucher_Promotion");
+                ws3.Cells["A1"].Value = "PROMOTION PROGRAM EFFICIENCY (VOUCHER)";
                 ws3.Cells["A1:F1"].Merge = true;
                 ws3.Cells["A1"].Style.Font.Bold = true;
 
-                ws3.Cells["A2"].Value = "Mã Voucher";
-                ws3.Cells["B2"].Value = "Tên chương trình";
-                ws3.Cells["C2"].Value = "Số lượt dùng";
-                ws3.Cells["D2"].Value = "Doanh thu gốc";
-                ws3.Cells["E2"].Value = "Tổng giảm giá";
-                ws3.Cells["F2"].Value = "Thực thu";
+                ws3.Cells["A2"].Value = "Voucher Code";
+                ws3.Cells["B2"].Value = "Program Name";
+                ws3.Cells["C2"].Value = "Usage Count";
+                ws3.Cells["D2"].Value = "Original Revenue";
+                ws3.Cells["E2"].Value = "Total Discount";
+                ws3.Cells["F2"].Value = "Final Revenue";
                 ws3.Cells["A2:F2"].Style.Font.Bold = true;
                 ws3.Cells["A2:F2"].Style.Fill.PatternType = ExcelFillStyle.Solid;
                 ws3.Cells["A2:F2"].Style.Fill.BackgroundColor.SetColor(Color.LightYellow);
@@ -431,14 +431,14 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 ws3.Cells.AutoFitColumns();
 
                 // --- SHEET 4: TIP EXPENSE ---
-                var ws4 = package.Workbook.Worksheets.Add("ChiPhi_Tip");
-                 ws4.Cells["A1"].Value = "CHI TIẾT CHI PHÍ TIP";
+                var ws4 = package.Workbook.Worksheets.Add("Tip_Expenses");
+                 ws4.Cells["A1"].Value = "DETAILED TIP EXPENSES";
                 ws4.Cells["A1:C1"].Merge = true;
                 ws4.Cells["A1"].Style.Font.Bold = true;
 
-                ws4.Cells["A2"].Value = "Ngày giờ";
-                ws4.Cells["B2"].Value = "Mô tả / Ghi chú";
-                ws4.Cells["C2"].Value = "Số tiền";
+                ws4.Cells["A2"].Value = "Date Time";
+                ws4.Cells["B2"].Value = "Description / Note";
+                ws4.Cells["C2"].Value = "Amount";
                 ws4.Cells["A2:C2"].Style.Font.Bold = true;
 
                 row = 3;
@@ -451,7 +451,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                     row++;
                 }
 
-                ws4.Cells[row, 2].Value = "TỔNG CỘNG";
+                ws4.Cells[row, 2].Value = "TOTAL";
                 ws4.Cells[row, 3].Formula = $"SUM(C3:C{row-1})";
                 ws4.Cells[row, 3].Style.Numberformat.Format = "#,##0";
                 ws4.Cells[row, 2, row, 3].Style.Font.Bold = true;
@@ -462,7 +462,7 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
                 package.SaveAs(stream);
                 stream.Position = 0;
 
-                string excelName = $"BaoCaoToanCanh_{start:yyyyMMdd}_{end:yyyyMMdd}.xlsx";
+                string excelName = $"FullReport_{start:yyyyMMdd}_{end:yyyyMMdd}.xlsx";
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
             }
         }
