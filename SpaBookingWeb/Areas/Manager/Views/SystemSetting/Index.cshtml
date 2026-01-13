@@ -359,7 +359,7 @@
                                     <th>Phone Number</th>
                                     <th>Email</th>
                                     <th>Loyalty Points</th>
-                                    <th class="text-center" style="width: 150px;">Action</th>
+                                    <th class="text-center" style="width: 250px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -373,10 +373,19 @@
                                             <td>@c.Email</td>
                                             <td>@c.Point</td>
                                             <td class="text-center">
-                                                <form asp-action="PromoteCustomer" method="post" onsubmit="return confirm('Are you sure you want to promote customer @c.FullName to Staff? A login account will be automatically created.');">
+                                                <form asp-action="PromoteCustomer" method="post" class="form-inline d-flex align-items-center justify-content-center"
+                                                      onsubmit="return confirm('Are you sure you want to promote customer?');">
                                                     <input type="hidden" name="customerId" value="@c.CustomerId" />
-                                                    <button type="submit" class="btn btn-sm btn-info shadow-sm">
-                                                        <i class="fas fa-arrow-up"></i> Promote
+                                                    
+                                                    <select name="roleName" class="form-control form-control-sm mr-2" style="width: 130px;">
+                                                        <option value="Staff">Staff</option>
+                                                        <option value="Technician">Technician</option>
+                                                        <option value="Receptionist">Receptionist</option>
+                                                        <option value="Manager">Manager</option>
+                                                    </select>
+
+                                                    <button type="submit" class="btn btn-sm btn-info shadow-sm font-weight-bold">
+                                                        <i class="fas fa-arrow-up mr-1"></i> Promote
                                                     </button>
                                                 </form>
                                             </td>

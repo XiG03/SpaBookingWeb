@@ -74,7 +74,6 @@ namespace SpaBookingWeb.Data
             builder.Entity<TechnicianService>().HasKey(ts => new { ts.EmployeeId, ts.ServiceId });
             builder.Entity<IdentityUserRole<string>>().HasKey(r => new { r.UserId, r.RoleId });
             
-            builder.Entity<Employee>().HasIndex(e => e.IdentityUserId).IsUnique();
             builder.Entity<Voucher>().HasIndex(v => v.Code).IsUnique();
 
             builder.Entity<Invoice>()

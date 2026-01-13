@@ -23,6 +23,6 @@ namespace SpaBookingWeb.Services.Manager
         Task DeleteDepositRuleAsync(int id);
 
         // 5. Promote Customer -> Employee
-        Task PromoteCustomerAsync(int customerId);
+        Task PromoteCustomerAsync(int customerId, string roleName);
     }
 }

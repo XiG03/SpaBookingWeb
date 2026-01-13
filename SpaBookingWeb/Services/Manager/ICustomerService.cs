@@ -20,7 +20,7 @@ namespace SpaBookingWeb.Services.Manager
         Task<bool> CreateCustomerAsync(ApplicationUser user, string password);
         
         // Sync Identity User to Customer Table
-        Task SyncCustomerAsync(string fullName, string phoneNumber, string email);
+        Task SyncCustomerAsync(string fullName, string? phoneNumber, string email);
     }
 }
 

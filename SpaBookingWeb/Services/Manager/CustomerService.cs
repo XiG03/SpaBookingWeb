@@ -224,11 +224,14 @@ namespace SpaBookingWeb.Services.Manager
             var result = await _userManager.DeleteAsync(user);
             return result.Succeeded;
         }
-        public async Task SyncCustomerAsync(string fullName, string phoneNumber, string email)
+        public async Task SyncCustomerAsync(string fullName, string? phoneNumber, string email)
         {
             // Check if customer already exists in custom table (by Phone or Email)
             // Ideally we should use Identity UserId as Foreign Key, bu based on current schema we match by Phone/Email
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phoneNumber || c.Email == email);
+            // Check if customer already exists in custom table (by Phone or Email)
+            // Fix: If phoneNumber is null, do not match with other nulls.
+            var existingCustomer = await _context.Customers
+                .FirstOrDefaultAsync(c => (phoneNumber != null && c.PhoneNumber == phoneNumber) || c.Email == email);
             
             if (existingCustomer == null)
             {

@@ -124,12 +124,12 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
 
         // --- PROMOTION ACTIONS ---
         [HttpPost]
-        public async Task<IActionResult> PromoteCustomer(int customerId)
+        public async Task<IActionResult> PromoteCustomer(int customerId, string roleName)
         {
             try
             {
-                await _systemSettingService.PromoteCustomerAsync(customerId);
-                TempData["SuccessMessage"] = "Customer promoted to employee successfully. Default account: Email/Phone, Pass: Password123!";
+                await _systemSettingService.PromoteCustomerAsync(customerId, roleName);
+                TempData["SuccessMessage"] = $"Customer promoted to {roleName} successfully. Default account: Email/Phone, Pass: Password123!";
             }
             catch (System.Exception ex)
             {

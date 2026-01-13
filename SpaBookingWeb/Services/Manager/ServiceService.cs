@@ -29,7 +29,7 @@ namespace SpaBookingWeb.Services.Manager
         // ... Old methods (GetServiceDashboardAsync, GetServiceForEditAsync, Create, Update) kept as is ...
         // I will condense old methods to focus on the newly added method
 
-        public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync(string searchName = null)
+        public async Task<ServiceDashboardViewModel> GetServiceDashboardAsync(string? searchName = null)
         {
             var query = _context.Services.AsQueryable();
 

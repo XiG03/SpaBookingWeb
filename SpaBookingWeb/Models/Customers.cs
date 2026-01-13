@@ -32,8 +32,8 @@ namespace SpaBookingWeb.Models
         [Required, StringLength(100)]
         public string FullName { get; set; }
 
-        [Required, StringLength(20)]
-        public string PhoneNumber { get; set; }
+        [StringLength(20)]
+        public string? PhoneNumber { get; set; }
 
         [StringLength(100)]
         public string Email { get; set; }

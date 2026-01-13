@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using SpaBookingWeb.Services.Manager;
 using SpaBookingWeb.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,7 @@ namespace SpaBookingWeb.Controllers
 
         // --- LOGIN ---
         [HttpGet]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -84,7 +85,7 @@ namespace SpaBookingWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModels model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModels model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             returnUrl ??= Url.Content("~/");
@@ -221,7 +222,7 @@ namespace SpaBookingWeb.Controllers
 
         // --- REGISTER ---
         [HttpGet]
-        public IActionResult Register(string returnUrl = null)
+        public IActionResult Register(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -229,7 +230,7 @@ namespace SpaBookingWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Register(RegisterViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             returnUrl ??= Url.Content("~/");
@@ -411,7 +412,7 @@ namespace SpaBookingWeb.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
@@ -419,7 +420,7 @@ namespace SpaBookingWeb.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
@@ -522,6 +523,16 @@ namespace SpaBookingWeb.Controllers
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "Error checking/assigning role for existing user linking Google.");
+                        }
+
+                        // Sync Customer for existing user as well (Fix missing data issue)
+                        try 
+                        {
+                             await _customerService.SyncCustomerAsync(user.FullName, user.PhoneNumber, user.Email);
+                        }
+                        catch (Exception ex)
+                        {
+                             _logger.LogError(ex, "Error syncing customer for existing Google user.");
                         }
 
                         if (linkResult.Succeeded)

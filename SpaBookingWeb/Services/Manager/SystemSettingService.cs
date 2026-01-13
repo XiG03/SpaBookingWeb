@@ -245,10 +245,12 @@ namespace SpaBookingWeb.Services.Manager
         }
 
         // --- 5. PROMOTE CUSTOMER ---
-        public async Task PromoteCustomerAsync(int customerId)
+        public async Task PromoteCustomerAsync(int customerId, string roleName)
         {
             var customer = await _context.Customers.FindAsync(customerId);
             if (customer == null) throw new Exception("Customer not found.");
+
+            if (string.IsNullOrEmpty(roleName)) roleName = "Staff";
 
             // 1. Check User
             string email = customer.Email;
@@ -319,12 +321,12 @@ namespace SpaBookingWeb.Services.Manager
             _context.TechnicianDetails.Add(techDetail);
             await _context.SaveChangesAsync();
 
-            // 4. Assign "Staff" role
-            if (!await _roleManager.RoleExistsAsync("Staff"))
+            // 4. Assign Role
+            if (!await _roleManager.RoleExistsAsync(roleName))
             {
-                await _roleManager.CreateAsync(new IdentityRole("Staff"));
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
             }
-            await _userManager.AddToRoleAsync(user, "Staff");
+            await _userManager.AddToRoleAsync(user, roleName);
         }
 
         private async Task<string> SaveImageAsync(IFormFile imageFile)
