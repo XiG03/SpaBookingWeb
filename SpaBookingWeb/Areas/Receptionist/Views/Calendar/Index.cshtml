@@ -1,0 +1,2145 @@
+﻿@using Newtonsoft.Json
+@model SpaBookingWeb.ViewModels.Receptionist.CalendarVM
+@{
+    ViewData["Title"] = "Lịch hẹn Spa";
+    Layout = "~/Areas/Receptionist/Views/Shared/_Layout.cshtml";
+
+    // Cấu hình khung giờ hiển thị (8h - 19h)
+    int startHour = 8;
+    int endHour = 20;
+    int totalHours = endHour - startHour;
+}
+<link href="https://cdn.jsdelivr.net/npm/@@sweetalert2/theme-bootstrap-4/bootstrap-4.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const MASTER_DATA = {
+        services: @Html.Raw(JsonConvert.SerializeObject(Model.Services)),
+        combos: @Html.Raw(JsonConvert.SerializeObject(Model.Combos)),
+        techs: @Html.Raw(JsonConvert.SerializeObject(Model.TechnicianGroups.SelectMany(g => g.Technicians))),
+        depositRules: @Html.Raw(JsonConvert.SerializeObject(Model.DepositRules)),
+        events: @Html.Raw(JsonConvert.SerializeObject(Model.Events))
+    };
+
+    // --- [NEW] BỘ UI THÔNG BÁO MỚI (SweetAlert2) ---
+    const Toast = Swal.mixin({
+        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
+    });
+
+    // 1. Thay thế Alert Thành công
+    const showSuccess = async (msg) => {
+        return Swal.fire({
+            icon: 'success', title: 'Thành công', text: msg,
+            confirmButtonColor: '#2563EB', confirmButtonText: 'Đóng'
+        });
+    };
+
+    // 2. Thay thế Alert Lỗi
+    const showError = async (msg) => {
+        return Swal.fire({
+            icon: 'error', title: 'Đã có lỗi', text: msg,
+            confirmButtonColor: '#DC2626', confirmButtonText: 'Đóng'
+        });
+    };
+
+    // 3. Thay thế Alert Cảnh báo (Dạng Info)
+    const showWarning = async (msg) => {
+        return Swal.fire({
+            icon: 'warning', title: 'Lưu ý', text: msg,
+            confirmButtonColor: '#D97706', confirmButtonText: 'Đã hiểu'
+        });
+    };
+
+    // 4. Thay thế Confirm (Trả về true/false y hệt native confirm)
+    const showConfirm = async (msg) => {
+        const result = await Swal.fire({
+            title: 'Xác nhận',
+            text: msg, // Giữ nguyên nội dung bạn truyền vào
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563EB', cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy bỏ'
+        });
+        return result.isConfirmed;
+    };
+
+    // 5. Thay thế Prompt (Trả về text hoặc null y hệt native prompt)
+    const showPrompt = async (msg) => {
+        const { value: text } = await Swal.fire({
+            title: msg,
+            input: 'text',
+            inputPlaceholder: 'Nhập nội dung...',
+            showCancelButton: true,
+            confirmButtonText: 'Gửi', cancelButtonText: 'Hủy'
+        });
+        return text;
+    };
+    // -----------------------------------------------------
+</script>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 3px;
+    }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+</style>
+
+<div class="h-[calc(100vh-80px)] flex flex-col bg-white dark:bg-gray-900">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="material-symbols-outlined text-blue-600">calendar_month</span>
+            Lịch hẹn
+        </h1>
+        <div class="flex items-center bg-gray-100 rounded-lg p-1">
+            <a href="?date=@Model.SelectedDate.AddDays(-1).ToString("yyyy-MM-dd")" class="p-2 hover:bg-white rounded shadow-sm"><span class="material-symbols-outlined text-sm">chevron_left</span></a>
+            <input type="date" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" onchange="window.location.href='?date='+this.value" class="bg-transparent border-none font-bold text-gray-700 focus:ring-0 cursor-pointer mx-2">
+            <a href="?date=@Model.SelectedDate.AddDays(1).ToString("yyyy-MM-dd")" class="p-2 hover:bg-white rounded shadow-sm"><span class="material-symbols-outlined text-sm">chevron_right</span></a>
+        </div>
+        <button onclick="openBookingModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md flex items-center gap-2">
+            <span class="material-symbols-outlined">add</span> Đặt lịch mới
+        </button>
+    </div>
+
+    <div class="flex-1 overflow-hidden flex flex-col relative bg-white">
+
+        <div class="flex border-b border-gray-200 bg-gray-50 h-10 mr-[6px] z-20 shadow-sm text-gray-500 font-bold text-xs select-none">
+            <div class="w-60 flex-shrink-0 border-r border-gray-200 p-3 text-center uppercase bg-gray-50 sticky left-0 z-30">
+                Kỹ thuật viên
+            </div>
+
+            <div class="flex-1 relative h-full">
+                @for (int i = 0; i <= totalHours; i++)
+                {
+                    // Tính phần trăm vị trí
+                    double percent = (double)i / totalHours * 100;
+
+                    // LOGIC CĂN CHỈNH:
+                    // - Đầu tiên (i==0): translate-x-0 (Căn trái)
+                    // - Cuối cùng (i==totalHours): -translate-x-full (Căn phải - kéo ngược lại vào trong)
+                    // - Ở giữa: -translate-x-1/2 (Căn giữa chuẩn)
+                    string alignClass = "-translate-x-1/2";
+                    if (i == 0)
+                    {
+                        alignClass = "translate-x-0 pl-1"; // Thêm chút padding trái cho đẹp
+                    }
+                    else if (i == totalHours)
+                    {
+                        alignClass = "-translate-x-full pr-1"; // Thêm chút padding phải
+                    }
+
+                    <div class="absolute top-0 bottom-0 border-l border-gray-200 pt-3 text-[10px] text-gray-500 @alignClass"
+                         style="left: @percent%">
+                        @((startHour + i).ToString("00")):00
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto relative custom-scrollbar" id="timelineContainer">
+
+            <div class="absolute top-0 bottom-0 left-0 right-0 pointer-events-none flex ml-60 z-0">
+                @for (int i = 0; i < totalHours; i++)
+                {
+                    <div class="h-full border-l border-dashed border-gray-100" style="width: @(100.0 / totalHours)%"></div>
+                }
+            </div>
+
+            @foreach (var group in Model.TechnicianGroups)
+            {
+                @foreach (var tech in group.Technicians)
+                {
+                    <div class="flex border-b border-gray-100 h-20 group hover:bg-gray-50 transition relative">
+
+                        <div class="w-60 flex-shrink-0 border-r border-gray-100 p-3 flex items-center gap-3 sticky left-0 bg-white group-hover:bg-gray-50 z-10 transition shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden ring-2 ring-gray-100">
+                                <img src="https://via.placeholder.com/150" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=@tech.Name&background=random'" />
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="text-sm font-bold truncate w-36 text-gray-800">@tech.Name</p>
+                                <p class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block font-semibold border border-blue-100">
+                                    @tech.SkillLevel
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 relative">
+                            @foreach (var evt in Model.Events.Where(e => e.TechnicianId == tech.Id))
+                            {
+                                double left = ((evt.StartTime.Hour + evt.StartTime.Minute / 60.0 - startHour) / totalHours) * 100;
+                                double width = ((evt.EndTime - evt.StartTime).TotalHours / totalHours) * 100;
+
+                                <div class="absolute top-2 bottom-2 rounded border-l-4 p-2 text-xs shadow-sm hover:shadow-md cursor-pointer z-10 @evt.ColorClass transition hover:-translate-y-0.5 select-none"
+                                     style="left: @left%; width: @width%;"
+                                     onclick="openDetailModal(@evt.AppointmentId)">
+
+                                    <div class="font-bold truncate flex items-center gap-1">
+                                        @evt.CustomerName
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(evt.GuestName))
+                                    {
+                                        <div class="text-[10px] text-pink-700 font-bold truncate"> + @evt.GuestName</div>
+                                    }
+                                    <div class="text-[10px] truncate opacity-75 mt-0.5">@evt.ServiceName</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            <div class="h-10 w-full"></div>
+        </div>
+    </div>
+</div>
+
+<div id="bookingModal" class="fixed inset-0 z-50 hidden" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden">
+                <div class="bg-blue-600 px-6 py-4 flex justify-between items-center text-white">
+                    <h3 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined">add_circle</span> Đặt lịch mới</h3>
+                    <button onclick="closeModal()" class="hover:text-blue-200"><span class="material-symbols-outlined">close</span></button>
+                </div>
+
+                <div class="px-6 py-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 flex flex-wrap gap-4 items-center justify-between">
+                        <div class="flex items-center gap-2 text-yellow-800 font-bold">
+                            <span class="material-symbols-outlined">event_available</span>
+                            <label>Thời gian:</label>
+                        </div>
+                        <div class="flex gap-4">
+                            <input type="date" id="inputBookingDate"
+                                   class="border-0 border-b border-yellow-300 bg-transparent font-bold text-yellow-900 focus:ring-0 cursor-pointer"
+                                   onchange="onBookingDateChange(this.value)">
+                            <input type="time" id="inputBookingTime" min="08:00" max="20:00"
+                                   class="border-0 border-b border-yellow-300 bg-transparent font-bold text-xl text-yellow-900 focus:ring-0 cursor-pointer"
+                                   onchange="updateBookingTime()">
+                            <div id="bookingTimeError" class="text-xs text-red-600 font-bold mt-1 hidden"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2 border-t border-yellow-200">
+                        <input type="checkbox" id="chkWalkIn" onchange="toggleWalkInMode()" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
+                        <label for="chkWalkIn" class="font-bold text-blue-800 cursor-pointer select-none text-sm">
+                            Khách vãng lai / Làm ngay (Không cọc, Vào làm luôn)
+                        </label>
+                    </div>
+
+                    @* <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">SĐT</label>
+                            <div class="flex mt-1">
+                                <input type="text" id="inputPhone" class="block w-full rounded-l-md border-gray-300 focus:ring-blue-500" placeholder="Nhập SĐT" onblur="if(this.value.length>=10) searchCustomer()">
+                                <button onclick="searchCustomer()" class="px-3 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-200"><span class="material-symbols-outlined text-sm">search</span></button>
+                            </div>
+                            <div id="customerStatus" class="mt-1 min-h-[20px] text-xs"></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Tên khách</label>
+                            <input type="text" id="inputName" class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1" placeholder="Họ tên...">
+                        </div>
+                    </div> *@
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Số điện thoại khách hàng</label>
+                            <div class="flex mt-1">
+                                <input type="text" id="inputPhone"
+                                       class="block w-full rounded-l-md border-gray-300 focus:ring-blue-500 shadow-sm"
+                                       placeholder="Nhập SĐT để bắt đầu..."
+                                       onkeydown="if(event.key==='Enter') searchCustomer()"
+                                       oninput="resetCustomerStatus()">
+                                <button onclick="searchCustomer()" type="button" class="px-4 bg-blue-600 text-white font-bold border border-blue-600 rounded-r-md hover:bg-blue-700 transition flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">search</span> Tìm
+                                </button>
+                            </div>
+                            <div id="customerStatus" class="mt-1 min-h-[20px] text-xs"></div>
+                        </div>
+
+                        <div id="customerInfoFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200 animate-fade-in-down">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700">Tên khách hàng <span class="text-red-500">*</span></label>
+                                <input type="text" id="inputName"
+                                       class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm"
+                                       placeholder="Nhập họ tên..."
+                                       oninput="validateSubmitButton()">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700">Email (Tạo tài khoản)</label>
+                                <input type="email" id="inputEmail"
+                                       class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm"
+                                       placeholder="example@gmail.com"
+                                       oninput="validateSubmitButton()">
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                        .animate-fade-in-down {
+                            animation: fadeInDown 0.3s ease-out;
+                        }
+                        @@keyframes fadeInDown {
+                            from
+
+                        {
+                            opacity: 0;
+                            transform: translateY(-10px);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+
+                        }
+                    </style>
+
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-bold text-gray-700">Dịch vụ & Khách đi cùng</h4>
+                            <button onclick="addGuest()" class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200 hover:bg-green-100 font-bold">+ Thêm khách</button>
+                        </div>
+                        <div id="guestListContainer" class="space-y-3"></div>
+                    </div>
+
+                    <div id="assignmentSection" class="hidden">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-blue-600 text-sm">engineering</span> Phân công KTV</h4>
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                                    <tr><th class="px-4 py-2 text-left">Khách</th><th class="px-4 py-2 text-left">Dịch vụ</th><th class="px-4 py-2 text-left">Giờ (Dự kiến)</th><th class="px-4 py-2 text-left">Chọn KTV</th></tr>
+                                </thead>
+                                <tbody id="assignmentTableBody" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @* Ghi chú *@
+                    <div class="mt-3">
+                        <label class="block text-sm font-bold text-gray-700">Ghi chú đơn hàng</label>
+                        <textarea id="inputNotes" rows="2" class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm text-sm" placeholder="Yêu cầu đặc biệt..."></textarea>
+                    </div>
+
+                    <div class="border-t pt-4 flex flex-col items-end gap-1">
+                        <div class="text-gray-500 text-sm">Tổng cộng (<span id="totalItems">0</span> dịch vụ)</div>
+                        <div class="text-2xl font-bold text-blue-600" id="totalPriceDisplay">0 đ</div>
+                        <div id="depositSection" class="hidden flex flex-col items-end mt-2">
+                            <div class="text-sm">Yêu cầu cọc: <span class="font-bold text-red-600" id="depositAmountDisplay">0 đ</span></div>
+                            <label class="flex items-center gap-2 cursor-pointer mt-1">
+                                <input type="checkbox" id="depositPaid" onchange="validateSubmitButton()" class="rounded text-green-600 focus:ring-green-500">
+                                <span class="text-sm font-bold text-gray-800">Đã thu tiền mặt</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-2">
+                    <button onclick="submitBooking()" id="btnSubmit" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">Xác nhận</button>
+                    <button onclick="closeModal()" class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-bold hover:bg-gray-50">Hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="detailModal" class="fixed inset-0 z-50 hidden" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm" onclick="closeDetailModal()"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-down">
+                <div class="bg-purple-600 px-6 py-4 flex justify-between items-center text-white">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined">visibility</span> Chi tiết lịch hẹn
+                    </h3>
+                    <button onclick="closeDetailModal()" class="hover:text-purple-200"><span class="material-symbols-outlined">close</span></button>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border">
+                        <div>
+                            <label class="text-xs text-gray-500 uppercase font-bold">Khách hàng</label>
+                            <div class="font-bold text-gray-800 text-lg" id="detailCustomerName">...</div>
+                            <div class="text-sm text-gray-600 mb-2" id="detailCustomerPhone">...</div>
+
+                            <span id="detailStatus" class="px-2 py-1 rounded text-xs font-bold bg-gray-200">...</span>
+                        </div>
+
+                        <div class="text-right">
+                            <label class="text-xs text-blue-600 uppercase font-bold">Thời gian hẹn</label>
+                            <div class="text-2xl font-bold text-blue-700" id="detailTimeRange">...</div>
+                            <div class="text-sm font-bold text-gray-700" id="detailBookingDate">...</div>
+
+                            <div class="mt-3 pt-2 border-t border-gray-200">
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Ngày tạo đơn</label>
+                                <div class="text-xs text-gray-500" id="detailCreatedDate">...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase font-bold">Ghi chú / Yêu cầu</label>
+                        <div id="detailNotes" class="p-3 bg-yellow-50 border border-yellow-100 rounded text-sm text-gray-700 italic min-h-[40px]">
+                            Không có ghi chú.
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase font-bold mb-2 block">Chi tiết dịch vụ</label>
+                        <div class="border rounded overflow-hidden">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-100 text-gray-600 font-bold border-b">
+                                    <tr>
+                                        <th class="p-2">Khách</th>
+                                        <th class="p-2">Dịch vụ</th>
+                                        <th class="p-2">KTV</th>
+                                        <th class="p-2 text-right">Giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailItemsBody" class="divide-y">
+                                </tbody>
+                                <tfoot class="bg-gray-50 font-bold border-t">
+                                    <tr>
+                                        <td colspan="3" class="p-2 text-right">Tổng cộng:</td>
+                                        <td class="p-2 text-right text-blue-600" id="detailTotal">0 đ</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
+                    <div id="detailActions" class="flex gap-2"></div>
+
+                    <button onclick="closeDetailModal()" class="px-4 py-2 bg-white border border-gray-300 rounded font-bold hover:bg-gray-100 text-gray-700">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="paymentModal" class="fixed inset-0 z-[60] hidden" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[80vh]">
+
+                <div class="w-full md:w-3/5 bg-gray-50 p-6 overflow-y-auto border-r border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-600">list_alt</span> Dịch vụ sử dụng
+                    </h3>
+                    <div id="paymentItemsContainer" class="space-y-3">
+                    </div>
+                </div>
+
+                <div class="w-full md:w-2/5 p-6 flex flex-col bg-white">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-600">calculate</span> Thanh toán
+                    </h3>
+
+                    <div class="mb-4 text-sm bg-blue-50 p-3 rounded text-blue-800 border border-blue-100">
+                        Khách: <span id="payCustName" class="font-bold">...</span><br>
+                        Hạng: <span id="payMemberLevel" class="font-bold text-orange-600">...</span>
+                        (Giảm: <span id="payMemberPercent">0</span>%)
+                    </div>
+
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="voucherCode" placeholder="Nhập mã Voucher..." class="flex-1 border rounded px-3 py-2 text-sm uppercase focus:ring-blue-500">
+                        <button onclick="calculateBill()" class="bg-gray-800 text-white px-3 py-2 rounded text-sm font-bold hover:bg-gray-700">Áp dụng</button>
+                    </div>
+
+                    <div class="space-y-2 text-sm flex-1">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tổng tiền hàng:</span>
+                            <span class="font-bold" id="lblSubTotal">0</span>
+                        </div>
+                        <div class="flex justify-between text-green-600">
+                            <span>Thành viên:</span>
+                            <span>- <span id="lblMemberDisc">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-green-600">
+                            <span>Voucher <span id="lblVoucherMsg" class="text-xs italic text-gray-400"></span>:</span>
+                            <span>- <span id="lblVoucherDisc">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-blue-600">
+                            <span>Tiền Tip (Tổng):</span>
+                            <span>+ <span id="lblTipTotal">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-red-500 border-b pb-2">
+                            <span>Đã cọc:</span>
+                            <span>- <span id="lblDeposit">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-gray-900 pt-2">
+                            <span>CẦN THU:</span>
+                            <span class="text-blue-600" id="lblFinal">0</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-3">
+                        <p class="text-xs text-gray-500 font-bold uppercase">Phương thức thanh toán:</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="processPayment('Cash')" class="flex items-center justify-center gap-2 py-3 border-2 border-green-500 bg-green-50 text-green-700 rounded-lg font-bold hover:bg-green-100 transition">
+                                <span class="material-symbols-outlined">payments</span> TIỀN MẶT
+                            </button>
+                            <button onclick="processPayment('Momo')" class="flex items-center justify-center gap-2 py-3 border-2 border-pink-500 bg-pink-50 text-pink-700 rounded-lg font-bold hover:bg-pink-100 transition">
+                                <span class="material-symbols-outlined">qr_code_scanner</span> MOMO QR
+                            </button>
+                        </div>
+                        <button onclick="closePaymentModal()" class="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium">Đóng / Để sau</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="momoQrModal" class="hidden absolute inset-0 z-[70] bg-white flex flex-col items-center justify-center">
+    <h3 class="text-xl font-bold text-pink-600 mb-4">Quét mã để thanh toán</h3>
+    <div id="momoQrContainer" class="p-4 bg-white shadow-lg border rounded-xl">
+    </div>
+    <p class="mt-4 text-gray-500 animate-pulse">Đang chờ tín hiệu thanh toán...</p>
+    <button onclick="document.getElementById('momoQrModal').classList.add('hidden')" class="mt-6 text-sm text-gray-400 underline">Hủy / Quay lại</button>
+</div>
+
+<div id="rescheduleModal" class="fixed inset-0 z-[80] hidden" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-[600px] p-6 animate-fade-in-down">
+            <h3 class="text-lg font-bold mb-4 text-orange-600 flex items-center gap-2">
+                <span class="material-symbols-outlined">edit_calendar</span> Dời lịch & Phân công lại
+            </h3>
+
+            <input type="hidden" id="reschApptId">
+
+            <div class="grid grid-cols-2 gap-4 mb-4 bg-orange-50 p-3 rounded border border-orange-100">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Ngày mới</label>
+                    <input type="date" id="reschDate" onchange="onRescheduleDateChange(this.value)" class="w-full border border-gray-300 rounded px-2 py-1 font-bold text-gray-700 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Giờ bắt đầu</label>
+                    <input type="time" id="reschTime" min="08:00" max="20:00"
+                           onchange="updateRescheduleAvailability()"
+                           class="w-full border border-gray-300 rounded px-2 py-1 font-bold text-gray-700 focus:ring-orange-500">
+                    <div id="reschTimeError" class="text-xs text-red-600 font-bold mt-1 hidden"></div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phân công kỹ thuật viên</label>
+                <div class="border rounded overflow-hidden max-h-[300px] overflow-y-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100 text-gray-600 font-bold">
+                            <tr>
+                                <th class="p-2 text-left">Dịch vụ / Khách</th>
+                                <th class="p-2 text-left">Thời lượng</th>
+                                <th class="p-2 text-left">Chọn KTV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rescheduleTableBody" class="divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button onclick="document.getElementById('rescheduleModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-gray-600 rounded font-bold hover:bg-gray-200">Hủy</button>
+                <button onclick="submitReschedule()" class="px-4 py-2 bg-orange-600 text-white rounded font-bold hover:bg-orange-700 shadow-md">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let bookingState = { guests: [] };
+    let selectedTechMap = {}; // <--- THÊM DÒNG QUAN TRỌNG NÀY
+
+    // === [THÊM MỚI] BIẾN DỮ LIỆU ĐỘNG CHO MODAL ===
+    // Mặc định ban đầu lấy từ MASTER_DATA (ngày hiện tại của trang)
+    let currentModalTechs = MASTER_DATA.techs;
+    let currentModalEvents = MASTER_DATA.events;
+    // ==============================================
+
+    // === [THÊM MỚI] BIẾN DỮ LIỆU ĐỘNG CHO DỜI LỊCH ===
+    let currentRescheduleTechs = [];
+    let currentRescheduleEvents = [];
+    // =================================================
+
+    // === [THÊM MỚI] BIẾN TRẠNG THÁI KHÁCH HÀNG ===
+    let isCustomerVerified = false; // Mặc định là chưa tìm kiếm
+    // ==============================================
+
+    // Hàm Reset khi người dùng sửa số điện thoại
+    function resetCustomerStatus() {
+        isCustomerVerified = false;
+        document.getElementById('customerInfoFields').classList.add('hidden'); // Ẩn khung nhập tên
+        document.getElementById('customerStatus').innerHTML = ''; // Xóa trạng thái cũ
+        document.getElementById('inputName').value = ''; // Xóa tên cũ
+        validateSubmitButton(); // Khóa nút xác nhận ngay lập tức
+    }
+
+    function openBookingModal(timeArg = null) {
+        // Init State
+        bookingState = { guests: [{ id: 1, type: 'MAIN', selectedItems: [] }] };
+        selectedTechMap = {}; // <--- THÊM DÒNG NÀY ĐỂ RESET KHI MỞ MỚI
+
+        // Setup Date/Time
+        const todayStr = '@Model.SelectedDate.ToString("yyyy-MM-dd")'; // Mặc định ngày đang xem
+        document.getElementById('inputBookingDate').value = todayStr;
+        // Lấy ngày hôm nay (YYYY-MM-DD) và gán vào thuộc tính min
+        document.getElementById('inputBookingDate').min = new Date().toISOString().split('T')[0];
+
+        // === [THÊM] RESET DỮ LIỆU VỀ NGÀY HIỆN TẠI CỦA TRANG ===
+        currentModalTechs = MASTER_DATA.techs;
+        currentModalEvents = MASTER_DATA.events;
+        // ========================================================
+        // === [THÊM] RESET TRẠNG THÁI ===
+        isCustomerVerified = false;
+        // ==============================
+
+        if (timeArg) {
+            document.getElementById('inputBookingTime').value = timeArg;
+        } else {
+            const now = new Date();
+            let h = now.getHours();
+            let m = Math.ceil(now.getMinutes() / 15) * 15;
+            if(m===60){h++; m=0;}
+            document.getElementById('inputBookingTime').value = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+        }
+
+        // Reset UI
+        document.getElementById('bookingModal').classList.remove('hidden');
+        document.getElementById('inputPhone').value = '';
+        document.getElementById('customerStatus').innerHTML = '';
+        document.getElementById('inputNotes').value = '';
+        document.getElementById('chkWalkIn').checked = false;
+
+        // --- CODE MỚI: ẨN KHUNG THÔNG TIN & RESET VALUE ---
+        const infoFields = document.getElementById('customerInfoFields');
+        infoFields.classList.add('hidden'); // Ẩn đi
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputEmail').value = '';
+        document.getElementById('inputName').readOnly = false; // Mặc định cho nhập
+        document.getElementById('inputEmail').readOnly = false;
+        // --------------------------------------------------
+
+        renderGuestList();
+        renderAssignmentTable();
+        calculateTotal();
+    }
+
+    function closeModal() { document.getElementById('bookingModal').classList.add('hidden'); }
+
+    // --- FIX 2: HIỆN COMBO & DỊCH VỤ ---
+    function renderGuestList() {
+        const container = document.getElementById('guestListContainer');
+        container.innerHTML = '';
+
+        // Merge Services và Combos vào 1 list để chọn
+        const allServices = MASTER_DATA.services.map(s => ({...s, type: 'SERVICE'}));
+        const allCombos = MASTER_DATA.combos.map(c => ({Id: c.Id, Name: `[Combo] ${c.Name}`, Price: c.Price, Duration: 'Combo', type: 'COMBO'}));
+        const displayItems = [...allCombos, ...allServices];
+
+        bookingState.guests.forEach((guest, index) => {
+            const isMain = guest.type === 'MAIN';
+            let listHtml = displayItems.map(item => {
+                // Check xem item này đã chọn chưa
+                const isChecked = guest.selectedItems.some(i => i.id === item.Id && i.type === item.type) ? 'checked' : '';
+                return `
+                <label class="flex items-center gap-2 p-1 hover:bg-gray-50 rounded w-full cursor-pointer">
+                    <input type="checkbox" ${isChecked} onchange="toggleItem(${guest.id}, '${item.type}', ${item.Id})" class="rounded border-gray-300 text-blue-600">
+                    <span class="text-sm ${item.type==='COMBO'?'font-bold text-blue-700':'text-gray-700'}">${item.Name} <span class="text-xs text-gray-400">(${item.type==='COMBO'?'Nhiều bước':item.Duration+'p'})</span></span>
+                </label>`;
+            }).join('');
+
+            const html = `
+            <div class="border rounded-lg p-3 bg-white relative mb-2">
+                ${!isMain ? `<button onclick="removeGuest(${guest.id})" class="absolute top-2 right-2 text-red-500 material-symbols-outlined text-sm">delete</button>` : ''}
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-4 border-r pr-2">
+                        <div class="font-bold text-xs text-blue-600 uppercase mb-1">${isMain ? 'KHÁCH CHÍNH' : `KHÁCH #${index}`}</div>
+                        ${!isMain ? `<input type="text" placeholder="Tên khách..." onchange="updateGuestName(${guest.id}, this.value)" class="w-full text-sm border-b border-gray-300 p-0">` : ''}
+                    </div>
+                    <div class="col-span-8 h-32 overflow-y-auto grid grid-cols-2 gap-2 content-start">${listHtml}</div>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    function toggleItem(guestId, type, itemId) {
+        const guest = bookingState.guests.find(g => g.id === guestId);
+        const existsIdx = guest.selectedItems.findIndex(i => i.id === itemId && i.type === type);
+
+        if (existsIdx > -1) guest.selectedItems.splice(existsIdx, 1); // Bỏ chọn
+        else guest.selectedItems.push({ id: itemId, type: type }); // Chọn mới
+
+        renderAssignmentTable();
+        calculateTotal();
+    }
+
+    function addGuest() { bookingState.guests.push({ id: Date.now(), type: 'GUEST', selectedItems: [] }); renderGuestList(); }
+    function removeGuest(id) { bookingState.guests = bookingState.guests.filter(g => g.id !== id); renderGuestList(); renderAssignmentTable(); calculateTotal(); }
+    function updateGuestName(id, val) { bookingState.guests.find(g=>g.id===id).name = val; renderAssignmentTable(); }
+    function updateBookingTime() {
+        const dateStr = document.getElementById('inputBookingDate').value;
+        const timeStr = document.getElementById('inputBookingTime').value;
+        const errorDiv = document.getElementById('bookingTimeError');
+
+        // 1. GỌI HÀM KIỂM TRA
+        const check = validateDateTimeRule(dateStr, timeStr);
+
+        if (!check.valid) {
+            // A. Nếu lỗi: Hiện thông báo
+            errorDiv.innerText = check.msg;
+            errorDiv.classList.remove('hidden');
+
+            // Xóa bảng phân công KTV để tránh chọn nhầm khi giờ sai
+            document.getElementById('assignmentTableBody').innerHTML = '';
+            document.getElementById('assignmentSection').classList.add('hidden');
+        } else {
+            // B. Nếu đúng: Ẩn lỗi và chạy tiếp logic cũ
+            errorDiv.classList.add('hidden');
+            renderAssignmentTable(); // Logic cũ
+        }
+
+        // Luôn gọi validate nút submit cuối cùng
+        validateSubmitButton();
+    }
+
+    // --- BỘ LỌC 4 LỚP (ĐÃ FIX LỖI) ---
+    function renderAssignmentTable() {
+        const tbody = document.getElementById('assignmentTableBody');
+        const section = document.getElementById('assignmentSection');
+        tbody.innerHTML = '';
+
+        const dateStr = document.getElementById('inputBookingDate').value;
+        const timeStr = document.getElementById('inputBookingTime').value;
+        if(!dateStr || !timeStr) return;
+
+        let baseTime = new Date(`${dateStr}T${timeStr}:00`);
+
+        // 1. CHUẨN BỊ TASKS
+        let allTasks = [];
+        bookingState.guests.forEach(guest => {
+            let cursor = new Date(baseTime);
+            guest.selectedItems.forEach(item => {
+                let servicesToRun = [];
+                if (item.type === 'COMBO') {
+                    const combo = MASTER_DATA.combos.find(c => c.Id === item.id);
+                    if(combo && combo.ServiceIds) {
+                         combo.ServiceIds.forEach(sid => {
+                             const s = MASTER_DATA.services.find(x => x.Id === sid);
+                             if(s) servicesToRun.push({...s, fromCombo: combo.Id});
+                         });
+                    }
+                } else {
+                    const s = MASTER_DATA.services.find(x => x.Id === item.id);
+                    if(s) servicesToRun.push(s);
+                }
+                servicesToRun.forEach(svc => {
+                    let end = new Date(cursor.getTime() + (svc.Duration || 60)*60000);
+                    allTasks.push({
+                        guestId: guest.id,
+                        guestName: guest.type==='MAIN' ? (document.getElementById('inputName').value||'Khách chính') : (guest.name||'Khách đi cùng'),
+                        serviceName: svc.Name,
+                        serviceId: svc.Id,
+                        comboId: svc.fromCombo || null,
+                        startTime: new Date(cursor),
+                        endTime: new Date(end)
+                    });
+                    cursor = end;
+                });
+            });
+        });
+
+        if (allTasks.length === 0) { section.classList.add('hidden'); return; }
+        section.classList.remove('hidden');
+
+        // 2. RENDER VÀ CHECK
+        allTasks.forEach((task, idx) => {
+            const taskStartMin = task.startTime.getHours()*60 + task.startTime.getMinutes();
+            const taskEndMin = task.endTime.getHours()*60 + task.endTime.getMinutes();
+            const timeRangeStr = `${formatTime(task.startTime)} - ${formatTime(task.endTime)}`;
+
+            // Lấy KTV đang được chọn ở dòng này (nếu có)
+            const currentSelectedTechId = selectedTechMap[idx] ? parseInt(selectedTechMap[idx]) : "";
+
+            let options = `<option value="">-- Chọn KTV --</option>`;
+
+            currentModalTechs.forEach(tech => {
+                // --- DEBUG: Bỏ comment dòng dưới để xem tại sao KTV bị ẩn ---
+                // console.log(`Check ${tech.Name}: Skill=${tech.AllowedServiceIds?.includes(task.serviceId)}, Shift=${tech.ShiftStartMinutes}`);
+
+                // LỚP 1: CHECK KỸ NĂNG (SKILL)
+                // Fix an toàn: Nếu AllowedServiceIds tồn tại và KHÔNG chứa serviceId thì mới ẩn.
+                // Nếu AllowedServiceIds null (backend chưa gửi), tạm thời cho hiện để không lỗi.
+                if (tech.AllowedServiceIds && tech.AllowedServiceIds.length > 0 && !tech.AllowedServiceIds.includes(task.serviceId)) {
+                    return;
+                }
+
+                // LỚP 2: CHECK CA LÀM (SHIFT)
+                // Nếu KTV không có ca làm (ShiftStartMinutes == 0), ẩn luôn.
+                if (tech.ShiftStartMinutes === 0 || taskStartMin < tech.ShiftStartMinutes || taskEndMin > tech.ShiftEndMinutes) {
+                    return;
+                }
+
+                // === LỚP 2.5: CHECK BẬN TRONG DB (DB BUSY) ===
+                const isBusyInDb = (currentModalEvents || []).some(evt => {
+                    if (evt.TechnicianId !== tech.Id) return false;
+                    const evtStart = new Date(evt.StartTime);
+                    const evtEnd = new Date(evt.EndTime);
+                    return checkOverlap(task.startTime, task.endTime, evtStart, evtEnd);
+                });
+
+                if (isBusyInDb) return; // <--- ĐÃ BỎ COMMENT DÒNG NÀY ĐỂ CHẶN LỊCH CŨ
+
+                // LỚP 3: CHECK TRÙNG CỤC BỘ (LOCAL CONFLICT)
+                let isBusyLocal = false;
+                for (let otherIdx in selectedTechMap) {
+                    if (parseInt(otherIdx) === idx) continue;
+                    // Fix an toàn: Kiểm tra task tồn tại trước khi lấy giờ
+                    const otherTask = allTasks[otherIdx];
+                    if (!otherTask) continue;
+
+                    if (parseInt(selectedTechMap[otherIdx]) === tech.Id) {
+                        if (checkOverlap(task.startTime, task.endTime, otherTask.startTime, otherTask.endTime)) {
+                            isBusyLocal = true; break;
+                        }
+                    }
+                }
+
+                if (!isBusyLocal) {
+                    const selected = (tech.Id === currentSelectedTechId) ? "selected" : "";
+                    options += `<option value="${tech.Id}" ${selected}>${tech.Name}</option>`;
+                }
+            });
+
+            // Nếu KTV đã chọn trước đó giờ bị ẩn (do trùng giờ), bỏ chọn
+            if (currentSelectedTechId && !options.includes(`value="${currentSelectedTechId}"`)) {
+                 delete selectedTechMap[idx]; options = options.replace("selected", "");
+            }
+
+            const html = `
+            <tr class="border-b">
+                <td class="px-4 py-2 font-bold">${idx===0 || task.guestId !== allTasks[idx-1].guestId ? task.guestName : ''}</td>
+                <td class="px-4 py-2 text-gray-600 text-sm">${task.serviceName}</td>
+                <td class="px-4 py-2 text-blue-600 text-sm font-medium">${timeRangeStr}</td>
+                <td class="px-4 py-2">
+                    <select onchange="onSelectTech(${idx}, this.value)" class="w-full rounded border-gray-300 py-1 text-sm shadow-sm focus:border-blue-500">
+                        ${options}
+                    </select>
+                    <input type="hidden" class="task-data" data-sid="${task.serviceId}" data-cid="${task.comboId || ''}" data-start="${formatTime(task.startTime)}" data-end="${formatTime(task.endTime)}">
+                </td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', html);
+        });
+
+        validateSubmitButton();
+    }
+
+    function onSelectTech(rowIdx, techId) {
+        if (techId) selectedTechMap[rowIdx] = techId; else delete selectedTechMap[rowIdx];
+        renderAssignmentTable();
+    }
+
+    function checkOverlap(startA, endA, startB, endB) { return (startA < endB && startB < endA); }
+
+    // Cập nhật hàm Tìm kiếm (Xử lý Hiện/Ẩn và Điền dữ liệu)
+    async function searchCustomer() {
+        const phone = document.getElementById('inputPhone').value;
+        const statusDiv = document.getElementById('customerStatus');
+        const infoFields = document.getElementById('customerInfoFields'); // Khung chứa Tên & Email
+        const nameInput = document.getElementById('inputName');
+        const emailInput = document.getElementById('inputEmail');
+
+        if (!phone) {
+            statusDiv.innerHTML = '<span class="text-red-500">Vui lòng nhập SĐT!</span>';
+            return;
+        }
+
+        statusDiv.innerHTML = '<span class="text-gray-500 flex items-center gap-1"><span class="material-symbols-outlined text-xs animate-spin">sync</span> Đang tìm kiếm...</span>';
+
+        try {
+            const res = await fetch(`/Receptionist/Calendar/GetCustomerByPhone?phone=${phone}`);
+            const data = await res.json();
+
+            // HIỆN KHUNG NHẬP LIỆU RA
+            infoFields.classList.remove('hidden');
+
+            // === [THÊM] ĐÁNH DẤU ĐÃ TÌM KIẾM THÀNH CÔNG ===
+            isCustomerVerified = true;
+            // ==============================================
+
+            let statusHtml = "";
+
+            if (data.success && !data.isNew) {
+                // TRƯỜNG HỢP: KHÁCH CŨ (Đã có TK)
+                statusHtml = `<span class="text-green-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Khách cũ: ${data.data.membership}</span>`;
+
+                // === [LOGIC MỚI] CHECK TRÙNG LỊCH TRÊN GIAO DIỆN (Frontend Warning) ===
+                // Quét trong MASTER_DATA.events xem hôm nay khách này có lịch chưa?
+                // Lưu ý: data.data.fullName là tên chuẩn từ DB.
+                const customerName = data.data.fullName;
+
+                // Tìm các event của khách này (Status != Cancelled)
+                // MASTER_DATA.events chứa lịch của ngày đang xem
+                const existingAppts = (MASTER_DATA.events || []).filter(e =>
+                    e.CustomerName.toLowerCase() === customerName.toLowerCase()
+                );
+
+                if (existingAppts.length > 0) {
+                    // Lấy giờ của lịch đầu tiên tìm thấy để cảnh báo
+                    const firstEvt = existingAppts[0];
+                    const timeStr = new Date(firstEvt.StartTime).toTimeString().substring(0,5);
+
+                    statusHtml += `
+                    <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-orange-800 text-xs flex items-start gap-2">
+                        <span class="material-symbols-outlined text-sm mt-0.5">warning</span>
+                        <div>
+                            <strong>Cảnh báo:</strong> Khách <b>${customerName}</b> đã có lịch hôm nay lúc <b>${timeStr}</b>.<br>
+                            Vui lòng kiểm tra kỹ trước khi đặt thêm.
+                        </div>
+                    </div>`;
+                }
+                // ======================================================================
+
+                // Điền dữ liệu tự động
+                nameInput.value = data.data.fullName;
+                emailInput.value = data.data.email || ""; // Điền email nếu có
+
+                // Có thể khóa lại không cho sửa nếu muốn (Optional)
+                nameInput.readOnly = true;
+                emailInput.readOnly = true;
+                nameInput.classList.add('bg-gray-100');
+                emailInput.classList.add('bg-gray-100');
+
+            } else {
+                // TRƯỜNG HỢP: KHÁCH MỚI
+                statusHtml = `<span class="text-blue-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">person_add</span> Khách mới - Vui lòng tạo thông tin</span>`;
+
+                // Reset trắng để nhập mới
+                nameInput.value = '';
+                emailInput.value = '';
+                nameInput.readOnly = false;
+                emailInput.readOnly = false;
+                nameInput.classList.remove('bg-gray-100');
+                emailInput.classList.remove('bg-gray-100');
+
+                // Focus vào ô tên để nhập cho nhanh
+                nameInput.focus();
+            }
+            statusDiv.innerHTML = statusHtml;
+
+            // === [THÊM] GỌI CHECK LẠI NÚT SUBMIT ===
+            validateSubmitButton();
+            // =======================================
+        } catch (e) {
+            console.error(e);
+            statusDiv.innerHTML = '<span class="text-red-500">Lỗi kết nối server</span>';
+            // Nếu lỗi thì coi như chưa xác thực
+            isCustomerVerified = false;
+            validateSubmitButton();
+        }
+
+        // Render lại bảng bên dưới để cập nhật tên khách (nếu có thay đổi)
+        renderAssignmentTable();
+    }
+
+    // --- SUPPORT FUNCTIONS ---
+    function formatTime(d) { return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
+
+    function calculateTotal() {
+        let total = 0, count = 0;
+        bookingState.guests.forEach(g => {
+            g.selectedItems.forEach(i => {
+                count++;
+                if(i.type==='SERVICE') total += MASTER_DATA.services.find(s=>s.Id===i.id).Price;
+                if(i.type==='COMBO') total += MASTER_DATA.combos.find(c=>c.Id===i.id).Price;
+            });
+        });
+        document.getElementById('totalPriceDisplay').innerText = new Intl.NumberFormat('vi-VN', {style:'currency',currency:'VND'}).format(total);
+        document.getElementById('totalItems').innerText = count;
+
+        // === [LOGIC MỚI] ===
+        const isWalkIn = document.getElementById('chkWalkIn').checked; // Check trạng thái
+        const depSec = document.getElementById('depositSection');
+        // Logic Cọc
+        let req = 0;
+        if (!isWalkIn){
+            const rule = MASTER_DATA.depositRules.find(r => total >= r.MinOrderValue);
+            if(rule) req = rule.DepositType === 'Percent' ? total * (rule.DepositValue/100) : rule.DepositValue;
+        }
+
+        if(req > 0) {
+            depSec.classList.remove('hidden');
+            document.getElementById('depositAmountDisplay').innerText = new Intl.NumberFormat('vi-VN', {style:'currency',currency:'VND'}).format(req);
+            depSec.dataset.req = req;
+            // Nếu hiện lại cọc, bỏ tick "Đã thu" để tránh nhầm lẫn
+            document.getElementById('depositPaid').checked = false;
+        } else {
+            depSec.classList.add('hidden');
+            depSec.dataset.req = 0;
+        }
+        validateSubmitButton();
+    }
+
+    function validateSubmitButton() {
+        const btn = document.getElementById('btnSubmit');
+        const req = parseFloat(document.getElementById('depositSection').dataset.req || 0);
+        const paid = document.getElementById('depositPaid').checked;
+        const selects = document.querySelectorAll('#assignmentTableBody select');
+
+        // Nếu div lỗi không có class 'hidden' nghĩa là đang có lỗi hiển thị -> Chặn
+        const isTimeInvalid = !document.getElementById('bookingTimeError').classList.contains('hidden');
+
+        // Điều kiện 1: Đã chọn KTV hết chưa?
+        let allTechSelected = selects.length > 0 && Array.from(selects).every(s => s.value !== "");
+        // Điều kiện 2: Cọc đủ chưa?
+        let depositOk = req === 0 || paid;
+        
+        // 2. Kiểm tra thông tin Khách hàng (LOGIC MỚI)
+        let customerOk = false;
+
+        if (isCustomerVerified) {
+            // Kiểm tra xem đang là chế độ Khách Cũ hay Mới dựa vào thuộc tính readOnly của ô tên
+            const isNewCustomer = !document.getElementById('inputName').readOnly;
+
+            if (isNewCustomer) {
+                // KHÁCH MỚI: Phải nhập đủ Tên & Email
+                const nameVal = document.getElementById('inputName').value.trim();
+                const emailVal = document.getElementById('inputEmail').value.trim();
+                
+                // (Tùy chọn) Kiểm tra định dạng email cơ bản có chứa
+                const isEmailValid = emailVal.length > 0 && emailVal.includes('@@');
+
+                customerOk = (nameVal.length > 0 && isEmailValid);
+            } else {
+                // KHÁCH CŨ: Đã tìm thấy là OK (Thông tin đã có sẵn trong DB)
+                customerOk = true;
+            }
+        }
+
+        // Tổng hợp điều kiện
+        btn.disabled = !(allTechSelected && depositOk && customerOk && !isTimeInvalid);
+
+        // Visual Feedback
+        if (btn.disabled) {
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            // Thêm tooltip báo lỗi thời gian
+            if (isTimeInvalid) btn.title = "Thời gian chọn không hợp lệ!";
+            else if (!isCustomerVerified) btn.title = "Vui lòng tìm kiếm khách hàng trước";
+            // Cập nhật tooltip để nhắc nhở
+            if (!isCustomerVerified) btn.title = "Vui lòng tìm kiếm khách hàng trước";
+            else if (!customerOk) btn.title = "Vui lòng nhập đầy đủ Tên và Email hợp lệ";
+            else btn.title = "Vui lòng chọn KTV cho tất cả dịch vụ";
+        } else {
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.title = "";
+        }
+    }
+
+    // --- SUBMIT DỮ LIỆU ---
+    async function submitBooking() {
+        // Gom dữ liệu từ bookingState và các dòng trong Bảng
+        const guestsData = [];
+
+        // Chúng ta phải gom theo group guest, nhưng dữ liệu chi tiết (TechId, Time) lại nằm trong DOM table
+        // Cách hay nhất: Loop qua Table Rows để lấy data
+        const rows = document.querySelectorAll('#assignmentTableBody tr');
+        let currentGuestName = "";
+        let currentGuestItems = [];
+
+        // Vì cấu trúc bảng phẳng (Flat List), ta cần map lại vào Guest Object
+        // Để đơn giản hóa cho Controller: Gửi 1 list items phẳng kèm GuestName là được!
+        // Nhưng ViewModel yêu cầu List<BookingGuestVM>. Ta sẽ gom lại.
+
+        // Map tạm:
+        let mapGuest = {}; // "GuestName" -> [Items]
+
+        rows.forEach(tr => {
+            const guestNameCell = tr.cells[0].innerText.trim();
+            if(guestNameCell) currentGuestName = guestNameCell; // Lấy tên từ dòng đầu tiên của block
+
+            const select = tr.querySelector('select');
+            const hidden = tr.querySelector('.task-data');
+
+            if (!mapGuest[currentGuestName]) mapGuest[currentGuestName] = [];
+
+            mapGuest[currentGuestName].push({
+                ServiceId: parseInt(hidden.dataset.sid),
+                ComboId: hidden.dataset.cid ? parseInt(hidden.dataset.cid) : null,
+                TechnicianId: parseInt(select.value),
+                StartTime: hidden.dataset.start,
+                EndTime: hidden.dataset.end
+            });
+        });
+
+        // Convert to Array for VM
+        const payloadGuests = Object.keys(mapGuest).map(key => ({
+            GuestName: key,
+            Items: mapGuest[key]
+        }));
+
+        const payload = {
+            CustomerPhone: document.getElementById('inputPhone').value,
+            CustomerName: document.getElementById('inputName').value,
+            CustomerEmail: document.getElementById('inputEmail').value,
+            BookingDate: document.getElementById('inputBookingDate').value,
+            StartTime: document.getElementById('inputBookingTime').value, // Giờ tổng
+            Notes: document.getElementById('inputNotes').value, // <--- Lấy value thật,
+            IsWalkIn: document.getElementById('chkWalkIn').checked,
+            IsDepositPaid: document.getElementById('depositPaid').checked,
+            Guests: payloadGuests
+        };
+
+        // Gửi AJAX
+        try {
+            const res = await fetch('/Receptionist/Calendar/SaveBooking', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) {
+                // [THAY ĐỔI] Dùng showSuccess và await để chờ người dùng đọc xong mới reload
+                await showSuccess('Đặt lịch thành công!');
+                window.location.reload();
+            } else {
+                // [THAY ĐỔI] sweetalert
+                await showError('Lỗi: ' + await res.text());
+            }
+        } catch(e) { alert('Lỗi kết nối'); }
+    }
+
+    // --- LOGIC XEM CHI TIẾT ---
+    async function openDetailModal(apptId) {
+        // 1. Reset UI cũ
+        document.getElementById('detailCustomerName').innerText = 'Đang tải...';
+        document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center">Đang tải dữ liệu...</td></tr>';
+        document.getElementById('detailModal').classList.remove('hidden');
+
+        try {
+            // 2. Gọi API lấy dữ liệu
+            const res = await fetch(`/Receptionist/Calendar/GetAppointmentDetails?id=${apptId}`);
+            if (!res.ok) throw new Error('Không tìm thấy lịch hẹn');
+
+            const data = await res.json();
+
+            // 3. Đổ dữ liệu vào Modal
+            document.getElementById('detailCustomerName').innerText = data.customerName;
+            document.getElementById('detailCustomerPhone').innerText = data.customerPhone || 'Không có SĐT';
+            document.getElementById('detailTimeRange').innerText = data.timeRange; // VD: 14:00 - 15:30
+            document.getElementById('detailBookingDate').innerText = data.bookingDate; // VD: 10/01/2026
+            document.getElementById('detailCreatedDate').innerText = data.createdDate;
+            document.getElementById('detailNotes').innerText = data.notes || 'Không có ghi chú.';
+            document.getElementById('detailStatus').innerText = data.status;
+
+            // Format tiền
+            const fmtMoney = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'});
+            document.getElementById('detailTotal').innerText = fmtMoney.format(data.totalAmount);
+
+            // Render danh sách items
+            const tbody = document.getElementById('detailItemsBody');
+            tbody.innerHTML = '';
+
+            data.items.forEach(item => {
+                // === LOGIC HIỂN THỊ GIÁ COMBO ===
+                // Nếu có comboId -> Là con của combo -> Không hiện giá lẻ
+                // Nếu không -> Hiện giá bình thường
+                let priceDisplay = "";
+                let nameDisplay = item.serviceName;
+
+                if (item.comboId) {
+                    priceDisplay = '<span class="text-xs text-gray-500 italic">(Theo Combo)</span>';
+                    // Tùy chọn: Thụt đầu dòng hoặc đổi màu tên để dễ nhìn
+                    nameDisplay = `<span class="pl-4 text-gray-600 border-l-2 border-gray-300 ml-1">${item.serviceName}</span>`;
+                } else {
+                    priceDisplay = fmtMoney.format(item.price);
+                }
+                // ================================
+
+                const row = `
+                <tr class="hover:bg-gray-50 border-b last:border-0">
+                    <td class="p-2 font-medium">${item.guestName}</td>
+                    <td class="p-2 text-gray-800">${nameDisplay}</td>
+                    <td class="p-2 text-blue-600 font-medium text-sm">${item.techName}</td>
+                    <td class="p-2 text-right font-bold text-gray-700">${priceDisplay}</td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // === [LOGIC MỚI] HIỂN THỊ NÚT BẤM ===
+            const actionDiv = document.getElementById('detailActions');
+            actionDiv.innerHTML = ''; // Reset nút cũ
+
+            if (data.status === 'Confirmed' || data.status === 'Pending') {
+                // Trạng thái Chờ -> Hiện nút CHECK-IN
+                let mainBtns = `
+                    <button onclick="updateAppointmentStatus(${data.id}, 'InProgress')"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm animate-bounce-short">
+                        <span class="material-symbols-outlined">login</span> KHÁCH ĐẾN (CHECK-IN)
+                    </button>`;
+
+                // Nhóm nút quản lý (Bên trái - Hủy/Dời)
+                // Ta dùng flex-row-reverse hoặc trick css để tách 2 nhóm
+                // Nhưng đơn giản nhất là thêm 2 nút Hủy/Dời vào trước
+
+                // Tính giờ để check 24h (Dùng data.startTime từ API trả về - Cần bổ sung startTime vào API GetAppointmentDetails nếu chưa có)
+                // Giả sử ta truyền thêm startTimeStr vào data
+
+                actionDiv.innerHTML = `
+                    <div class="flex gap-2 w-full justify-between">
+                        <div class="flex gap-2">
+                            <button onclick="checkCancelRule(${data.id}, '${data.startTime}')" class="px-3 py-2 border border-red-300 text-red-600 rounded hover:bg-red-50 font-bold text-sm flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">cancel</span> Hủy Lịch
+                            </button>
+                            <button onclick="checkRescheduleRule(${data.id}, '${data.startTime}', ${data.duration})" class="px-3 py-2 border border-orange-300 text-orange-600 rounded hover:bg-orange-50 font-bold text-sm flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">edit_calendar</span> Dời Lịch
+                            </button>
+                        </div>
+                        <div>${mainBtns}</div>
+                    </div>`;
+            }
+            else if (data.status === 'InProgress') {
+            // Trạng thái Đang làm -> Hiện nút CHECK-OUT
+            actionDiv.innerHTML = `
+                <button onclick="openPaymentModal(${data.id})"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined">payments</span> THANH TOÁN & VỀ
+                </button>`;
+            }
+            // Trường hợp ĐÃ THANH TOÁN XONG (Completed)
+            if (data.status === 'Completed') {
+                // Ta cần lấy InvoiceId để in.
+                // Lưu ý: API GetAppointmentDetails cần trả về invoiceId (nếu có)
+                // Giả sử API trả về data.invoiceId
+
+                if (data.invoiceId) {
+                    actionDiv.innerHTML = `
+                        <button onclick="printInvoice(${data.invoiceId})" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm">
+                            <span class="material-symbols-outlined">print</span> IN HÓA ĐƠN
+                        </button>`;
+                } else {
+                    actionDiv.innerHTML = `<span class="text-green-600 font-bold">Đã hoàn thành</span>`;
+                }
+            }
+        // Nếu Completed hoặc Cancelled thì không hiện nút gì thêm
+        } catch (e) {
+            alert('Lỗi: ' + e.message);
+            closeDetailModal();
+        }
+    }
+
+    // --- HÀM GỌI API CHUYỂN TRẠNG THÁI ---
+    async function updateAppointmentStatus(apptId, newStatus) {
+        // [THAY ĐỔI] Thêm await showConfirm sweetalert
+        const msg = newStatus === 'InProgress' ? 'Xác nhận khách đã đến cửa hàng?' : 'Xác nhận khách đã thanh toán và ra về?';
+        if (!await showConfirm(msg)) return;
+
+        // Hiệu ứng loading
+        const btn = document.querySelector('#detailActions button');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Đang xử lý...';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('id', apptId);
+            formData.append('status', newStatus);
+
+            const res = await fetch('/Receptionist/Calendar/UpdateAppointmentStatus', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                // Thành công -> Tắt modal và reload lại lịch
+                closeDetailModal();
+                window.location.reload();
+            } else {
+				await showError('Lỗi: ' + result.message); // [THAY ĐỔI] dùng sweetalert
+                btn.innerHTML = oldText; // Khôi phục nút
+                btn.disabled = false;
+            }
+        } catch (e) {
+			await showError('Lỗi kết nối server!'); // [THAY ĐỔI] dùng sweetalert
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    let currentBillData = { items: [] }; // Lưu trạng thái hiện tại
+    let currentApptId = 0;
+    let pollingInterval = null;
+
+    // 1. MỞ MODAL
+    async function openPaymentModal(apptId) {
+        closeDetailModal(); // Đóng cái modal detail cũ đi
+        currentApptId = apptId;
+        document.getElementById('paymentModal').classList.remove('hidden');
+        document.getElementById('paymentItemsContainer').innerHTML = 'Loading...';
+
+        // Load dữ liệu từ Server
+        const res = await fetch(`/Receptionist/Calendar/GetBillDetails?id=${apptId}`);
+        const data = await res.json();
+
+        // Fill thông tin Header
+        document.getElementById('payCustName').innerText = data.customerName;
+        document.getElementById('payMemberLevel').innerText = data.membershipLevel;
+        document.getElementById('payMemberPercent').innerText = data.membershipDiscountPercent;
+
+        // === [FIX: ĐIỀN LẠI VOUCHER CŨ] ===
+        // Lấy voucherCode từ data trả về và điền vào ô input
+        const voucherInput = document.getElementById('voucherCode');
+        if (data.voucherCode) {
+            voucherInput.value = data.voucherCode;
+        } else {
+            voucherInput.value = ''; // Reset nếu không có
+        }
+        // =================================
+
+        // Render Items
+        currentBillData.items = data.items; // Lưu vào biến toàn cục để thao tác
+        renderBillItems();
+
+        // Tính tiền lần đầu
+        calculateBill();
+    }
+
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.add('hidden');
+        if(pollingInterval) clearInterval(pollingInterval);
+    }
+
+    // 2. RENDER LIST DỊCH VỤ & Ô TIP
+    function renderBillItems() {
+        const container = document.getElementById('paymentItemsContainer');
+        container.innerHTML = '';
+
+        currentBillData.items.forEach((item, index) => {
+            const html = `
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between gap-4 transition ${!item.isSelected ? 'opacity-50 grayscale' : ''}">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" onchange="toggleBillItem(${index})" ${item.isSelected ? 'checked' : ''} class="w-5 h-5 text-blue-600 rounded">
+                    <div>
+                        <div class="font-bold text-gray-800">${item.serviceName}</div>
+                        <div class="text-xs text-gray-500">KTV: ${item.techName}</div>
+                        <div class="text-sm font-medium text-blue-600">${item.price.toLocaleString()}đ</div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-end">
+                    <label class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tip cho KTV</label>
+                    <input type="number"
+                           value="${item.tipAmount}"
+                           onchange="updateTip(${index}, this.value)"
+                           class="w-24 text-right border border-gray-300 rounded px-2 py-1 text-sm focus:ring-green-500 font-bold text-green-700"
+                           placeholder="0" min="0" ${!item.isSelected ? 'disabled' : ''}>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // 3. CÁC HÀM THAO TÁC (Tự động tính lại tiền sau khi sửa)
+    function toggleBillItem(index) {
+        currentBillData.items[index].isSelected = !currentBillData.items[index].isSelected;
+        renderBillItems(); // Re-render để mờ/sáng
+        calculateBill();
+    }
+
+    function updateTip(index, value) {
+        currentBillData.items[index].tipAmount = parseInt(value) || 0;
+        calculateBill(); // Tính lại tổng tip
+    }
+
+    // 4. GỌI SERVER TÍNH TIỀN (Debounce could be added here)
+    async function calculateBill() {
+        const payload = {
+            AppointmentId: currentApptId,
+            VoucherCode: document.getElementById('voucherCode').value,
+            Items: currentBillData.items
+        };
+
+        const res = await fetch('/Receptionist/Calendar/CalculateBill', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        // Update UI Calculator
+        const fmt = (n) => n.toLocaleString();
+        document.getElementById('lblSubTotal').innerText = fmt(result.subTotal);
+        document.getElementById('lblMemberDisc').innerText = fmt(result.memberDiscount);
+        document.getElementById('lblVoucherDisc').innerText = fmt(result.voucherDiscount);
+        document.getElementById('lblVoucherMsg').innerText = result.voucherMessage ? `(${result.voucherMessage})` : '';
+        document.getElementById('lblTipTotal').innerText = fmt(result.totalTip);
+        document.getElementById('lblDeposit').innerText = fmt(result.deposit);
+        document.getElementById('lblFinal').innerText = fmt(result.finalAmount) + ' đ';
+    }
+
+    // 5. XỬ LÝ THANH TOÁN
+    async function processPayment(method) {
+        // Lấy số tiền chốt
+        const finalAmountStr = document.getElementById('lblFinal').innerText;
+
+        // Gọi API CheckoutCash
+        const payload = {
+            AppointmentId: currentApptId,
+            VoucherCode: document.getElementById('voucherCode').value,
+            Items: currentBillData.items,
+            PaymentMethod: method // Gửi kèm phương thức thanh toán luôn
+        };
+
+        if (method === 'Cash') {
+			// [THAY ĐỔI] Giữ nguyên nội dung text, chỉ bọc vào showConfirm sweetalert
+            if(!await showConfirm(`XÁC NHẬN ĐÃ THU ĐỦ: ${finalAmountStr} (Tiền mặt)?\nHành động này sẽ chốt đơn ngay.`)) return;
+
+            try{
+                const res = await fetch('/Receptionist/Calendar/CheckoutCash', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    // [THAY ĐỔI] Thay alert thành showSuccess sweetalert (nhưng ta dùng fire trực tiếp để custom nút bấm cho trường hợp in hóa đơn)
+                    const askPrint = await Swal.fire({
+                        icon: 'success',
+                        title: 'Thanh toán thành công!',
+                        text: 'Bạn có muốn IN HÓA ĐƠN ngay không?',
+                        showCancelButton: true,
+                        confirmButtonText: '🖨️ In ngay',
+                        cancelButtonText: 'Đóng',
+                        confirmButtonColor: '#2563EB'
+                    });
+
+                    if(askPrint.isConfirmed) {
+                        printInvoice(data.invoiceId);
+                        setTimeout(() => window.location.reload(), 5000);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+					await showError('Lỗi: ' + data.message); // [THAY ĐỔI] dùng sweetalert
+                }
+            } catch(e) {
+				await showError('Lỗi kết nối khi thanh toán tiền mặt: ' + e.message); // [THAY ĐỔI] dùng sweetalert
+            }
+        }
+        else if (method === 'Momo') {
+            // const qrModal = document.getElementById('momoQrModal');
+            // const qrContainer = document.getElementById('momoQrContainer');
+            // qrModal.classList.remove('hidden');
+            // qrContainer.innerHTML = '<div class="text-center">Đang tạo mã QR...</div>';
+
+            // const payload = {
+            //     AppointmentId: currentApptId,
+            //     VoucherCode: document.getElementById('voucherCode').value,
+            //     Items: currentBillData.items
+            // };
+
+            // const res = await fetch('/Receptionist/Calendar/CreateMomoPayment', {
+            //     method: 'POST',
+            //     headers: {'Content-Type': 'application/json'},
+            //     body: JSON.stringify(payload)
+            // });
+            // const data = await res.json();
+
+            // if(data.success) {
+            //     qrContainer.innerHTML = `
+            //         <div class="text-center">
+            //             <p class="mb-2 text-sm">Click để mở trang thanh toán Momo (Môi trường Test)</p>
+            //             <a href="${data.payUrl}" target="_blank" class="bg-pink-600 text-white px-4 py-2 rounded font-bold">MỞ MOMO PAYMENT</a>
+            //             <p class="mt-4 text-xs text-gray-400">Sau khi thanh toán xong, hệ thống sẽ tự động đóng cửa sổ này.</p>
+            //         </div>`;
+
+            //     Bắt đầu Polling (Hỏi server xem xong chưa)
+            //     startPolling(currentApptId);
+            // } else {
+            //     alert('Lỗi tạo Momo: ' + data.message);
+            //     qrModal.classList.add('hidden');
+            // }
+            // Thay đổi UI để báo đang chuyển hướng
+            const btn = event.currentTarget; // Nút vừa bấm
+            const originalText = btn.innerHTML; // Lưu lại nội dung cũ (MOMO QR)
+            try{
+                btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Đang chuyển hướng Momo...';
+                btn.disabled = true;
+
+                const res = await fetch('/Receptionist/Calendar/CreateMomoPayment', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    // CHUYỂN HƯỚNG TRANG WEB SANG MOMO LUÔN
+                    window.location.href = data.payUrl;
+                } else {
+					await showError('Lỗi tạo Momo: ' + data.message); // [THAY ĐỔI] dùng sweetalert
+                    btn.innerHTML = 'MOMO QR';
+                    btn.disabled = false;
+                }
+            } catch(e) {
+                console.error(e);
+				await showError('Lỗi kết nối server!'); // [THAY ĐỔI] dùng sweetalert
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    }
+
+    // 6. POLLING (Hỏi server liên tục)
+    function startPolling(apptId) {
+        if(pollingInterval) clearInterval(pollingInterval);
+
+        pollingInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/Receptionist/Calendar/CheckPaymentStatus?appointmentId=${apptId}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    clearInterval(pollingInterval);
+                    // [THAY ĐỔI] Dùng SweetAlert thay vì alert thường
+                    await showSuccess('Momo báo tin: Thanh toán THÀNH CÔNG!');
+                    window.location.reload();
+                }
+            } catch (e) {
+                console.log("Polling error", e);
+            }
+        }, 3000); // 3 giây hỏi 1 lần
+    }
+
+    // Tự động chạy khi trang load để check kết quả từ Momo trả về
+    document.addEventListener("DOMContentLoaded", async function() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Nếu có param ?msg=... (Thành công)
+        const msg = urlParams.get('msg');
+        if (msg) {
+            // [THAY ĐỔI] Thay alert(msg) bằng showSuccess
+            // Không cần await ở đây để nó chạy song song với logic dưới (nếu có)
+            showSuccess(msg);
+            // Xóa param khỏi URL cho đẹp
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Xử lý thông báo Lỗi & Mở lại Modal
+        const error = urlParams.get('error');
+        const reopenId = urlParams.get('reopenId'); // Lấy ID cần mở lại
+
+        if (error) {
+            // [THAY ĐỔI] Thay alert(error) bằng showError
+            await showError(error);
+
+            // Nếu có yêu cầu mở lại Modal (do hủy Momo) -> Mở ngay lập tức
+            if (reopenId) {
+                openPaymentModal(parseInt(reopenId));
+            }
+        }
+
+        // === [THÊM MỚI] TỰ ĐỘNG IN HÓA ĐƠN (MOMO RETURN) ===
+        const printId = urlParams.get('printInvoiceId');
+        if (printId) {
+            // [THAY ĐỔI] Thay confirm() mặc định bằng SweetAlert2 Confirm
+            const askPrint = await Swal.fire({
+                icon: 'success',
+                title: 'Thanh toán Momo thành công!',
+                text: 'Bạn có muốn IN HÓA ĐƠN ngay không?',
+                showCancelButton: true,
+                confirmButtonText: '🖨️ In ngay',
+                cancelButtonText: 'Đóng',
+                confirmButtonColor: '#2563EB',
+                cancelButtonColor: '#6B7280'
+            });
+            // Hỏi xác nhận cho lịch sự (hoặc in luôn tùy bạn)
+            if(askPrint.isConfirmed) {
+                printInvoice(printId);
+            }
+        }
+        // ===================================================
+
+        // Dọn dẹp URL sau khi xử lý xong (Xóa hết param để F5 không bị lại)
+        if (msg || error || printId) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
+
+    // === LOGIC HỦY & DỜI LỊCH (24H RULE) ===
+
+    // Hàm tiện ích: Tính số giờ còn lại đến lúc hẹn
+    function getHoursUntilAppt(dateStr) {
+        // dateStr dạng "yyyy-MM-dd HH:mm:ss" từ C# trả về
+        // Chuyển đổi chuỗi thành Date object
+        // Lưu ý: Safari trên iOS kén định dạng này, nên thay ' ' thành 'T' cho chuẩn ISO
+        const isoStr = dateStr.replace(' ', 'T');
+        const apptDate = new Date(isoStr);
+        const now = new Date();
+
+        const diffMs = apptDate - now; // Miliseconds
+        return diffMs / (1000 * 60 * 60); // Đổi sang giờ
+    }
+
+    // 1. XỬ LÝ HỦY LỊCH
+    async function checkCancelRule(id, dateStr) {
+        const hours = getHoursUntilAppt(dateStr);
+        const isViolation = hours < 24;
+
+        // Nội dung cảnh báo động
+        let confirmMsg = "";
+        if (isViolation) {
+            confirmMsg = "⚠️ CẢNH BÁO VI PHẠM (Dưới 24h)\n\nKhách hủy quá sát giờ. Theo quy định, tiền cọc (nếu có) sẽ KHÔNG được hoàn lại.\n\nBạn có chắc chắn muốn HỦY lịch hẹn này không?";
+        } else {
+            confirmMsg = "✅ HỦY HỢP LỆ (Trên 24h)\n\nBạn có thể hoàn lại tiền cọc cho khách theo quy định.\n\nXác nhận hủy lịch hẹn?";
+        }
+
+		// [THAY ĐỔI] confirm -> showConfirm sweetalert
+        if (!await showConfirm(confirmMsg)) return;
+
+		// [THAY ĐỔI] prompt -> showPrompt sweetalert
+        const reason = await showPrompt("Nhập lý do hủy (Bắt buộc):");
+        if (reason === null) return; // Người dùng ấn Hủy
+        if (!reason.trim()) {
+            await showWarning("Phải nhập lý do mới được hủy!"); // [THAY ĐỔI]
+            return;
+        }
+
+        try {
+            // Gọi API
+            const res = await fetch(`/Receptionist/Calendar/CancelAppointment?id=${id}&reason=${encodeURIComponent(reason)}`, { method: 'POST' });
+            const data = await res.json();
+            if(data.success) {
+				await showSuccess("Đã hủy lịch thành công!"); // [THAY ĐỔI] dùng sweetalert
+                window.location.reload();
+            } else {
+				await showError(data.message); // [THAY ĐỔI] dùng sweetalert
+            }
+        } catch(e) { await showError(data.message); } // [THAY ĐỔI] dùng sweetalert
+    }
+
+    // 2. XỬ LÝ DỜI LỊCH
+    // [THAY ĐỔI] Thêm async
+    async function checkRescheduleRule(id, dateStr, duration) {
+        const hours = getHoursUntilAppt(dateStr);
+
+        // Code nghiệp vụ thật đây: Chặn nếu dưới 24h
+        if (hours < 24) {
+			// [THAY ĐỔI] alert -> showWarning (hoặc showError) sweetalert
+            await showError("⛔ KHÔNG THỂ DỜI LỊCH!\n\nLịch hẹn chỉ còn " + hours.toFixed(1) + " giờ nữa là bắt đầu (Dưới 24h).\n\nHệ thống không cho phép dời lịch để tránh trống lịch KTV.\nVui lòng chọn HỦY (Mất cọc) nếu khách không thể đến.");
+            return;
+        }
+
+        // Nếu hợp lệ (> 24h) -> Mở modal
+        openRescheduleModal(id, duration);
+    }
+
+    // Biến toàn cục lưu chi tiết của đơn đang dời
+    let currentRescheduleItems = [];
+
+	// 1.MỞ MODAL DỜI LỊCH
+    async function openRescheduleModal(apptId) {
+        // closeDetailModal();
+        // document.getElementById('rescheduleModal').classList.remove('hidden');
+        // document.getElementById('reschApptId').value = id;
+        // document.getElementById('reschDuration').value = duration;
+
+        // document.getElementById('reschDate').value = '';
+        // document.getElementById('reschTime').value = '';
+        // document.getElementById('reschTech').innerHTML = '<option value="">-- Chọn ngày giờ trước --</option>';
+        closeDetailModal();
+        document.getElementById('rescheduleModal').classList.remove('hidden');
+        document.getElementById('reschApptId').value = apptId;
+
+        // Reset Inputs
+        document.getElementById('reschDate').value = '';
+        document.getElementById('reschTime').value = '';
+        document.getElementById('rescheduleTableBody').innerHTML = '<tr><td colspan="3" class="p-4 text-center">Đang tải...</td></tr>';
+        // === [THÊM DÒNG NÀY] CHẶN CHỌN NGÀY QUÁ KHỨ ===
+        document.getElementById('reschDate').min = new Date().toISOString().split('T')[0];
+
+        try {
+            // Gọi API lấy chi tiết (đã sửa ở Bước 1)
+            const res = await fetch(`/Receptionist/Calendar/GetAppointmentDetails?id=${apptId}`);
+            const data = await res.json();
+
+            // Lưu items vào biến toàn cục
+            currentRescheduleItems = data.items;
+
+            // Render bảng ban đầu (chưa lọc KTV vì chưa chọn giờ)
+            renderRescheduleRows();
+
+        } catch(e) {
+            alert("Lỗi tải dữ liệu: " + e.message);
+        }
+    }
+
+    // 2. RENDER CÁC DÒNG DỊCH VỤ
+    function renderRescheduleRows() {
+        const tbody = document.getElementById('rescheduleTableBody');
+        tbody.innerHTML = '';
+        currentRescheduleItems.forEach((item, index) => {
+            const html = `
+            <tr class="resch-row border-b last:border-0" data-index="${index}">
+                <td class="p-3">
+                    <div class="font-bold text-gray-800 text-sm">${item.serviceName}</div>
+                    <div class="text-xs text-blue-600 font-bold bg-blue-50 inline-block px-1 rounded mt-1">
+                        ${item.guestName}
+                    </div>
+                </td>
+                <td class="p-3">
+                    <div class="text-gray-900 font-bold text-sm time-range">--:--</div>
+                    <div class="text-xs text-gray-500">${item.duration} phút</div>
+                </td>
+                <td class="p-3">
+                    <select class="resch-tech-select w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-orange-500"
+                            data-original-tech="${item.techId}"
+                            data-service-id="${item.serviceId}">
+                        <option value="">-- Chọn giờ trước --</option>
+                    </select>
+                </td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // === HÀM CỐT LÕI: TÍNH TOÁN & LỌC (V3) ===
+    function updateRescheduleAvailability() {
+        const dateVal = document.getElementById('reschDate').value;
+        const timeVal = document.getElementById('reschTime').value;
+
+        const errorDiv = document.getElementById('reschTimeError');
+        const saveBtn = document.querySelector('#rescheduleModal button.bg-orange-600'); // Nút Lưu thay đổi
+
+        if (!dateVal || !timeVal) return;
+
+        // GỌI HÀM KIỂM TRA
+        const check = validateDateTimeRule(dateVal, timeVal);
+
+        if (!check.valid) {
+            // A. Nếu lỗi: Hiện thông báo & Khóa nút
+            errorDiv.innerText = check.msg;
+            errorDiv.classList.remove('hidden');
+            saveBtn.disabled = true;
+            saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Xóa danh sách KTV để không cho chọn
+            document.querySelectorAll('.resch-tech-select').forEach(s => s.innerHTML = '<option>⛔ Giờ không hợp lệ</option>');
+            return; // DỪNG LUÔN, KHÔNG CHẠY TÍNH TOÁN DƯỚI NỮA
+        } else {
+            // B. Nếu đúng: Ẩn lỗi & Mở nút
+            errorDiv.classList.add('hidden');
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // 1. TÍNH TOÁN GIỜ TUẦN TỰ (Sequential Time Logic)
+        // Gom nhóm theo khách để tính giờ nối tiếp
+        let guestCursors = {}; // Map: "Tên khách" -> Thời gian kết thúc dịch vụ trước đó
+
+        // Thời gian bắt đầu chung (Global)
+        const [h, m] = timeVal.split(':').map(Number);
+        const globalStart = new Date(`${dateVal}T${timeVal}:00`);
+
+        const rows = document.querySelectorAll('.resch-row');
+
+        // Mảng lưu tạm các KTV đã được gán "tạm" trong phiên tính toán này (để tránh trùng cục bộ)
+        let assignedTechsLocal = []; // [{techId, start, end}]
+
+        rows.forEach((row, idx) => {
+            const item = currentRescheduleItems[idx];
+            const guestKey = item.guestName || "Main";
+
+            // Xác định giờ bắt đầu cho dịch vụ này
+            let myStart = new Date(globalStart); // Mặc định là giờ chung
+
+            // Nếu khách này đã có dịch vụ trước đó -> Nối tiếp đuôi
+            if (guestCursors[guestKey]) {
+                myStart = new Date(guestCursors[guestKey]);
+            }
+
+            // Tính giờ kết thúc
+            let myEnd = new Date(myStart.getTime() + item.duration * 60000);
+
+            // Cập nhật con trỏ thời gian cho khách này
+            guestCursors[guestKey] = myEnd;
+
+            // Hiển thị ra UI (Cột Thời lượng)
+            const timeStr = `${formatTime(myStart)} - ${formatTime(myEnd)}`;
+            row.querySelector('.time-range').innerText = timeStr;
+
+            // --- 2. LỌC KTV (3 LỚP) ---
+            const select = row.querySelector('.resch-tech-select');
+            const originalTechId = parseInt(select.dataset.originalTech);
+            const serviceId = parseInt(select.dataset.serviceId); // ID dịch vụ để check skill
+
+            let optionsHtml = "";
+            let autoSelectId = null;
+
+            // Duyệt danh sách tất cả KTV
+            (currentRescheduleTechs || []).forEach(tech => {
+                let isDisabled = false;
+                let note = "";
+
+                // LỚP 1: CHECK KỸ NĂNG (Skill)
+                // Nếu KTV có danh sách kỹ năng và KHÔNG chứa serviceId này -> Ẩn
+                if (tech.AllowedServiceIds && tech.AllowedServiceIds.length > 0) {
+                     // Lưu ý: serviceId có thể null nếu là Combo, ta tạm bỏ qua check nếu null
+                     if (serviceId && !tech.AllowedServiceIds.includes(serviceId)) {
+                         return; // Bỏ qua, không render người này luôn
+                     }
+                }
+
+                // LỚP 2: CHECK LỊCH DATABASE (Shift & Events)
+                // Convert time sang phút trong ngày để so sánh Shift
+                const startMin = myStart.getHours()*60 + myStart.getMinutes();
+                const endMin = myEnd.getHours()*60 + myEnd.getMinutes();
+
+                if (tech.ShiftStartMinutes === 0) { isDisabled = true; note = "(Nghỉ)"; }
+                else if (startMin < tech.ShiftStartMinutes || endMin > tech.ShiftEndMinutes) { isDisabled = true; note = "(Hết ca)"; }
+
+                if (!isDisabled) {
+                    const currentApptId = parseInt(document.getElementById('reschApptId').value);
+                    const isBusyDB = (currentRescheduleEvents || []).some(evt => {
+                        if (evt.TechnicianId !== tech.Id) return false;
+                        const evtApptId = evt.AppointmentId || evt.appointmentId;
+                        if (evtApptId === currentApptId) return false; // Trừ lịch cũ của chính nó
+                        // 2. BỎ QUA NẾU ĐÃ HOÀN THÀNH (Cho phép đè lên lịch sử)
+                        // (Lưu ý: evt.Status có thể viết hoa hoặc thường tùy API, nên check cả 2 hoặc log ra xem)
+                        const status = evt.Status || evt.status;
+                        if (status === 'Completed') return false;
+                        const evtStart = new Date(evt.StartTime);
+                        const evtEnd = new Date(evt.EndTime);
+                        return (myStart < evtEnd && evtStart < myEnd); // Check overlap
+                    });
+                    if (isBusyDB) { isDisabled = true; note = "(Bận lịch)"; }
+                }
+
+                // LỚP 3: CHECK TRÙNG CỤC BỘ (Local Conflict)
+                // Kiểm tra xem KTV này đã được gán cho dòng nào bên trên mà bị trùng giờ không?
+                if (!isDisabled) {
+                    const isBusyLocal = assignedTechsLocal.some(assign =>
+                        assign.techId === tech.Id &&
+                        (myStart < assign.end && assign.start < myEnd) // Có trùng giờ
+                    );
+                    if (isBusyLocal) { isDisabled = true; note = "(Trùng dòng trên)"; }
+                }
+
+                // Render Option
+                const isOriginal = (tech.Id === originalTechId);
+                let selectedAttr = "";
+
+                // Logic Auto-Select:
+                // Ưu tiên chọn KTV gốc NẾU họ không bị disable
+                if (isOriginal && !isDisabled) {
+                    selectedAttr = "selected";
+                    autoSelectId = tech.Id;
+                }
+
+                if (isDisabled) {
+                    // Nếu là gốc nhưng bận -> Vẫn hiện nhưng disable
+                    if(isOriginal) optionsHtml += `<option disabled class="bg-gray-200 text-gray-400" selected>${tech.Name} ${note}</option>`;
+                    // Người lạ bận -> Không hiện để đỡ rối (hoặc hiện tùy bạn)
+                } else {
+                    optionsHtml += `<option value="${tech.Id}" ${selectedAttr}>${tech.Name}</option>`;
+                }
+            });
+
+            select.innerHTML = optionsHtml;
+
+            // Fallback: Nếu không chọn được KTV gốc (do bận), chọn người rảnh đầu tiên
+            if (!autoSelectId) {
+                const firstAvail = select.querySelector('option:not([disabled])');
+                if (firstAvail) {
+                    firstAvail.selected = true;
+                    autoSelectId = parseInt(firstAvail.value);
+                } else {
+                    select.insertAdjacentHTML('afterbegin', `<option value="">⚠️ Không có KTV rảnh</option>`);
+                    select.value = "";
+                }
+            }
+
+            // --- LƯU TRẠNG THÁI ĐỂ CHECK CHO DÒNG SAU ---
+            if (autoSelectId) {
+                assignedTechsLocal.push({
+                    techId: autoSelectId,
+                    start: myStart,
+                    end: myEnd
+                });
+            }
+        });
+    }
+
+    // Helper format giờ
+    function formatTime(date) {
+        return date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
+    }
+
+    // 4. SUBMIT DỜI LỊCH (Gửi List chi tiết)
+    async function submitReschedule() {
+        const dateVal = document.getElementById('reschDate').value;
+        const timeVal = document.getElementById('reschTime').value;
+
+        // Lấy ID từ hidden field và parse sang số
+        const apptIdStr = document.getElementById('reschApptId').value;
+        const apptId = parseInt(apptIdStr);
+
+		if(!dateVal || !timeVal) { await showWarning("Vui lòng chọn ngày giờ mới!"); return; } // [THAY ĐỔI] dùng sweetalert
+		if(!apptId || isNaN(apptId)) { await showError("Lỗi: Không tìm thấy ID lịch hẹn! Vui lòng tải lại trang."); return; } // [THAY ĐỔI] dùng sweetalert
+
+        // Gom dữ liệu từ bảng
+        const details = [];
+        const rows = document.querySelectorAll('.resch-row');
+
+        // === [LOGIC MỚI] CHECK XUNG ĐỘT THỜI GIAN (Time Collision) ===
+        // Mảng chứa các slot đã chọn: { techId: 1, start: 600, end: 630 } (Phút)
+        const assignedSlots = [];
+        let collisionError = null;
+
+        let isValid = true;
+
+        rows.forEach(row => {
+            const detailId = parseInt(row.dataset.detailId || row.dataset.index); // Fallback nếu thiếu
+            const select = row.querySelector('.resch-tech-select');
+
+            // Check kỹ detailId
+            if (isNaN(detailId)) return;
+            const techId = parseInt(select.value);
+
+            if (!techId || isNaN(techId)) {
+                isValid = false;
+            } else {
+                // 1. Lấy khung giờ của dòng này (Từ cột "Thời lượng")
+                // Giả định cột thời lượng là cột thứ 2 (index 1) và có dạng "10:00 - 10:30"
+                const timeText = row.cells[1].innerText.trim().split('\n')[0]; // Lấy dòng đầu (bỏ qua '30 phút' bên dưới)
+                const [startStr, endStr] = timeText.split('-').map(s => s.trim());
+
+                // Đổi sang số phút để so sánh (VD: 10:00 -> 600)
+                const startMin = parseTime(startStr);
+                const endMin = parseTime(endStr);
+
+                // 2. Kiểm tra xem ông KTV này có bị trùng giờ với slot nào đã chọn trước đó không?
+                const isConflict = assignedSlots.some(slot =>
+                    slot.techId === techId &&       // Cùng một người
+                    startMin < slot.end && slot.start < endMin // Giao nhau về thời gian (Overlap)
+                );
+
+                if (isConflict) {
+                    collisionError = `KTV đang bị trùng giờ làm việc (${startStr} - ${endStr})!`;
+                }
+
+                // Lưu lại slot này để check cho dòng sau
+                assignedSlots.push({ techId, start: startMin, end: endMin });
+            }
+
+            details.push({
+                DetailId: detailId,
+                TechnicianId: parseInt(techId)
+            });
+        });
+
+        // Hàm phụ: Đổi "10:30" -> 630 phút
+        function parseTime(t) {
+            if(!t) return 0;
+            const parts = t.split(':');
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+
+        if (!isValid) {
+			await showWarning("Vui lòng chọn KTV cho tất cả các dịch vụ!"); // [THAY ĐỔI] dùng sweetalert
+            return;
+        }
+
+        // === [THÊM MỚI] CHẶN NẾU TRÙNG ===
+        if (collisionError) {
+            await showError("⛔ XUNG ĐỘT LỊCH TRÌNH!\n\n" + collisionError + "\n\nMột KTV không thể làm 2 việc CÙNG LÚC.\n(Nhưng làm tuần tự việc này xong đến việc kia thì được).");
+            return;
+        }
+        // =================================
+
+        // Payload mới
+        const payload = {
+            AppointmentId: parseInt(document.getElementById('reschApptId').value),
+            NewDate: dateVal,
+            NewTime: timeVal,
+            Details: details // <--- Gửi list thay vì 1 ID
+        };
+
+        console.log("Sending payload:", payload); // <--- Bật F12 xem log này
+
+        try {
+            const res = await fetch('/Receptionist/Calendar/ProcessReschedule', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            // Đọc response text trước để debug nếu lỗi
+            const text = await res.text();
+            try {
+                const data = JSON.parse(text);
+                if(data.success) {
+					await showSuccess("✅ Dời lịch và phân công lại thành công!"); // [THAY ĐỔI] dùng sweetalert
+                    window.location.reload();
+                } else {
+					await showError("Lỗi server trả về: " + data.message); // [THAY ĐỔI] dùng sweetalert
+                }
+            } catch {
+                console.error("Server error raw:", text);
+                await showError("Lỗi hệ thống (Xem console để biết chi tiết)"); // [THAY ĐỔI] dùng sweetalert
+            }
+		} catch(e) { await showError("Lỗi kết nối server"); } // [THAY ĐỔI] dùng sweetalert
+    }
+
+    // Hàm mở cửa sổ in (Popup)
+    function printInvoice(invoiceId) {
+        if (!invoiceId) { alert("Chưa có ID hóa đơn!"); return; }
+
+        // Mở cửa sổ popup kích thước nhỏ
+        const url = `/Receptionist/Calendar/PrintInvoice?id=${invoiceId}`;
+        const w = 400;
+        const h = 600;
+        const left = (screen.width/2)-(w/2);
+        const top = (screen.height/2)-(h/2);
+
+        window.open(url, 'PrintInvoice', `toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=${w}, height=${h}, top=${top}, left=${left}`);
+    }
+
+    // HÀM XỬ LÝ CHẾ ĐỘ WALK-IN
+    function toggleWalkInMode() {
+        const isWalkIn = document.getElementById('chkWalkIn').checked;
+        const dateInput = document.getElementById('inputBookingDate');
+        const timeInput = document.getElementById('inputBookingTime');
+
+        if (isWalkIn) {
+            // 1. Tự động set Ngày & Giờ hiện tại
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            timeInput.value = `${hh}:${min}`;
+
+            // SỬA: Gọi onBookingDateChange thay vì updateBookingTime
+            // Để nó tải dữ liệu ca làm của "Hôm nay" về
+            onBookingDateChange(dateInput.value);
+        }
+
+        // 2. Tính lại tiền (để ẩn/hiện phần Cọc)
+        calculateTotal();
+    }
+
+    // HÀM XỬ LÝ KHI ĐỔI NGÀY TRONG MODAL
+    async function onBookingDateChange(newDateStr) {
+        if (!newDateStr) return;
+
+        // Hiện loading trong bảng
+        document.getElementById('assignmentTableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500"><span class="material-symbols-outlined animate-spin align-middle">sync</span> Đang tải lịch làm việc...</td></tr>';
+
+        try {
+            // Gọi API lấy dữ liệu ngày mới
+            const res = await fetch(`/Receptionist/Calendar/GetTechsAvailability?date=${newDateStr}`);
+            const data = await res.json();
+
+            if (data.success) {
+                // Cập nhật biến dữ liệu động
+                currentModalTechs = data.techs;
+                currentModalEvents = data.events;
+
+                // Render lại bảng với dữ liệu mới
+                updateBookingTime();
+            } else {
+                alert('Lỗi tải dữ liệu: ' + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Lỗi kết nối server khi tải lịch làm việc!');
+        }
+    }
+
+    // HÀM XỬ LÝ KHI ĐỔI NGÀY TRONG MODAL DỜI LỊCH
+    async function onRescheduleDateChange(newDateStr) {
+        if (!newDateStr) return;
+
+        // Thông báo đang tải trong các ô Select KTV
+        const selects = document.querySelectorAll('.resch-tech-select');
+        selects.forEach(s => s.innerHTML = '<option>Đang tải dữ liệu...</option>');
+
+        try {
+            // Gọi lại chính API GetTechsAvailability (đã sửa PascalCase)
+            const res = await fetch(`/Receptionist/Calendar/GetTechsAvailability?date=${newDateStr}`);
+            const data = await res.json();
+
+            if (data.success) {
+                // Cập nhật biến dữ liệu động riêng cho Dời lịch
+                currentRescheduleTechs = data.techs;
+                currentRescheduleEvents = data.events;
+
+                // Tính toán lại danh sách KTV
+                updateRescheduleAvailability();
+            } else {
+                alert('Lỗi tải dữ liệu: ' + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Lỗi kết nối server khi tải lịch làm việc!');
+        }
+    }
+
+    // HÀM KIỂM TRA HỢP LỆ NGÀY GIỜ (Dùng chung cho cả 2 modal)
+    function validateDateTimeRule(dateStr, timeStr) {
+        if (!dateStr || !timeStr) return { valid: true, msg: "" }; // Chưa chọn thì chưa lỗi
+
+        // 1. KIỂM TRA KHUNG GIỜ LÀM VIỆC (08:00 - 20:00)
+        const [h, m] = timeStr.split(':').map(Number);
+        // Nếu nhỏ hơn 8h hoặc lớn hơn 20h (hoặc đúng 20h mà có phút lẻ)
+        if (h < 8 || h > 20 || (h === 20 && m > 0)) {
+            return { valid: false, msg: "⛔ Vui lòng chọn trong khung giờ 08:00 - 20:00" };
+        }
+
+        // 2. KIỂM TRA QUÁ KHỨ (Ngày đã chọn so với Hiện tại)
+        // Cách 1: Nếu đang tích "Làm ngay" thì KHÔNG cần check quá khứ
+        const chkWalkIn = document.getElementById('chkWalkIn');
+        if (chkWalkIn && chkWalkIn.checked) {
+             return { valid: true, msg: "" };
+        }
+
+        // Cách 2: Làm tròn thời gian hiện tại về 0 giây để so sánh công bằng
+        const selectedDate = new Date(`${dateStr}T${timeStr}`);
+        const now = new Date();
+        now.setSeconds(0, 0); // <--- QUAN TRỌNG: Reset giây về 0
+
+        // So sánh timestamp.
+        // Lưu ý: Nếu là Walk-in (Làm ngay) thì code tự điền giờ hiện tại -> Sẽ hợp lệ.
+        // Nếu chọn tay: Phải lớn hơn hoặc bằng hiện tại (cho phép sai số 1 phút để dễ chọn)
+        if (selectedDate < now) {
+            // Check kỹ hơn: Nếu là ngày quá khứ hẳn
+            const selectedDayOnly = new Date(dateStr);
+            const todayOnly = new Date(now.toDateString()); // Reset giờ về 00:00
+
+            if (selectedDayOnly < todayOnly) {
+                return { valid: false, msg: "⛔ Không thể chọn ngày trong quá khứ!" };
+            }
+            // Nếu là hôm nay nhưng giờ cũ
+            return { valid: false, msg: "⛔ Không thể chọn giờ trong quá khứ!" };
+        }
+
+        return { valid: true, msg: "" };
+    }
+</script>
