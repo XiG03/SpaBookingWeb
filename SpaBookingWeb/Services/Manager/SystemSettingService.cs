@@ -284,49 +284,64 @@ namespace SpaBookingWeb.Services.Manager
                 }
             }
 
-            // 2. Create Employee
+            // 2. Create or Update Employee
             var existingEmp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == user.Id);
             if (existingEmp != null)
             {
-                // If User is already Employee -> Skip or report error
-                throw new Exception("This account (Email/Phone) is already an employee in the system.");
+                // If User is already Employee -> Just update the role
+                // Remove all existing roles (except Customer if we were preserving it, but here we want to SWITCH role for employee context)
+                // Actually, let's keep it simple: Remove all employee roles and add the new one.
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                var rolesToRemove = currentRoles.Where(r => r != "Customer").ToList();
+                if (rolesToRemove.Any())
+                {
+                    await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                }
+                
+                // Add new role logic (below)
             }
-
-            // Create Employee with default full info to avoid database constraint error
-            var newEmployee = new Employee
+            else
             {
-                IdentityUserId = user.Id,
-                FullName = customer.FullName,
-                Gender = "Other", // Default gender
-                DateOfBirth = new DateTime(2000, 1, 1), // Default DOB
-                Address = "Not updated",
-                BaseSalary = 5000000, 
-                HireDate = DateTime.Now,
-                IsActive = true,
-                Avatar = "/ManagerAssets/assets/avatars/face-1.jpg" // Default Avatar
-            };
+                // Create Employee with default full info to avoid database constraint error
+                var newEmployee = new Employee
+                {
+                    IdentityUserId = user.Id,
+                    FullName = customer.FullName,
+                    Gender = "Other", // Default gender
+                    DateOfBirth = new DateTime(2000, 1, 1), // Default DOB
+                    Address = "Not updated",
+                    BaseSalary = 5000000, 
+                    HireDate = DateTime.Now,
+                    IsActive = true,
+                    Avatar = "/ManagerAssets/assets/avatars/face-1.jpg" // Default Avatar
+                };
 
-            _context.Employees.Add(newEmployee);
-            await _context.SaveChangesAsync(); // Save to generate EmployeeId
+                _context.Employees.Add(newEmployee);
+                await _context.SaveChangesAsync(); // Save to generate EmployeeId
 
-            // 3. Create Default TechnicianDetail (1-1 relation, should exist to avoid errors in other modules)
-            var techDetail = new TechnicianDetail
-            {
-                EmployeeId = newEmployee.EmployeeId,
-                SkillLevel = "Junior",
-                Bio = "New employee promoted from customer.",
-                CommissionRate = 0,
-                IsDeleted = false
-            };
-            _context.TechnicianDetails.Add(techDetail);
-            await _context.SaveChangesAsync();
+                // 3. Create Default TechnicianDetail (1-1 relation, should exist to avoid errors in other modules)
+                var techDetail = new TechnicianDetail
+                {
+                    EmployeeId = newEmployee.EmployeeId,
+                    SkillLevel = "Junior",
+                    Bio = "New employee promoted from customer.",
+                    CommissionRate = 0,
+                    IsDeleted = false
+                };
+                _context.TechnicianDetails.Add(techDetail);
+                await _context.SaveChangesAsync();
+            }
 
             // 4. Assign Role
             if (!await _roleManager.RoleExistsAsync(roleName))
             {
                 await _roleManager.CreateAsync(new IdentityRole(roleName));
             }
-            await _userManager.AddToRoleAsync(user, roleName);
+            // Check if already in role to avoid error
+            if (!await _userManager.IsInRoleAsync(user, roleName))
+            {
+                await _userManager.AddToRoleAsync(user, roleName);
+            }
         }
 
         private async Task<string> SaveImageAsync(IFormFile imageFile)

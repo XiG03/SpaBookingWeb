@@ -85,23 +85,64 @@ namespace SpaBookingWeb.Areas.Manager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EmployeeViewModel model)
         {
+            // Remove PhoneNumber validation if empty (not required for employees)
+            if (string.IsNullOrWhiteSpace(model.PhoneNumber))
+            {
+                ModelState.Remove("PhoneNumber");
+                model.PhoneNumber = string.Empty; // Set to empty instead of null
+            }
+            
+            // DEBUG: Log ModelState
+            Console.WriteLine($"[EDIT POST] ModelState.IsValid: {ModelState.IsValid}");
+            Console.WriteLine($"[EDIT POST] EmployeeId: {model.EmployeeId}, Email: {model.Email}");
+            
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { 
+                        Key = x.Key, 
+                        Errors = string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage)) 
+                    })
+                    .ToList();
+                
+                Console.WriteLine($"[EDIT POST] ModelState errors:");
+                foreach (var error in errors)
+                {
+                    Console.WriteLine($"  - {error.Key}: {error.Errors}");
+                }
+            }
+            
             if (ModelState.IsValid)
             {
                 try
                 {
+                    Console.WriteLine($"[EDIT POST] Calling UpdateEmployeeAsync...");
                     await _employeeService.UpdateEmployeeAsync(model);
                     TempData["Success"] = "Employee updated successfully";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Update error: " + ex.Message);
+                    // Display inner exception if available for better debugging
+                    var errorMessage = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        errorMessage += " | Inner: " + ex.InnerException.Message;
+                        if (ex.InnerException.InnerException != null)
+                        {
+                            errorMessage += " | Detail: " + ex.InnerException.InnerException.Message;
+                        }
+                    }
+                    Console.WriteLine($"[EDIT POST] Exception: {errorMessage}");
+                    ModelState.AddModelError("", "Update error: " + errorMessage);
                 }
             }
             
             // Reload data if error
             model.Roles = await _employeeService.GetRolesSelectListAsync();
             model.Services = await _employeeService.GetServicesSelectListAsync();
+            Console.WriteLine($"[EDIT POST] Returning view with errors");
             return View(model);
         }
 

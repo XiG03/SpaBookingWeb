@@ -57,7 +57,7 @@ namespace SpaBookingWeb.Services.Manager
                     FullName = emp.FullName,
                     Email = emp.ApplicationUser?.Email ?? "N/A",
                     PhoneNumber = emp.ApplicationUser?.PhoneNumber ?? "N/A",
-                    Position = roles.FirstOrDefault() ?? "N/A", 
+                    Position = roles.FirstOrDefault(r => r != "Customer") ?? "Customer", 
                     Avatar = emp.Avatar,
                     IsActive = emp.IsActive,
                     AverageRating = Math.Round(avgRating, 1),
@@ -97,7 +97,8 @@ namespace SpaBookingWeb.Services.Manager
             if (emp.ApplicationUser != null)
             {
                 var userRoles = await _userManager.GetRolesAsync(emp.ApplicationUser);
-                var roleName = userRoles.FirstOrDefault();
+                // Fix: Ignore "Customer" role to pick the actual functional role
+                var roleName = userRoles.FirstOrDefault(r => r != "Customer");
                 if (roleName != null)
                 {
                     var role = await _roleManager.FindByNameAsync(roleName);
@@ -171,89 +172,200 @@ namespace SpaBookingWeb.Services.Manager
 
         public async Task UpdateEmployeeAsync(EmployeeViewModel model)
         {
+            // Check if this is an actual employee or just a user with employee role
             var emp = await _context.Employees
-                .Include(e => e.ApplicationUser)
                 .Include(e => e.TechnicianServices)
                 .FirstOrDefaultAsync(e => e.EmployeeId == model.EmployeeId);
 
-            if (emp == null) throw new Exception("Employee not found");
-
-            emp.FullName = model.FullName;
-            emp.BaseSalary = model.BaseSalary;
-            emp.Address = model.Address;
-            emp.DateOfBirth = model.DateOfBirth;
-            emp.Gender = model.Gender;
-            emp.IsActive = model.IsActive;
-
-            if (emp.ApplicationUser != null)
-            {
-                emp.ApplicationUser.Email = model.Email;
-                emp.ApplicationUser.UserName = model.Email;
-                emp.ApplicationUser.PhoneNumber = model.PhoneNumber;
-                await _userManager.UpdateAsync(emp.ApplicationUser);
-
-                // 1. Update Role
-                var currentRoles = await _userManager.GetRolesAsync(emp.ApplicationUser);
-                await _userManager.RemoveFromRolesAsync(emp.ApplicationUser, currentRoles);
-
-                if (!string.IsNullOrEmpty(model.SelectedRoleId))
-                {
-                    var role = await _roleManager.FindByIdAsync(model.SelectedRoleId);
-                    if (role != null)
-                    {
-                        await _userManager.AddToRoleAsync(emp.ApplicationUser, role.Name);
-                    }
-                }
-            }
-
-            // 2. Update Services (Smart Merge logic to avoid Tracking errors and handle Soft Delete)
-            var currentServiceIds = model.SelectedServiceIds ?? new List<int>();
+            bool hasEmployeeRecord = (emp != null);
             
-            // Get all TechnicianServices (including soft deleted) to process
-            var allExistingServices = await _context.TechnicianServices
-                .IgnoreQueryFilters()
-                .Where(ts => ts.EmployeeId == emp.EmployeeId)
-                .ToListAsync();
+            System.Diagnostics.Debug.WriteLine($"[UPDATE EMPLOYEE] EmployeeId: {model.EmployeeId}, Has Employee Record: {hasEmployeeRecord}");
 
-            foreach (var existing in allExistingServices)
+            // Find the user - either through Employee record or by email
+            ApplicationUser user;
+            if (hasEmployeeRecord)
             {
-                if (currentServiceIds.Contains(existing.ServiceId))
+                user = await _userManager.FindByIdAsync(emp.IdentityUserId);
+            }
+            else
+            {
+                // No employee record, find by email
+                user = await _userManager.FindByEmailAsync(model.Email);
+            }
+            
+            if (user == null)
+            {
+                throw new Exception($"User not found for email: {model.Email}");
+            }
+
+            // 1. Update Identity User Info
+            System.Diagnostics.Debug.WriteLine($"[UPDATE EMPLOYEE] Updating user: {user.Email}");
+            
+            // Update User Details
+            user.Email = model.Email;
+            user.UserName = model.Email;
+            user.PhoneNumber = model.PhoneNumber;
+            user.FullName = model.FullName;
+            user.Address = model.Address;
+            
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                throw new Exception($"User update failed: {string.Join(", ", updateResult.Errors.Select(e => e.Description))}");
+            }
+
+            // 2. Update Role - Direct database approach to prevent duplicate key errors
+            System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Starting role update for user: {user.Email}");
+            
+            // Get the new role (if selected)
+            string newRoleId = model.SelectedRoleId;
+            string newRoleName = null;
+            if (!string.IsNullOrEmpty(newRoleId))
+            {
+                var newRole = await _roleManager.FindByIdAsync(newRoleId);
+                if (newRole != null)
                 {
-                    // If selected: Ensure it is Active (Restore if needed)
-                    // Use Entry to set IsDeleted = false because model might not expose it directly or to be sure
-                    var entry = _context.Entry(existing);
-                    if (entry.CurrentValues.Properties.Any(p => p.Name == "IsDeleted"))
+                    newRoleName = newRole.Name;
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] New Role: {newRoleName ?? "NONE"}");
+            
+            // CRITICAL FIX: Directly clean up AspNetUserRoles table to prevent duplicates
+            // Get all non-Customer roles for this user from database
+            var allRoles = await _roleManager.Roles.ToListAsync();
+            
+            // Execute raw SQL to remove all employee role assignments (except Customer)
+            var employeeRoleIds = allRoles
+                .Where(r => r.Name != "Customer")
+                .Select(r => r.Id)
+                .ToList();
+            
+            if (employeeRoleIds.Any())
+            {
+                System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Cleaning up existing role assignments...");
+                
+                // Use raw SQL to delete from AspNetUserRoles
+                var deleteQuery = $@"
+                    DELETE FROM AspNetUserRoles 
+                    WHERE UserId = @p0 
+                    AND RoleId IN ({string.Join(",", employeeRoleIds.Select((_, i) => $"@p{i + 1}"))})";
+                
+                var parameters = new List<object> { user.Id };
+                parameters.AddRange(employeeRoleIds.Cast<object>());
+                
+                await _context.Database.ExecuteSqlRawAsync(deleteQuery, parameters.ToArray());
+                System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Cleaned up existing employee roles from database");
+            }
+            
+            // Now add the new role if specified
+            if (!string.IsNullOrEmpty(newRoleId))
+            {
+                System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Adding new role: {newRoleName}");
+                
+                // Use raw SQL to insert into AspNetUserRoles
+                var insertQuery = "INSERT INTO AspNetUserRoles (UserId, RoleId) VALUES (@p0, @p1)";
+                
+                try
+                {
+                    await _context.Database.ExecuteSqlRawAsync(insertQuery, user.Id, newRoleId);
+                    System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Successfully added role via direct SQL");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] ERROR: {ex.Message}");
+                    // Role might already exist - that's OK, continue
+                }
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"[ROLE UPDATE] Role update completed");
+            
+            // Detach ApplicationUser to prevent tracking conflicts
+            var userEntry = _context.Entry(user);
+            if (userEntry.State != EntityState.Detached)
+            {
+                userEntry.State = EntityState.Detached;
+            }
+
+            // 3. Update Employee Details (only if employee record exists)
+            if (hasEmployeeRecord)
+            {
+                System.Diagnostics.Debug.WriteLine($"[UPDATE EMPLOYEE] Updating Employee record fields");
+                
+                emp.FullName = model.FullName;
+                emp.BaseSalary = model.BaseSalary;
+                emp.Address = model.Address;
+                emp.DateOfBirth = model.DateOfBirth;
+                emp.Gender = model.Gender;
+                emp.IsActive = model.IsActive;
+
+                // 4. Update Services
+                var currentServiceIds = model.SelectedServiceIds ?? new List<int>();
+                
+                var allExistingServices = await _context.TechnicianServices
+                    .IgnoreQueryFilters()
+                    .Where(ts => ts.EmployeeId == emp.EmployeeId)
+                    .ToListAsync();
+
+                foreach (var existing in allExistingServices)
+                {
+                    if (currentServiceIds.Contains(existing.ServiceId))
                     {
-                        entry.CurrentValues["IsDeleted"] = false;
+                        var entry = _context.Entry(existing);
+                        if (entry.CurrentValues.Properties.Any(p => p.Name == "IsDeleted"))
+                        {
+                            entry.CurrentValues["IsDeleted"] = false;
+                        }
+                    }
+                    else
+                    {
+                        _context.TechnicianServices.Remove(existing);
                     }
                 }
-                else
+
+                var existingIds = allExistingServices.Select(x => x.ServiceId).ToList();
+                var newIds = currentServiceIds.Except(existingIds);
+
+                foreach (var newId in newIds)
                 {
-                    // If deselectd: Soft Delete
-                    _context.TechnicianServices.Remove(existing);
+                    _context.TechnicianServices.Add(new TechnicianService
+                    {
+                        EmployeeId = emp.EmployeeId,
+                        ServiceId = newId
+                    });
+                }
+
+                // Save employee changes
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    System.Diagnostics.Debug.WriteLine($"[UPDATE EMPLOYEE] Employee record saved successfully");
+                }
+                catch (DbUpdateException ex)
+                {
+                    // Capture inner exception details for debugging
+                    var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                    var fullMessage = $"Database update error: {innerMessage}";
+                    
+                    // Log additional details if available
+                    if (ex.InnerException?.InnerException != null)
+                    {
+                        fullMessage += $" | Inner: {ex.InnerException.InnerException.Message}";
+                    }
+                    
+                    throw new Exception(fullMessage, ex);
                 }
             }
-
-            // Add new services that never existed
-            var existingIds = allExistingServices.Select(x => x.ServiceId).ToList();
-            var newIds = currentServiceIds.Except(existingIds);
-
-            foreach (var newId in newIds)
+            else
             {
-                _context.TechnicianServices.Add(new TechnicianService
-                {
-                    EmployeeId = emp.EmployeeId,
-                    ServiceId = newId
-                });
+                System.Diagnostics.Debug.WriteLine($"[UPDATE EMPLOYEE] No Employee record - skipping Employee table updates");
             }
-
-            _context.Employees.Update(emp);
-            await _context.SaveChangesAsync();
         }
 
         public async Task<List<SelectListItem>> GetRolesSelectListAsync()
         {
             return await _roleManager.Roles
+                .Where(r => r.Name != "Customer") // Exclude Customer role from dropdown
                 .Select(r => new SelectListItem { Value = r.Id, Text = r.Name })
                 .ToListAsync();
         }
