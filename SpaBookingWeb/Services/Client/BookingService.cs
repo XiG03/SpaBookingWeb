@@ -217,11 +217,23 @@ namespace SpaBookingWeb.Services.Client
                 if (memberDuration > sessionMaxDuration) sessionMaxDuration = memberDuration;
             }
 
-            // [NEW] Get STAFF'S Work Schedule & Busy Schedule
-            var workingStaffIds = await _context.WorkSchedules
+            // [NEW] Get STAFF'S Work Schedule with Shift details
+            var workSchedules = await _context.WorkSchedules
+                .Include(ws => ws.Shift)
                 .Where(ws => ws.WorkDate.Date == date.Date && !ws.IsDeleted)
-                .Select(ws => ws.EmployeeId)
                 .ToListAsync();
+
+            var workingStaffIds = workSchedules.Select(ws => ws.EmployeeId).Distinct().ToList();
+
+            // Create Staff Work Hours Map: StaffId -> Shift Range
+            var staffShiftMap = new Dictionary<int, (TimeSpan Start, TimeSpan End)>();
+            foreach(var ws in workSchedules)
+            {
+                if (ws.Shift != null && !staffShiftMap.ContainsKey(ws.EmployeeId))
+                {
+                    staffShiftMap[ws.EmployeeId] = (ws.Shift.StartTime, ws.Shift.EndTime);
+                }
+            }
 
             var staffBusyIntervals = new Dictionary<int, List<(TimeSpan Start, TimeSpan End)>>();
             foreach (var staffId in workingStaffIds) staffBusyIntervals[staffId] = new List<(TimeSpan, TimeSpan)>();
@@ -284,7 +296,8 @@ namespace SpaBookingWeb.Services.Client
                 // Check 3: Staff free? (Use existing helper method, updated for negative IDs)
                 // To simplify in this context file while keeping old logic, assume check staff here
                 // If want to integrate detailed staff check logic, need update IsSessionFitAsync to handle negative IDs
-                if (await IsSessionFitAsync(time, session, staffBusyIntervals, technicianSkills, closeTime))
+                // Check 3: Staff free? (Use helper method passing Shift Map)
+                if (await IsSessionFitAsync(time, session, staffBusyIntervals, technicianSkills, closeTime, staffShiftMap))
                 {
                     availableSlots.Add(time.ToString(@"hh\:mm"));
                 }
@@ -373,7 +386,8 @@ namespace SpaBookingWeb.Services.Client
             BookingSessionModel session, 
             Dictionary<int, List<(TimeSpan Start, TimeSpan End)>> staffBusyMap,
             dynamic technicianSkills,
-            TimeSpan shopCloseTime)
+            TimeSpan shopCloseTime,
+            Dictionary<int, (TimeSpan ShiftStart, TimeSpan ShiftEnd)> staffShiftMap = null)
         {
             var tempBusyMap = new Dictionary<int, List<(TimeSpan Start, TimeSpan End)>>();
             foreach(var kvp in staffBusyMap) tempBusyMap[kvp.Key] = new List<(TimeSpan, TimeSpan)>(kvp.Value);
@@ -409,7 +423,7 @@ namespace SpaBookingWeb.Services.Client
 
                         if (requiredStaffId.HasValue)
                         {
-                            if (IsStaffAvailable(requiredStaffId.Value, memberCurrentTime, serviceEndTime, tempBusyMap))
+                            if (IsStaffAvailable(requiredStaffId.Value, memberCurrentTime, serviceEndTime, tempBusyMap, staffShiftMap))
                             {
                                 tempBusyMap[requiredStaffId.Value].Add((memberCurrentTime, serviceEndTime));
                                 foundStaff = true;
@@ -424,7 +438,7 @@ namespace SpaBookingWeb.Services.Client
 
                             foreach (var staffId in skilledStaffIds)
                             {
-                                if (IsStaffAvailable(staffId, memberCurrentTime, serviceEndTime, tempBusyMap))
+                                if (IsStaffAvailable(staffId, memberCurrentTime, serviceEndTime, tempBusyMap, staffShiftMap))
                                 {
                                     tempBusyMap[staffId].Add((memberCurrentTime, serviceEndTime));
                                     foundStaff = true;
@@ -441,7 +455,7 @@ namespace SpaBookingWeb.Services.Client
                         bool foundStaffForCombo = false;
                         foreach(var staffId in tempBusyMap.Keys)
                         {
-                             if (IsStaffAvailable(staffId, memberCurrentTime, serviceEndTime, tempBusyMap))
+                             if (IsStaffAvailable(staffId, memberCurrentTime, serviceEndTime, tempBusyMap, staffShiftMap))
                             {
                                 tempBusyMap[staffId].Add((memberCurrentTime, serviceEndTime));
                                 foundStaffForCombo = true;
@@ -457,9 +471,17 @@ namespace SpaBookingWeb.Services.Client
             return true;
         }
 
-        private bool IsStaffAvailable(int staffId, TimeSpan start, TimeSpan end, Dictionary<int, List<(TimeSpan Start, TimeSpan End)>> busyMap)
+        private bool IsStaffAvailable(int staffId, TimeSpan start, TimeSpan end, Dictionary<int, List<(TimeSpan Start, TimeSpan End)>> busyMap, Dictionary<int, (TimeSpan ShiftStart, TimeSpan ShiftEnd)> staffShiftMap = null)
         {
             if (!busyMap.ContainsKey(staffId)) return false; // Employee not working today
+
+            // [NEW] Check Shift Hours (If map provided)
+            if (staffShiftMap != null && staffShiftMap.ContainsKey(staffId))
+            {
+                var shift = staffShiftMap[staffId];
+                // Must be fully within shift: start >= shiftStart AND end <= shiftEnd
+                if (start < shift.ShiftStart || end > shift.ShiftEnd) return false;
+            }
 
             foreach (var interval in busyMap[staffId])
             {
@@ -539,7 +561,14 @@ namespace SpaBookingWeb.Services.Client
                         if (service != null)
                         {
                             int? staffId = (member.ServiceStaffMap != null && member.ServiceStaffMap.ContainsKey(id)) ? member.ServiceStaffMap[id] : null;
-                            if (staffId == null) staffId = await AutoAssignStaffAsync(id, currentServiceStartTime, service.DurationMinutes);
+                            
+                            _logger.LogInformation($"[SaveBooking] Item {id}: Initial StaffId from Map = {staffId}");
+
+                            if (staffId == null || staffId <= 0) 
+                            {
+                                staffId = await AutoAssignStaffAsync(id, currentServiceStartTime, service.DurationMinutes);
+                                _logger.LogInformation($"[SaveBooking] Item {id}: AutoAssigned StaffId = {staffId}");
+                            }
 
                             _context.AppointmentDetails.Add(new AppointmentDetail
                             {
@@ -601,8 +630,13 @@ namespace SpaBookingWeb.Services.Client
                                     staffId = member.ServiceStaffMap[cd.ServiceId];
                                 }
                                 
-                                if (staffId == null) 
+                                _logger.LogInformation($"[SaveBooking] Combo Item {cd.ServiceId}: Initial StaffId = {staffId}");
+
+                                if (staffId == null || staffId <= 0) 
+                                {
                                     staffId = await AutoAssignStaffAsync(cd.ServiceId, currentServiceStartTime, cd.Service.DurationMinutes);
+                                    _logger.LogInformation($"[SaveBooking] Combo Item {cd.ServiceId}: AutoAssigned StaffId = {staffId}");
+                                }
 
                                 subDetail.TechnicianId = staffId;
                                 _context.AppointmentDetails.Add(subDetail);
@@ -632,31 +666,90 @@ namespace SpaBookingWeb.Services.Client
 
         private async Task<int?> AutoAssignStaffAsync(int serviceId, DateTime startTime, int durationMinutes)
         {
-            var endTime = startTime.AddMinutes(durationMinutes);
-            var qualifiedStaffIds = await _context.TechnicianServices.Where(ts => ts.ServiceId == serviceId && !ts.IsDeleted).Select(ts => ts.EmployeeId).ToListAsync();
-            if (!qualifiedStaffIds.Any()) return null;
+            try 
+            {
+                var endTime = startTime.AddMinutes(durationMinutes);
+                _logger.LogInformation($"[AutoAssign] Start for Service {serviceId}, Time: {startTime}-{endTime}");
 
-            var workingStaffIds = await _context.WorkSchedules
-                .Where(ws => qualifiedStaffIds.Contains(ws.EmployeeId) && ws.WorkDate.Date == startTime.Date && !ws.IsDeleted)
-                .Select(ws => ws.EmployeeId).ToListAsync();
-            if (!workingStaffIds.Any()) return null;
+                var qualifiedStaffIds = await _context.TechnicianServices.Where(ts => ts.ServiceId == serviceId && !ts.IsDeleted).Select(ts => ts.EmployeeId).ToListAsync();
+                if (!qualifiedStaffIds.Any()) 
+                {
+                    _logger.LogWarning($"[AutoAssign] No qualified staff found for service {serviceId}");
+                    return null;
+                }
 
-            var busyStaffIds = await _context.AppointmentDetails
-                .Include(ad => ad.Appointment)
-                .Where(ad => workingStaffIds.Contains(ad.TechnicianId.Value) && ad.Status != "Cancelled" && ad.Status != "Completed"
-                             && ad.Appointment.StartTime < endTime && ad.Appointment.EndTime > startTime)
-                .Select(ad => ad.TechnicianId.Value).ToListAsync();
+                // Get WorkSchedules including Shift
+                var workSchedules = await _context.WorkSchedules
+                    .Include(ws => ws.Shift)
+                    .Where(ws => qualifiedStaffIds.Contains(ws.EmployeeId) && ws.WorkDate.Date == startTime.Date && !ws.IsDeleted)
+                    .ToListAsync();
+                
+                if (!workSchedules.Any()) 
+                {
+                    _logger.LogWarning($"[AutoAssign] No work schedules found for qualified staff on {startTime.Date}");
+                    return null;
+                }
 
-            var availableCandidates = workingStaffIds.Except(busyStaffIds).ToList();
-            if (!availableCandidates.Any()) return null;
+                // [NEW] Filter staff by Shift hours
+                var shiftValidStaffIds = new List<int>();
+                foreach(var ws in workSchedules)
+                {
+                    if (ws.Shift != null)
+                    {
+                        if (startTime.TimeOfDay >= ws.Shift.StartTime && endTime.TimeOfDay <= ws.Shift.EndTime)
+                        {
+                            shiftValidStaffIds.Add(ws.EmployeeId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"[AutoAssign] Staff {ws.EmployeeId} skipped. Shift: {ws.Shift.StartTime}-{ws.Shift.EndTime} vs Booking: {startTime.TimeOfDay}-{endTime.TimeOfDay}");
+                        }
+                    }
+                    else
+                    {
+                        // Fallback: If no shift defined but has schedule, assume strict? or loose?
+                        // If user requested STRICT filtering, we might skip. But if data is legacy?
+                        // Let's Log warning and SKIP to be safe strictly.
+                        _logger.LogWarning($"[AutoAssign] Staff {ws.EmployeeId} has NO Shift assigned in Schedule.");
+                    }
+                }
 
-            var workloadStats = await _context.AppointmentDetails
-                .Include(ad => ad.Appointment)
-                .Where(ad => availableCandidates.Contains(ad.TechnicianId.Value) && ad.Appointment.StartTime.Date == startTime.Date)
-                .GroupBy(ad => ad.TechnicianId)
-                .Select(g => new { StaffId = g.Key, Count = g.Count() }).ToListAsync();
+                if (!shiftValidStaffIds.Any()) 
+                {
+                    _logger.LogWarning("[AutoAssign] No staff matches Shift Hours.");
+                    return null;
+                }
 
-            return availableCandidates.OrderBy(id => workloadStats.FirstOrDefault(w => w.StaffId == id)?.Count ?? 0).ThenBy(x => Guid.NewGuid()).FirstOrDefault();
+                var workingStaffIds = shiftValidStaffIds;
+
+                var busyStaffIds = await _context.AppointmentDetails
+                    .Include(ad => ad.Appointment)
+                    .Where(ad => workingStaffIds.Contains(ad.TechnicianId.Value) && ad.Status != "Cancelled" && ad.Status != "Completed"
+                                 && ad.Appointment.StartTime < endTime && ad.Appointment.EndTime > startTime)
+                    .Select(ad => ad.TechnicianId.Value).ToListAsync();
+
+                var availableCandidates = workingStaffIds.Except(busyStaffIds).ToList();
+                if (!availableCandidates.Any()) 
+                {
+                    _logger.LogWarning("[AutoAssign] All qualified/shift-valid staff are BUSY.");
+                    return null;
+                }
+
+                var workloadStats = await _context.AppointmentDetails
+                    .Include(ad => ad.Appointment)
+                    .Where(ad => availableCandidates.Contains(ad.TechnicianId.Value) && ad.Appointment.StartTime.Date == startTime.Date)
+                    .GroupBy(ad => ad.TechnicianId)
+                    .Select(g => new { StaffId = g.Key, Count = g.Count() }).ToListAsync();
+
+                var selected = availableCandidates.OrderBy(id => workloadStats.FirstOrDefault(w => w.StaffId == id)?.Count ?? 0).ThenBy(x => Guid.NewGuid()).FirstOrDefault();
+                _logger.LogInformation($"[AutoAssign] Selected Staff {selected}");
+                return selected;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "[AutoAssign] Exception occurred");
+                return null;
+            }
         }
 
         public async Task UpdateDepositStatusAsync(int appointmentId, string transactionId)

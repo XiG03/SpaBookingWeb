@@ -20,7 +20,7 @@
     
     <!-- Breadcrumb -->
     <nav class="flex flex-wrap gap-2 items-center text-sm">
-        <a class="text-text-muted hover:text-primary transition-colors" href="/">Trang chủ</a>
+        <a class="text-text-muted hover:text-primary transition-colors" href="/">Home</a>
         <span class="material-symbols-outlined text-text-muted text-[16px]">chevron_right</span>
         <a class="text-text-muted hover:text-primary transition-colors" href="/Combos">Combo</a>
         <span class="material-symbols-outlined text-text-muted text-[16px]">chevron_right</span>
@@ -41,7 +41,7 @@
                     <!-- Video Button Placeholder (Optional) -->
                     <div class="absolute top-4 right-4 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-xs font-bold shadow-sm cursor-pointer hover:bg-white transition-colors">
                         <span class="material-symbols-outlined text-primary text-sm">videocam</span>
-                        <span class="text-text-main dark:text-white">Xem Video</span>
+                        <span class="text-text-main dark:text-white">Watch Video</span>
                     </div>
                 </div>
 
@@ -63,7 +63,7 @@
                         <span class="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">Combo Hot</span>
                         <div class="flex items-center gap-1 text-amber-400 text-sm font-medium">
                             <span class="material-symbols-outlined text-sm fill-current">star</span>
-                            <span>@Model.AverageRating.ToString("0.0") (@Model.TotalReviews đánh giá)</span>
+                            <span>@Model.AverageRating.ToString("0.0") (@Model.TotalReviews evaluation)</span>
                         </div>
                     </div>
                     <h1 class="text-text-main dark:text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight">@Model.Name</h1>
@@ -79,7 +79,7 @@
             <div class="flex flex-col gap-6">
                 <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">spa</span>
-                    Dịch vụ bao gồm
+                    Service includes / comprises
                 </h2>
                 <div class="flex flex-col gap-4">
                     @foreach (var svc in Model.IncludedServices)
@@ -90,7 +90,7 @@
                             </div>
                             <div class="flex flex-col justify-center">
                                 <h3 class="font-bold text-lg text-text-main dark:text-white">@svc.Name</h3>
-                                <p class="text-sm text-text-muted dark:text-gray-400 mt-1">@svc.DurationMinutes phút • @svc.Description</p>
+                                <p class="text-sm text-text-muted dark:text-gray-400 mt-1">@svc.DurationMinutes minutes • @svc.Description</p>
                             </div>
                         </div>
                     }
@@ -103,15 +103,15 @@
                 <div class="flex flex-col gap-6">
                     <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">inventory_2</span>
-                        Sản phẩm sử dụng
+                        Products used
                     </h2>
                     <div class="overflow-hidden rounded-xl border border-gray-100 dark:border-white/10">
                         <table class="w-full text-left border-collapse bg-surface-light dark:bg-[#2f1b25]">
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">
-                                    <th class="p-4 font-semibold text-sm text-text-muted">Sản phẩm</th>
-                                    <th class="p-4 font-semibold text-sm text-text-muted">Phân loại</th>
-                                    <th class="p-4 font-semibold text-sm text-text-muted text-right">Định lượng</th>
+                                    <th class="p-4 font-semibold text-sm text-text-muted">Product</th>
+                                    <th class="p-4 font-semibold text-sm text-text-muted">Category</th>
+                                    <th class="p-4 font-semibold text-sm text-text-muted text-right">Unit</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-white/5">
@@ -138,12 +138,12 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-text-main dark:text-white flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary">reviews</span>
-                        Đánh giá từ khách hàng
+                        Customer reviews
                     </h2>
                     <div class="flex items-center gap-1 text-amber-400 font-bold">
                         <span class="text-2xl text-text-main dark:text-white mr-1">@Model.AverageRating.ToString("0.0")</span>
                         <span class="material-symbols-outlined fill-current">star</span>
-                        <span class="text-sm text-text-muted font-normal ml-1">(@Model.TotalReviews đánh giá)</span>
+                        <span class="text-sm text-text-muted font-normal ml-1">(@Model.TotalReviews reviews)</span>
                     </div>
                 </div>
                 
@@ -179,7 +179,7 @@
                 }
                 else
                 {
-                    <p class="text-text-muted italic">Chưa có đánh giá nào cho combo này.</p>
+                    <p class="text-text-muted italic">There are no reviews for this combo yet</p>
                 }
             </div>
         </div>
@@ -191,7 +191,7 @@
                     
                     <!-- Price Info -->
                     <div class="flex flex-col gap-2">
-                        <span class="text-text-muted text-sm font-medium">Tổng giá combo</span>
+                        <span class="text-text-muted text-sm font-medium">Total Combo Price </span>
                         <div class="flex items-baseline gap-3">
                             <h2 class="text-3xl font-bold text-text-main dark:text-white">@Model.Price.ToString("N0")₫</h2>
                             @if (Model.OriginalPrice > Model.Price)
@@ -202,7 +202,7 @@
                         @if (Model.SavingAmount > 0)
                         {
                             <div class="inline-flex self-start bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded">
-                                Tiết kiệm @Model.SavingPercent% (@Model.SavingAmount.ToString("N0")₫)
+                                Save @Model.SavingPercent% (@Model.SavingAmount.ToString("N0")₫)
                             </div>
                         }
                     </div>
@@ -211,27 +211,27 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex items-center gap-3 text-sm text-text-muted">
                             <span class="material-symbols-outlined text-primary">schedule</span>
-                            <span>Thời gian thực hiện: <strong class="text-text-main dark:text-white">@Model.DurationMinutes phút</strong></span>
+                            <span>Duration: <strong class="text-text-main dark:text-white">@Model.DurationMinutes phút</strong></span>
                         </div>
                         <div class="flex items-center gap-3 text-sm text-text-muted">
                             <span class="material-symbols-outlined text-primary">check_circle</span>
-                            <span>Bao gồm đầy đủ liệu trình &amp; sản phẩm</span>
+                            <span>Includes the full treatment course &amp; product</span>
                         </div>
                         <div class="flex items-center gap-3 text-sm text-text-muted">
                             <span class="material-symbols-outlined text-primary">event_available</span>
-                            <span>Đặt lịch trước, hủy miễn phí</span>
+                            <span>Book in advance, cancel for free.</span>
                         </div>
                     </div>
 
                     <!-- Action Button -->
                     <a href="/Booking/BookCombo?id=@Model.Id" 
                        class="w-full bg-primary hover:bg-pink-600 text-white font-bold text-lg py-4 px-6 rounded-xl shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
-                        <span>Đặt lịch ngay</span>
+                        <span>Book Now</span>
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </a>
                     
                     <p class="text-center text-xs text-text-muted">
-                        Chưa thanh toán ngay. Bạn sẽ thanh toán tại spa.
+                        No immediate payment required. You will pay at the spa.
                     </p>
                 </div>
 
@@ -239,8 +239,8 @@
                 <div class="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-[#3a222e] dark:to-[#2f1b25] rounded-xl p-5 border border-pink-100 dark:border-white/10 flex items-start gap-3">
                     <span class="material-symbols-outlined text-primary mt-1">redeem</span>
                     <div class="flex flex-col gap-1">
-                        <h4 class="font-bold text-text-main dark:text-white text-sm">Ưu đãi đặc biệt</h4>
-                        <p class="text-xs text-text-muted">Tặng thêm voucher 5% cho lần đặt tiếp theo khi sử dụng combo này trong tháng.</p>
+                        <h4 class="font-bold text-text-main dark:text-white text-sm">Special promotion</h4>
+                        <p class="text-xs text-text-muted">Get an extra 5% voucher for your next booking when you use this combo within the month.</p>
                     </div>
                 </div>
             </div>

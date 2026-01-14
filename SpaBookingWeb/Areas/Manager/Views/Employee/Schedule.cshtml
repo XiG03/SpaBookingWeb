@@ -274,7 +274,10 @@
             </div>
             <form asp-action="AssignShift" method="post">
                 <div class="modal-body">
-                    <input type="hidden" name="workDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="workDate" class="form-control" value="@currentDate.ToString("yyyy-MM-dd")" required />
+                    </div>
 
                     <div class="form-group">
                         <label>Select Employee</label>
