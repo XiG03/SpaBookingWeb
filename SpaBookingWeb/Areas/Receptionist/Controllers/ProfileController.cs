@@ -40,5 +40,23 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             // 3. Trả về View
             return View(model);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmSalary(int id)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+                await _receptionistService.ConfirmSalaryReceiptAsync(id, userId);
+
+                return Json(new { success = true, message = "Đã xác nhận nhận lương thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

@@ -249,21 +249,19 @@ namespace SpaBookingWeb.Services.Technictian
         public async Task<bool> IsCheckedInTodayAsync(int employeeId)
         {
             var today = DateTime.Today;
-            // Kiểm tra xem đã có giờ CheckInTime chưa
+
+            // Tìm xem có ca nào đang trạng thái "Đang làm việc" không
             return await _context.WorkSchedules
                 .AnyAsync(ws => ws.EmployeeId == employeeId
                                 && ws.WorkDate == today
-                                && ws.CheckInTime != null
+                                && ws.CheckInTime != null     // Đã vào
+                                && ws.CheckOutTime == null    // Chưa ra
                                 && !ws.IsDeleted);
         }
 
         public async Task<WorkSchedule?> GetTodayScheduleAsync(int employeeId)
         {
-            var today = DateTime.Today;
-            return await _context.WorkSchedules
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId
-                                           && ws.WorkDate == today
-                                           && !ws.IsDeleted);
+            return await GetSmartScheduleAsync(employeeId);
         }
 
         public async Task<string> PerformAttendanceAsync(int employeeId, string clientIp)
@@ -271,27 +269,26 @@ namespace SpaBookingWeb.Services.Technictian
             // 1. Kiểm tra IP (Logic whitelist)
             var allowedIps = _configuration["AttendanceSettings:AllowedIPs"]?.Split(';') ?? Array.Empty<string>();
 
+            // Map localhost về IP chuẩn nếu cần
+            if (clientIp == "::1") clientIp = "127.0.0.1";
+
             // Nếu clientIp là localhost (::1) thì phải xử lý chút để so sánh
             if (!allowedIps.Contains(clientIp))
             {
                 return $"IP của bạn ({clientIp}) không hợp lệ. Vui lòng kết nối Wi-Fi Spa!";
             }
 
-            // 2. Lấy lịch làm việc hôm nay
-            var today = DateTime.Today;
-            var schedule = await _context.WorkSchedules
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId
-                                           && ws.WorkDate == today
-                                           && !ws.IsDeleted);
+            // B. Lấy lịch thông minh
+            var schedule = await GetSmartScheduleAsync(employeeId);
 
-            if (schedule == null) return "Hôm nay bạn không có lịch làm việc!";
+            if (schedule == null) return "Hôm nay bạn không có lịch làm việc, hoặc đã hết ca!";
 
-            // 3. Xử lý Logic Check-in / Check-out
+            // C. Logic Check-in / Check-out
             if (schedule.CheckInTime == null)
             {
                 // --- CHECK IN ---
                 schedule.CheckInTime = DateTime.Now;
-                schedule.IsCheckIn = true; // Đánh dấu trạng thái hiển thị
+                schedule.IsCheckIn = true;
             }
             else if (schedule.CheckOutTime == null)
             {
@@ -300,11 +297,11 @@ namespace SpaBookingWeb.Services.Technictian
             }
             else
             {
-                return "Bạn đã hoàn thành ca làm việc hôm nay rồi!";
+                return "Ca làm việc này đã hoàn thành (đã Check-out)!";
             }
 
             await _context.SaveChangesAsync();
-            return null; // Null nghĩa là thành công
+            return null; // Thành công
         }
 
         public async Task<TechnicianProfileVM?> GetTechnicianProfileAsync(int employeeId)
@@ -384,6 +381,44 @@ namespace SpaBookingWeb.Services.Technictian
                 WorkDays = workDays,
                 TotalWorkHours = Math.Round(totalHours, 1) // Làm tròn 1 số thập phân
             };
+        }
+
+        // === [HÀM PHỤ TRỢ] LOGIC TÌM CA THEO GIỜ ===
+        private async Task<WorkSchedule?> GetSmartScheduleAsync(int employeeId)
+        {
+            var today = DateTime.Today;
+            var now = DateTime.Now.TimeOfDay; // Giờ hiện tại (VD: 19:30)
+
+            // 1. Lấy tất cả các ca trong ngày của nhân viên
+            var schedules = await _context.WorkSchedules
+                .Include(ws => ws.Shift)
+                .Where(ws => ws.EmployeeId == employeeId
+                             && ws.WorkDate == today
+                             && !ws.IsDeleted)
+                .ToListAsync();
+
+            if (!schedules.Any()) return null;
+
+            // 2. ƯU TIÊN 1: Tìm ca đang diễn ra (Start <= Now <= End)
+            // VD: Bây giờ 19h -> Chọn Ca Tối (17h-21h)
+            var activeShift = schedules.FirstOrDefault(s =>
+                s.Shift != null && s.Shift.StartTime <= now && s.Shift.EndTime >= now);
+
+            if (activeShift != null) return activeShift;
+
+            // 3. ƯU TIÊN 2: Tìm ca đang làm dở (đã Check-in nhưng chưa Check-out)
+            var pendingShift = schedules.FirstOrDefault(s => s.CheckInTime != null && s.CheckOutTime == null);
+            if (pendingShift != null) return pendingShift;
+
+            // 4. ƯU TIÊN 3: Ca sắp diễn ra gần nhất (Check-in sớm)
+            var upcomingShift = schedules
+                .Where(s => s.CheckInTime == null && s.Shift?.StartTime > now)
+                .MinBy(s => s.Shift?.StartTime);
+
+            if (upcomingShift != null) return upcomingShift;
+
+            // 5. CÙNG ĐƯỜNG: Lấy ca chưa làm bất kỳ cái nào
+            return schedules.FirstOrDefault(s => s.CheckInTime == null) ?? schedules.LastOrDefault();
         }
     }
 }

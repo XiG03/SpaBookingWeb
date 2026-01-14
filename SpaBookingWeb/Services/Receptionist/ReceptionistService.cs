@@ -48,6 +48,14 @@ namespace SpaBookingWeb.Services.Receptionist
                 ShiftStartMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.StartTime.TotalMinutes : 0,
                 ShiftEndMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.EndTime.TotalMinutes : 0,
 
+                // [THÊM MỚI] Logic lấy giờ nghỉ (Early Break)
+                // Nếu IsOnBreak = true và có giờ BreakStartTime -> Lấy tổng phút.
+                // Ngược lại để 0.
+                IsOnBreak = t.Schedule?.IsOnBreak ?? false,
+                BreakStartMinutes = (t.Schedule?.IsOnBreak == true && t.Schedule?.BreakStartTime != null)
+                                    ? (int)t.Schedule.BreakStartTime.Value.TotalMinutes
+                                    : 0,
+
                 // === THÊM LOGIC LẤY KỸ NĂNG ===
                 AllowedServiceIds = t.Employee.TechnicianServices
                                     .Where(ts => !ts.IsDeleted)
@@ -365,6 +373,25 @@ namespace SpaBookingWeb.Services.Receptionist
 
             // Sắp xếp giảm dần theo thời gian và lấy 6 cái mới nhất
             var finalActivities = activities.OrderByDescending(x => x.Timestamp).Take(6).ToList();
+
+            // [THÊM MỚI] 5. LẤY LỊCH SỬ LƯƠNG
+            var salaryList = await _context.Salaries
+                .Where(s => s.EmployeeId == employee.EmployeeId && !s.IsDeleted)
+                .OrderByDescending(s => s.Year).ThenByDescending(s => s.Month)
+                .Select(s => new SalaryHistoryItem
+                {
+                    SalaryId = s.SalaryId,
+                    Month = s.Month,
+                    Year = s.Year,
+                    BaseSalary = s.Employee.BaseSalary, // Hoặc lấy từ bảng Salary nếu có lưu snapshot
+                    Commission = s.TotalCommission,
+                    Bonus = s.Bonus,
+                    Deduction = s.Deduction,
+                    TotalSalary = s.TotalSalary,
+                    Status = s.Status // "Pending", "Completed"
+                })
+                .ToListAsync();
+
             // 6. TRẢ VỀ VIEWMODEL
             return new ReceptionistProfileVM
             {
@@ -391,7 +418,8 @@ namespace SpaBookingWeb.Services.Receptionist
                 // [GÁN DỮ LIỆU MỚI]
                 Attendance = attendanceInfo,
                 Quality = qualityInfo,
-                RecentActivities = finalActivities // Mục 3
+                RecentActivities = finalActivities, // Mục 3
+                SalaryHistory = salaryList // <--- Gán danh sách vừa lấy vào đây
             };
         }
 
@@ -701,12 +729,7 @@ namespace SpaBookingWeb.Services.Receptionist
         // === [THÊM MỚI] 1. LẤY LỊCH LÀM VIỆC HÔM NAY ===
         public async Task<WorkSchedule?> GetTodayScheduleAsync(int employeeId)
         {
-            var today = DateTime.Today;
-            return await _context.WorkSchedules
-                .Include(ws => ws.Shift) // Include Shift để hiển thị tên ca
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId
-                                           && ws.WorkDate == today
-                                           && !ws.IsDeleted);
+            return await GetSmartScheduleAsync(employeeId);
         }
 
         // === [THÊM MỚI] 2. THỰC HIỆN ĐIỂM DANH (CHECK IP) ===
@@ -723,12 +746,8 @@ namespace SpaBookingWeb.Services.Receptionist
                 return $"IP của bạn ({clientIp}) không hợp lệ. Vui lòng kết nối Wi-Fi Spa!";
             }
 
-            // 2. Lấy lịch làm việc hôm nay
-            var today = DateTime.Today;
-            var schedule = await _context.WorkSchedules
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId
-                                           && ws.WorkDate == today
-                                           && !ws.IsDeleted);
+            // 2. Lấy lịch làm việc phù hợp nhất với giờ hiện tại
+            var schedule = await GetSmartScheduleAsync(employeeId);
 
             if (schedule == null) return "Hôm nay bạn không có lịch làm việc!";
 
@@ -746,7 +765,7 @@ namespace SpaBookingWeb.Services.Receptionist
             }
             else
             {
-                return "Bạn đã hoàn thành ca làm việc hôm nay rồi!";
+                return "Ca làm việc này đã hoàn thành (đã Check-out)!";
             }
 
             await _context.SaveChangesAsync();
@@ -789,6 +808,75 @@ namespace SpaBookingWeb.Services.Receptionist
                 Hotline: 0909999888
             </div>
         </div>";
+        }
+
+        // === [HÀM PHỤ MỚI] LOGIC TÌM CA THÔNG MINH ===
+        // Hàm này giúp chọn đúng ca Sáng/Chiều/Tối dựa vào giờ hiện tại
+        private async Task<WorkSchedule?> GetSmartScheduleAsync(int employeeId)
+        {
+            var today = DateTime.Today;
+            var now = DateTime.Now.TimeOfDay;
+
+            // 1. Lấy TẤT CẢ các ca trong ngày của nhân viên
+            var schedules = await _context.WorkSchedules
+                .Include(ws => ws.Shift)
+                .Where(ws => ws.EmployeeId == employeeId
+                             && ws.WorkDate == today
+                             && !ws.IsDeleted)
+                .ToListAsync();
+
+            if (!schedules.Any()) return null;
+
+            // 2. ƯU TIÊN 1: Ca đang diễn ra (Giờ hiện tại nằm trong khung giờ ca)
+            // Ví dụ: Bây giờ 19h, Ca 3 (18h-22h) sẽ được chọn.
+            var activeShift = schedules.FirstOrDefault(s =>
+                s.Shift != null && s.Shift.StartTime <= now && s.Shift.EndTime >= now);
+
+            if (activeShift != null) return activeShift;
+
+            // 3. ƯU TIÊN 2: Ca chưa Check-out (Đang làm dở)
+            var pendingShift = schedules.FirstOrDefault(s => s.CheckInTime != null && s.CheckOutTime == null);
+            if (pendingShift != null) return pendingShift;
+
+            // 4. ƯU TIÊN 3: Ca sắp diễn ra gần nhất (Check-in sớm)
+            var upcomingShift = schedules
+                .Where(s => s.CheckInTime == null && s.Shift?.StartTime > now)
+                .MinBy(s => s.Shift?.StartTime);
+
+            if (upcomingShift != null) return upcomingShift;
+
+            // 5. CÙNG ĐƯỜNG: Lấy ca chưa làm bất kỳ cái nào (fallback)
+            var anyUnfinished = schedules.FirstOrDefault(s => s.CheckInTime == null);
+            if (anyUnfinished != null) return anyUnfinished;
+
+            // 6. Nếu làm xong hết rồi thì lấy cái cuối cùng để hiện trạng thái "Done"
+            return schedules.LastOrDefault();
+        }
+
+        // Hàm xác nhận đã nhận lương
+        public async Task<bool> ConfirmSalaryReceiptAsync(int salaryId, string userId)
+        {
+            // 1. Tìm nhân viên từ UserId (để bảo mật, tránh xác nhận hộ người khác)
+            var emp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == userId);
+            if (emp == null) throw new Exception("Không tìm thấy hồ sơ nhân viên.");
+
+            // 2. Tìm phiếu lương
+            var salary = await _context.Salaries.FirstOrDefaultAsync(s => s.SalaryId == salaryId);
+
+            if (salary == null) throw new Exception("Không tìm thấy bảng lương.");
+
+            // 3. Kiểm tra quyền sở hữu
+            if (salary.EmployeeId != emp.EmployeeId) throw new Exception("Bạn không có quyền thao tác trên bảng lương này.");
+
+            // 4. Kiểm tra trạng thái
+            if (salary.Status == "Completed") throw new Exception("Lương tháng này đã được xác nhận trước đó rồi.");
+
+            // 5. Cập nhật
+            salary.Status = "Completed";
+            // salary.PaymentDate = DateTime.Now; // Nếu có cột này thì uncomment
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

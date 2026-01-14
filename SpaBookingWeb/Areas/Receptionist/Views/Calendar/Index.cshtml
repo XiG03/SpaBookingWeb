@@ -792,6 +792,16 @@
                     return;
                 }
 
+                // [THÊM MỚI] LỚP 2.4: CHECK GIỜ NGHỈ (EARLY BREAK)
+                // Logic: Nếu KTV có báo nghỉ (IsOnBreak) VÀ giờ kết thúc dịch vụ (taskEndMin) lớn hơn giờ bắt đầu nghỉ
+                // -> Tức là làm chưa xong thì đã đến giờ nghỉ -> Ẩn (return)
+                if (tech.IsOnBreak && tech.BreakStartMinutes > 0) {
+                    if (taskEndMin > tech.BreakStartMinutes) {
+                        // Debug: console.log(`Ẩn ${tech.Name}: Xong lúc ${taskEndMin} nhưng nghỉ lúc ${tech.BreakStartMinutes}`);
+                        return;
+                    }
+                }
+
                 // === LỚP 2.5: CHECK BẬN TRONG DB (DB BUSY) ===
                 const isBusyInDb = (currentModalEvents || []).some(evt => {
                     if (evt.TechnicianId !== tech.Id) return false;
@@ -1811,6 +1821,20 @@
 
                 if (tech.ShiftStartMinutes === 0) { isDisabled = true; note = "(Nghỉ)"; }
                 else if (startMin < tech.ShiftStartMinutes || endMin > tech.ShiftEndMinutes) { isDisabled = true; note = "(Hết ca)"; }
+
+                // [THÊM MỚI] CHECK GIỜ NGHỈ (EARLY BREAK)
+                // Nếu chưa bị disable bởi Shift thì mới check tiếp Break
+                if (!isDisabled && tech.IsOnBreak && tech.BreakStartMinutes > 0) {
+                     if (endMin > tech.BreakStartMinutes) {
+                         isDisabled = true;
+                         // Tính giờ nghỉ ra chuỗi để hiển thị cho rõ (VD: 14:30)
+                         const h = Math.floor(tech.BreakStartMinutes / 60);
+                         const m = tech.BreakStartMinutes % 60;
+                         const timeStr = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+
+                         note = `(Nghỉ từ ${timeStr})`;
+                     }
+                }
 
                 if (!isDisabled) {
                     const currentApptId = parseInt(document.getElementById('reschApptId').value);

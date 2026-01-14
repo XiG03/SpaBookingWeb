@@ -33,6 +33,9 @@
 
         // [MỚI] Mục 3: Nhật ký hoạt động
         public List<ActivityItem> RecentActivities { get; set; } = new List<ActivityItem>();
+
+        // [THÊM MỚI] Danh sách lịch sử lương
+        public List<SalaryHistoryItem> SalaryHistory { get; set; } = new List<SalaryHistoryItem>();
     }
 
     // Class con lưu dữ liệu từng tháng
@@ -94,5 +97,20 @@
         public int InProgress { get; set; } // Đang phục vụ
         public int Completed { get; set; }  // Hoàn thành
         public int Cancelled { get; set; }  // Hủy
+    }
+
+    // [THÊM MỚI] Class con để chứa thông tin từng tháng lương
+    public class SalaryHistoryItem
+    {
+        public int SalaryId { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public decimal TotalSalary { get; set; }
+        public decimal BaseSalary { get; set; }
+        public decimal Commission { get; set; }
+        public decimal Bonus { get; set; }
+        public decimal Deduction { get; set; }
+        public string Status { get; set; } // "Pending" hoặc "Completed"
+        public DateTime? PaymentDate { get; set; } // Ngày thanh toán (nếu có cột này, tạm thời dùng CreatedDate hoặc null)
     }
 }

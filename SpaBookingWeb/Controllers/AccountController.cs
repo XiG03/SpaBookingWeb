@@ -76,7 +76,7 @@ namespace SpaBookingWeb.Controllers
                 // Technician default
                 else if (roles.Contains("Technician"))
                 {
-                    return RedirectToAction("Index", "Home", new { area = "Technictian" });
+                    return RedirectToAction("Index", "Home", new { area = "Technician" });
                 }
 
                 // Default for Customer
@@ -164,7 +164,7 @@ namespace SpaBookingWeb.Controllers
                 }
                 else if (roles.Contains("Technician") || roles.Contains("Staff"))
                 {
-                    return RedirectToAction("Index", "Home", new { area = "Technictian" });
+                    return RedirectToAction("Index", "Home", new { area = "Technician" });
                 }
             }
 

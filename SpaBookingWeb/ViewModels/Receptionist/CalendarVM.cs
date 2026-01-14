@@ -41,6 +41,10 @@
 
         // Danh sách ID các dịch vụ mà KTV này có kỹ năng làm
         public List<int> AllowedServiceIds { get; set; } = new List<int>();
+
+        // [THÊM MỚI] Để frontend biết giờ nghỉ
+        public bool IsOnBreak { get; set; }
+        public int BreakStartMinutes { get; set; } // Đổi TimeSpan sang phút (VD: 14:30 = 870)
     }
 
     // Đại diện cho 1 khối màu trên lịch (1 AppointmentDetail)

@@ -17,5 +17,7 @@ namespace SpaBookingWeb.Services.Receptionist
         Task<WorkSchedule?> GetTodayScheduleAsync(int employeeId);
 
         Task<string> PerformAttendanceAsync(int employeeId, string clientIp);
+
+        Task<bool> ConfirmSalaryReceiptAsync(int salaryId, string userId);
     }
 }

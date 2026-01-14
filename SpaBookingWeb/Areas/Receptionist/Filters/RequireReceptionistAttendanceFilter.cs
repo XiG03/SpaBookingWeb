@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
+using SpaBookingWeb.Data;
+using SpaBookingWeb.Models;
 using SpaBookingWeb.Services.Receptionist;
 
 namespace SpaBookingWeb.Areas.Receptionist.Filters
@@ -7,10 +11,17 @@ namespace SpaBookingWeb.Areas.Receptionist.Filters
     public class RequireReceptionistAttendanceFilter : IAsyncActionFilter
     {
         private readonly IReceptionistService _receptionistService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public RequireReceptionistAttendanceFilter(IReceptionistService receptionistService)
+        public RequireReceptionistAttendanceFilter(
+            IReceptionistService receptionistService,
+            UserManager<ApplicationUser> userManager,
+            ApplicationDbContext context)
         {
             _receptionistService = receptionistService;
+            _userManager = userManager;
+            _context = context;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -24,13 +35,36 @@ namespace SpaBookingWeb.Areas.Receptionist.Filters
                 return;
             }
 
-            // 2. LẤY ID LỄ TÂN (Giả lập ID = 6 để đồng bộ với code test của bạn)
-            // Sau này thay bằng logic lấy từ User.Identity
-            int employeeId = 6;
+            // 2. [CẬP NHẬT IDENTITY] LẤY ID LỄ TÂN TỪ USER ĐANG ĐĂNG NHẬP
+            var user = context.HttpContext.User;
+
+            // Nếu chưa đăng nhập -> Chuyển về trang Login
+            if (user == null || !user.Identity.IsAuthenticated)
+            {
+                context.Result = new RedirectToActionResult("Login", "Account", new { area = "" });
+                return;
+            }
+
+            var userId = _userManager.GetUserId(user);
+            var emp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == userId);
+
+            // Nếu tài khoản này không phải là nhân viên (hoặc chưa liên kết) -> Chặn
+            if (emp == null)
+            {
+                // Tùy chọn: Chuyển hướng về trang lỗi hoặc thông báo
+                var controllerObj = context.Controller as Controller;
+                if (controllerObj != null)
+                {
+                    controllerObj.TempData["ErrorMessage"] = "Tài khoản của bạn chưa được liên kết với hồ sơ nhân viên!";
+                }
+                // Redirect tạm về trang Home hoặc Login
+                context.Result = new RedirectToActionResult("Login", "Account", new { area = "" });
+                return;
+            }
 
             // 3. KIỂM TRA TRẠNG THÁI CHECK-IN
             // Gọi hàm lấy lịch hôm nay mà ta vừa viết ở bước trước
-            var schedule = await _receptionistService.GetTodayScheduleAsync(employeeId);
+            var schedule = await _receptionistService.GetTodayScheduleAsync(emp.EmployeeId);
 
             // Logic chặn:
             // - Nếu không có lịch làm việc (schedule == null) -> Chặn
