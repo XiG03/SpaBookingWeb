@@ -1,7 +1,7 @@
 ﻿@using Newtonsoft.Json
 @model SpaBookingWeb.ViewModels.Receptionist.CalendarVM
 @{
-    ViewData["Title"] = "Lịch hẹn Spa";
+    ViewData["Title"] = "Spa Appointments";
     Layout = "~/Areas/Receptionist/Views/Shared/_Layout.cshtml";
 
     // Cấu hình khung giờ hiển thị (8h - 19h)
@@ -28,7 +28,7 @@
     // 1. Thay thế Alert Thành công
     const showSuccess = async (msg) => {
         return Swal.fire({
-            icon: 'success', title: 'Thành công', text: msg,
+            icon: 'success', title: 'Success', text: msg,
             confirmButtonColor: '#2563EB', confirmButtonText: 'Đóng'
         });
     };
@@ -36,7 +36,7 @@
     // 2. Thay thế Alert Lỗi
     const showError = async (msg) => {
         return Swal.fire({
-            icon: 'error', title: 'Đã có lỗi', text: msg,
+            icon: 'error', title: 'Error', text: msg,
             confirmButtonColor: '#DC2626', confirmButtonText: 'Đóng'
         });
     };
@@ -44,7 +44,7 @@
     // 3. Thay thế Alert Cảnh báo (Dạng Info)
     const showWarning = async (msg) => {
         return Swal.fire({
-            icon: 'warning', title: 'Lưu ý', text: msg,
+            icon: 'warning', title: 'Notice', text: msg,
             confirmButtonColor: '#D97706', confirmButtonText: 'Đã hiểu'
         });
     };
@@ -52,12 +52,12 @@
     // 4. Thay thế Confirm (Trả về true/false y hệt native confirm)
     const showConfirm = async (msg) => {
         const result = await Swal.fire({
-            title: 'Xác nhận',
+            title: 'Confirm',
             text: msg, // Giữ nguyên nội dung bạn truyền vào
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#2563EB', cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Đồng ý', cancelButtonText: 'Hủy bỏ'
+            confirmButtonText: 'Yes', cancelButtonText: 'Cancel'
         });
         return result.isConfirmed;
     };
@@ -67,9 +67,9 @@
         const { value: text } = await Swal.fire({
             title: msg,
             input: 'text',
-            inputPlaceholder: 'Nhập nội dung...',
+            inputPlaceholder: 'Enter content...',
             showCancelButton: true,
-            confirmButtonText: 'Gửi', cancelButtonText: 'Hủy'
+            confirmButtonText: 'Submit', cancelButtonText: 'Cancel'
         });
         return text;
     };
@@ -99,7 +99,7 @@
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
             <span class="material-symbols-outlined text-blue-600">calendar_month</span>
-            Lịch hẹn
+            Appointments
         </h1>
         <div class="flex items-center bg-gray-100 rounded-lg p-1">
             <a href="?date=@Model.SelectedDate.AddDays(-1).ToString("yyyy-MM-dd")" class="p-2 hover:bg-white rounded shadow-sm"><span class="material-symbols-outlined text-sm">chevron_left</span></a>
@@ -107,7 +107,7 @@
             <a href="?date=@Model.SelectedDate.AddDays(1).ToString("yyyy-MM-dd")" class="p-2 hover:bg-white rounded shadow-sm"><span class="material-symbols-outlined text-sm">chevron_right</span></a>
         </div>
         <button onclick="openBookingModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md flex items-center gap-2">
-            <span class="material-symbols-outlined">add</span> Đặt lịch mới
+            <span class="material-symbols-outlined">add</span> New Booking
         </button>
     </div>
 
@@ -115,7 +115,7 @@
 
         <div class="flex border-b border-gray-200 bg-gray-50 h-10 mr-[6px] z-20 shadow-sm text-gray-500 font-bold text-xs select-none">
             <div class="w-60 flex-shrink-0 border-r border-gray-200 p-3 text-center uppercase bg-gray-50 sticky left-0 z-30">
-                Kỹ thuật viên
+                Technician
             </div>
 
             <div class="flex-1 relative h-full">
@@ -208,7 +208,7 @@
         <div class="flex min-h-full items-center justify-center p-4">
             <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden">
                 <div class="bg-blue-600 px-6 py-4 flex justify-between items-center text-white">
-                    <h3 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined">add_circle</span> Đặt lịch mới</h3>
+                    <h3 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined">add_circle</span> New Booking</h3>
                     <button onclick="closeModal()" class="hover:text-blue-200"><span class="material-symbols-outlined">close</span></button>
                 </div>
 
@@ -216,7 +216,7 @@
                     <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 flex flex-wrap gap-4 items-center justify-between">
                         <div class="flex items-center gap-2 text-yellow-800 font-bold">
                             <span class="material-symbols-outlined">event_available</span>
-                            <label>Thời gian:</label>
+                            <label>Time:</label>
                         </div>
                         <div class="flex gap-4">
                             <input type="date" id="inputBookingDate"
@@ -232,7 +232,7 @@
                     <div class="flex items-center gap-2 pt-2 border-t border-yellow-200">
                         <input type="checkbox" id="chkWalkIn" onchange="toggleWalkInMode()" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
                         <label for="chkWalkIn" class="font-bold text-blue-800 cursor-pointer select-none text-sm">
-                            Khách vãng lai / Làm ngay (Không cọc, Vào làm luôn)
+                            Walk-in / Immediate (No deposit, Start now)
                         </label>
                     </div>
 
@@ -252,7 +252,7 @@
                     </div> *@
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700">Số điện thoại khách hàng</label>
+                            <label class="block text-sm font-bold text-gray-700">Customer Phone Number</label>
                             <div class="flex mt-1">
                                 <input type="text" id="inputPhone"
                                        class="block w-full rounded-l-md border-gray-300 focus:ring-blue-500 shadow-sm"
@@ -260,7 +260,7 @@
                                        onkeydown="if(event.key==='Enter') searchCustomer()"
                                        oninput="resetCustomerStatus()">
                                 <button onclick="searchCustomer()" type="button" class="px-4 bg-blue-600 text-white font-bold border border-blue-600 rounded-r-md hover:bg-blue-700 transition flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">search</span> Tìm
+                                    <span class="material-symbols-outlined text-sm">search</span> Search
                                 </button>
                             </div>
                             <div id="customerStatus" class="mt-1 min-h-[20px] text-xs"></div>
@@ -268,14 +268,14 @@
 
                         <div id="customerInfoFields" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200 animate-fade-in-down">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700">Tên khách hàng <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-bold text-gray-700">Customer Name <span class="text-red-500">*</span></label>
                                 <input type="text" id="inputName"
                                        class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm"
                                        placeholder="Nhập họ tên..."
                                        oninput="validateSubmitButton()">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700">Email (Tạo tài khoản)</label>
+                                <label class="block text-sm font-bold text-gray-700">Email (Create account)</label>
                                 <input type="email" id="inputEmail"
                                        class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm"
                                        placeholder="example@gmail.com"
@@ -305,18 +305,18 @@
 
                     <div>
                         <div class="flex justify-between mb-2">
-                            <h4 class="font-bold text-gray-700">Dịch vụ & Khách đi cùng</h4>
-                            <button onclick="addGuest()" class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200 hover:bg-green-100 font-bold">+ Thêm khách</button>
+                            <h4 class="font-bold text-gray-700">Services & Guests</h4>
+                            <button onclick="addGuest()" class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200 hover:bg-green-100 font-bold">+ Add Guest</button>
                         </div>
                         <div id="guestListContainer" class="space-y-3"></div>
                     </div>
 
                     <div id="assignmentSection" class="hidden">
-                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-blue-600 text-sm">engineering</span> Phân công KTV</h4>
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-blue-600 text-sm">engineering</span> Assign Technician</h4>
                         <div class="border rounded-lg overflow-hidden">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
-                                    <tr><th class="px-4 py-2 text-left">Khách</th><th class="px-4 py-2 text-left">Dịch vụ</th><th class="px-4 py-2 text-left">Giờ (Dự kiến)</th><th class="px-4 py-2 text-left">Chọn KTV</th></tr>
+                                    <tr><th class="px-4 py-2 text-left">Guest</th><th class="px-4 py-2 text-left">Service</th><th class="px-4 py-2 text-left">Time (Est.)</th><th class="px-4 py-2 text-left">Select Tech</th></tr>
                                 </thead>
                                 <tbody id="assignmentTableBody" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
                             </table>
@@ -324,26 +324,26 @@
                     </div>
                     @* Ghi chú *@
                     <div class="mt-3">
-                        <label class="block text-sm font-bold text-gray-700">Ghi chú đơn hàng</label>
-                        <textarea id="inputNotes" rows="2" class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm text-sm" placeholder="Yêu cầu đặc biệt..."></textarea>
+                        <label class="block text-sm font-bold text-gray-700">Order Notes</label>
+                        <textarea id="inputNotes" rows="2" class="block w-full rounded-md border-gray-300 focus:ring-blue-500 mt-1 shadow-sm text-sm" placeholder="Special requests..."></textarea>
                     </div>
 
                     <div class="border-t pt-4 flex flex-col items-end gap-1">
-                        <div class="text-gray-500 text-sm">Tổng cộng (<span id="totalItems">0</span> dịch vụ)</div>
+                        <div class="text-gray-500 text-sm">Total (<span id="totalItems">0</span> services)</div>
                         <div class="text-2xl font-bold text-blue-600" id="totalPriceDisplay">0 đ</div>
                         <div id="depositSection" class="hidden flex flex-col items-end mt-2">
-                            <div class="text-sm">Yêu cầu cọc: <span class="font-bold text-red-600" id="depositAmountDisplay">0 đ</span></div>
+                            <div class="text-sm">Deposit Required: <span class="font-bold text-red-600" id="depositAmountDisplay">0 đ</span></div>
                             <label class="flex items-center gap-2 cursor-pointer mt-1">
                                 <input type="checkbox" id="depositPaid" onchange="validateSubmitButton()" class="rounded text-green-600 focus:ring-green-500">
-                                <span class="text-sm font-bold text-gray-800">Đã thu tiền mặt</span>
+                                <span class="text-sm font-bold text-gray-800">Cash Received</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-2">
-                    <button onclick="submitBooking()" id="btnSubmit" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">Xác nhận</button>
-                    <button onclick="closeModal()" class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-bold hover:bg-gray-50">Hủy</button>
+                    <button onclick="submitBooking()" id="btnSubmit" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">Confirm</button>
+                    <button onclick="closeModal()" class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-bold hover:bg-gray-50">Cancel</button>
                 </div>
             </div>
         </div>
@@ -357,7 +357,7 @@
             <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-down">
                 <div class="bg-purple-600 px-6 py-4 flex justify-between items-center text-white">
                     <h3 class="text-lg font-bold flex items-center gap-2">
-                        <span class="material-symbols-outlined">visibility</span> Chi tiết lịch hẹn
+                        <span class="material-symbols-outlined">visibility</span> Appointment Details
                     </h3>
                     <button onclick="closeDetailModal()" class="hover:text-purple-200"><span class="material-symbols-outlined">close</span></button>
                 </div>
@@ -365,7 +365,7 @@
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border">
                         <div>
-                            <label class="text-xs text-gray-500 uppercase font-bold">Khách hàng</label>
+                            <label class="text-xs text-gray-500 uppercase font-bold">Customer</label>
                             <div class="font-bold text-gray-800 text-lg" id="detailCustomerName">...</div>
                             <div class="text-sm text-gray-600 mb-2" id="detailCustomerPhone">...</div>
 
@@ -373,41 +373,41 @@
                         </div>
 
                         <div class="text-right">
-                            <label class="text-xs text-blue-600 uppercase font-bold">Thời gian hẹn</label>
+                            <label class="text-xs text-blue-600 uppercase font-bold">Appointment Time</label>
                             <div class="text-2xl font-bold text-blue-700" id="detailTimeRange">...</div>
                             <div class="text-sm font-bold text-gray-700" id="detailBookingDate">...</div>
 
                             <div class="mt-3 pt-2 border-t border-gray-200">
-                                <label class="text-[10px] text-gray-400 uppercase font-bold">Ngày tạo đơn</label>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Created Date</label>
                                 <div class="text-xs text-gray-500" id="detailCreatedDate">...</div>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-500 uppercase font-bold">Ghi chú / Yêu cầu</label>
+                        <label class="text-xs text-gray-500 uppercase font-bold">Notes / Requests</label>
                         <div id="detailNotes" class="p-3 bg-yellow-50 border border-yellow-100 rounded text-sm text-gray-700 italic min-h-[40px]">
-                            Không có ghi chú.
+                            No notes.
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-500 uppercase font-bold mb-2 block">Chi tiết dịch vụ</label>
+                        <label class="text-xs text-gray-500 uppercase font-bold mb-2 block">Service Details</label>
                         <div class="border rounded overflow-hidden">
                             <table class="w-full text-sm text-left">
                                 <thead class="bg-gray-100 text-gray-600 font-bold border-b">
                                     <tr>
-                                        <th class="p-2">Khách</th>
-                                        <th class="p-2">Dịch vụ</th>
-                                        <th class="p-2">KTV</th>
-                                        <th class="p-2 text-right">Giá</th>
+                                        <th class="p-2">Guest</th>
+                                        <th class="p-2">Service</th>
+                                        <th class="p-2">Tech</th>
+                                        <th class="p-2 text-right">Price</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailItemsBody" class="divide-y">
                                 </tbody>
                                 <tfoot class="bg-gray-50 font-bold border-t">
                                     <tr>
-                                        <td colspan="3" class="p-2 text-right">Tổng cộng:</td>
+                                        <td colspan="3" class="p-2 text-right">Total:</td>
                                         <td class="p-2 text-right text-blue-600" id="detailTotal">0 đ</td>
                                     </tr>
                                 </tfoot>
@@ -419,7 +419,7 @@
                 <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
                     <div id="detailActions" class="flex gap-2"></div>
 
-                    <button onclick="closeDetailModal()" class="px-4 py-2 bg-white border border-gray-300 rounded font-bold hover:bg-gray-100 text-gray-700">Đóng</button>
+                    <button onclick="closeDetailModal()" class="px-4 py-2 bg-white border border-gray-300 rounded font-bold hover:bg-gray-100 text-gray-700">Close</button>
                 </div>
             </div>
         </div>
@@ -434,7 +434,7 @@
 
                 <div class="w-full md:w-3/5 bg-gray-50 p-6 overflow-y-auto border-r border-gray-200">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-blue-600">list_alt</span> Dịch vụ sử dụng
+                        <span class="material-symbols-outlined text-blue-600">list_alt</span> Used Services
                     </h3>
                     <div id="paymentItemsContainer" class="space-y-3">
                     </div>
@@ -442,27 +442,27 @@
 
                 <div class="w-full md:w-2/5 p-6 flex flex-col bg-white">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-green-600">calculate</span> Thanh toán
+                        <span class="material-symbols-outlined text-green-600">calculate</span> Payment
                     </h3>
 
                     <div class="mb-4 text-sm bg-blue-50 p-3 rounded text-blue-800 border border-blue-100">
-                        Khách: <span id="payCustName" class="font-bold">...</span><br>
-                        Hạng: <span id="payMemberLevel" class="font-bold text-orange-600">...</span>
-                        (Giảm: <span id="payMemberPercent">0</span>%)
+                        Customer: <span id="payCustName" class="font-bold">...</span><br>
+                        Level: <span id="payMemberLevel" class="font-bold text-orange-600">...</span>
+                        (Discount: <span id="payMemberPercent">0</span>%)
                     </div>
 
                     <div class="flex gap-2 mb-6">
                         <input type="text" id="voucherCode" placeholder="Nhập mã Voucher..." class="flex-1 border rounded px-3 py-2 text-sm uppercase focus:ring-blue-500">
-                        <button onclick="calculateBill()" class="bg-gray-800 text-white px-3 py-2 rounded text-sm font-bold hover:bg-gray-700">Áp dụng</button>
+                        <button onclick="calculateBill()" class="bg-gray-800 text-white px-3 py-2 rounded text-sm font-bold hover:bg-gray-700">Apply</button>
                     </div>
 
                     <div class="space-y-2 text-sm flex-1">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Tổng tiền hàng:</span>
+                            <span class="text-gray-600">Subtotal:</span>
                             <span class="font-bold" id="lblSubTotal">0</span>
                         </div>
                         <div class="flex justify-between text-green-600">
-                            <span>Thành viên:</span>
+                            <span>Member:</span>
                             <span>- <span id="lblMemberDisc">0</span></span>
                         </div>
                         <div class="flex justify-between text-green-600">
@@ -470,30 +470,30 @@
                             <span>- <span id="lblVoucherDisc">0</span></span>
                         </div>
                         <div class="flex justify-between text-blue-600">
-                            <span>Tiền Tip (Tổng):</span>
+                            <span>Tip (Total):</span>
                             <span>+ <span id="lblTipTotal">0</span></span>
                         </div>
                         <div class="flex justify-between text-red-500 border-b pb-2">
-                            <span>Đã cọc:</span>
+                            <span>Deposited:</span>
                             <span>- <span id="lblDeposit">0</span></span>
                         </div>
                         <div class="flex justify-between text-xl font-bold text-gray-900 pt-2">
-                            <span>CẦN THU:</span>
+                            <span>TO COLLECT:</span>
                             <span class="text-blue-600" id="lblFinal">0</span>
                         </div>
                     </div>
 
                     <div class="mt-6 space-y-3">
-                        <p class="text-xs text-gray-500 font-bold uppercase">Phương thức thanh toán:</p>
+                        <p class="text-xs text-gray-500 font-bold uppercase">Payment Method:</p>
                         <div class="grid grid-cols-2 gap-3">
                             <button onclick="processPayment('Cash')" class="flex items-center justify-center gap-2 py-3 border-2 border-green-500 bg-green-50 text-green-700 rounded-lg font-bold hover:bg-green-100 transition">
-                                <span class="material-symbols-outlined">payments</span> TIỀN MẶT
+                                <span class="material-symbols-outlined">payments</span> CASH
                             </button>
                             <button onclick="processPayment('Momo')" class="flex items-center justify-center gap-2 py-3 border-2 border-pink-500 bg-pink-50 text-pink-700 rounded-lg font-bold hover:bg-pink-100 transition">
                                 <span class="material-symbols-outlined">qr_code_scanner</span> MOMO QR
                             </button>
                         </div>
-                        <button onclick="closePaymentModal()" class="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium">Đóng / Để sau</button>
+                        <button onclick="closePaymentModal()" class="w-full py-2 text-gray-500 hover:text-gray-700 text-sm font-medium">Close / Later</button>
                     </div>
                 </div>
             </div>
@@ -502,10 +502,10 @@
 </div>
 
 <div id="momoQrModal" class="hidden absolute inset-0 z-[70] bg-white flex flex-col items-center justify-center">
-    <h3 class="text-xl font-bold text-pink-600 mb-4">Quét mã để thanh toán</h3>
+    <h3 class="text-xl font-bold text-pink-600 mb-4">Scan to pay</h3>
     <div id="momoQrContainer" class="p-4 bg-white shadow-lg border rounded-xl">
     </div>
-    <p class="mt-4 text-gray-500 animate-pulse">Đang chờ tín hiệu thanh toán...</p>
+    <p class="mt-4 text-gray-500 animate-pulse">Waiting for payment signal...</p>
     <button onclick="document.getElementById('momoQrModal').classList.add('hidden')" class="mt-6 text-sm text-gray-400 underline">Hủy / Quay lại</button>
 </div>
 
@@ -514,18 +514,18 @@
     <div class="fixed inset-0 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl w-[600px] p-6 animate-fade-in-down">
             <h3 class="text-lg font-bold mb-4 text-orange-600 flex items-center gap-2">
-                <span class="material-symbols-outlined">edit_calendar</span> Dời lịch & Phân công lại
+                <span class="material-symbols-outlined">edit_calendar</span> Reschedule & Reassign
             </h3>
 
             <input type="hidden" id="reschApptId">
 
             <div class="grid grid-cols-2 gap-4 mb-4 bg-orange-50 p-3 rounded border border-orange-100">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase">Ngày mới</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">New Date</label>
                     <input type="date" id="reschDate" onchange="onRescheduleDateChange(this.value)" class="w-full border border-gray-300 rounded px-2 py-1 font-bold text-gray-700 focus:ring-orange-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase">Giờ bắt đầu</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">Start Time</label>
                     <input type="time" id="reschTime" min="08:00" max="20:00"
                            onchange="updateRescheduleAvailability()"
                            class="w-full border border-gray-300 rounded px-2 py-1 font-bold text-gray-700 focus:ring-orange-500">
@@ -534,14 +534,14 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phân công kỹ thuật viên</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Assign Technician</label>
                 <div class="border rounded overflow-hidden max-h-[300px] overflow-y-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-100 text-gray-600 font-bold">
                             <tr>
-                                <th class="p-2 text-left">Dịch vụ / Khách</th>
-                                <th class="p-2 text-left">Thời lượng</th>
-                                <th class="p-2 text-left">Chọn KTV</th>
+                                <th class="p-2 text-left">Service / Guest</th>
+                                <th class="p-2 text-left">Duration</th>
+                                <th class="p-2 text-left">Select Tech</th>
                             </tr>
                         </thead>
                         <tbody id="rescheduleTableBody" class="divide-y divide-gray-200">
@@ -551,8 +551,8 @@
             </div>
 
             <div class="flex justify-end gap-2 mt-4">
-                <button onclick="document.getElementById('rescheduleModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-gray-600 rounded font-bold hover:bg-gray-200">Hủy</button>
-                <button onclick="submitReschedule()" class="px-4 py-2 bg-orange-600 text-white rounded font-bold hover:bg-orange-700 shadow-md">Lưu thay đổi</button>
+                <button onclick="document.getElementById('rescheduleModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 text-gray-600 rounded font-bold hover:bg-gray-200">Cancel</button>
+                <button onclick="submitReschedule()" class="px-4 py-2 bg-orange-600 text-white rounded font-bold hover:bg-orange-700 shadow-md">Save Changes</button>
             </div>
         </div>
     </div>
@@ -656,7 +656,7 @@
                 return `
                 <label class="flex items-center gap-2 p-1 hover:bg-gray-50 rounded w-full cursor-pointer">
                     <input type="checkbox" ${isChecked} onchange="toggleItem(${guest.id}, '${item.type}', ${item.Id})" class="rounded border-gray-300 text-blue-600">
-                    <span class="text-sm ${item.type==='COMBO'?'font-bold text-blue-700':'text-gray-700'}">${item.Name} <span class="text-xs text-gray-400">(${item.type==='COMBO'?'Nhiều bước':item.Duration+'p'})</span></span>
+                    <span class="text-sm ${item.type==='COMBO'?'font-bold text-blue-700':'text-gray-700'}">${item.Name} <span class="text-xs text-gray-400">(${item.type==='COMBO'?'Multi-step':item.Duration+'m'})</span></span>
                 </label>`;
             }).join('');
 
@@ -665,8 +665,8 @@
                 ${!isMain ? `<button onclick="removeGuest(${guest.id})" class="absolute top-2 right-2 text-red-500 material-symbols-outlined text-sm">delete</button>` : ''}
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-4 border-r pr-2">
-                        <div class="font-bold text-xs text-blue-600 uppercase mb-1">${isMain ? 'KHÁCH CHÍNH' : `KHÁCH #${index}`}</div>
-                        ${!isMain ? `<input type="text" placeholder="Tên khách..." onchange="updateGuestName(${guest.id}, this.value)" class="w-full text-sm border-b border-gray-300 p-0">` : ''}
+                        <div class="font-bold text-xs text-blue-600 uppercase mb-1">${isMain ? 'MAIN GUEST' : `GUEST #${index}`}</div>
+                        ${!isMain ? `<input type="text" placeholder="Guest name..." onchange="updateGuestName(${guest.id}, this.value)" class="w-full text-sm border-b border-gray-300 p-0">` : ''}
                     </div>
                     <div class="col-span-8 h-32 overflow-y-auto grid grid-cols-2 gap-2 content-start">${listHtml}</div>
                 </div>
@@ -749,7 +749,7 @@
                     let end = new Date(cursor.getTime() + (svc.Duration || 60)*60000);
                     allTasks.push({
                         guestId: guest.id,
-                        guestName: guest.type==='MAIN' ? (document.getElementById('inputName').value||'Khách chính') : (guest.name||'Khách đi cùng'),
+                        guestName: guest.type==='MAIN' ? (document.getElementById('inputName').value||'Main Guest') : (guest.name||'Guest'),
                         serviceName: svc.Name,
                         serviceId: svc.Id,
                         comboId: svc.fromCombo || null,
@@ -773,7 +773,7 @@
             // Lấy KTV đang được chọn ở dòng này (nếu có)
             const currentSelectedTechId = selectedTechMap[idx] ? parseInt(selectedTechMap[idx]) : "";
 
-            let options = `<option value="">-- Chọn KTV --</option>`;
+            let options = `<option value="">-- Select Tech --</option>`;
 
             currentModalTechs.forEach(tech => {
                 // --- DEBUG: Bỏ comment dòng dưới để xem tại sao KTV bị ẩn ---
@@ -872,11 +872,11 @@
         const emailInput = document.getElementById('inputEmail');
 
         if (!phone) {
-            statusDiv.innerHTML = '<span class="text-red-500">Vui lòng nhập SĐT!</span>';
+            statusDiv.innerHTML = '<span class="text-red-500">Please enter phone number!</span>';
             return;
         }
 
-        statusDiv.innerHTML = '<span class="text-gray-500 flex items-center gap-1"><span class="material-symbols-outlined text-xs animate-spin">sync</span> Đang tìm kiếm...</span>';
+        statusDiv.innerHTML = '<span class="text-gray-500 flex items-center gap-1"><span class="material-symbols-outlined text-xs animate-spin">sync</span> Searching...</span>';
 
         try {
             const res = await fetch(`/Receptionist/Calendar/GetCustomerByPhone?phone=${phone}`);
@@ -893,7 +893,7 @@
 
             if (data.success && !data.isNew) {
                 // TRƯỜNG HỢP: KHÁCH CŨ (Đã có TK)
-                statusHtml = `<span class="text-green-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Khách cũ: ${data.data.membership}</span>`;
+                statusHtml = `<span class="text-green-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Returning Customer: ${data.data.membership}</span>`;
 
                 // === [LOGIC MỚI] CHECK TRÙNG LỊCH TRÊN GIAO DIỆN (Frontend Warning) ===
                 // Quét trong MASTER_DATA.events xem hôm nay khách này có lịch chưa?
@@ -915,8 +915,8 @@
                     <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-orange-800 text-xs flex items-start gap-2">
                         <span class="material-symbols-outlined text-sm mt-0.5">warning</span>
                         <div>
-                            <strong>Cảnh báo:</strong> Khách <b>${customerName}</b> đã có lịch hôm nay lúc <b>${timeStr}</b>.<br>
-                            Vui lòng kiểm tra kỹ trước khi đặt thêm.
+                            <strong>Cảnh báo:</strong> Khách <b>${customerName}</b> already has an appointment today at <b>${timeStr}</b>.<br>
+                            Please check carefully before booking.
                         </div>
                     </div>`;
                 }
@@ -934,7 +934,7 @@
 
             } else {
                 // TRƯỜNG HỢP: KHÁCH MỚI
-                statusHtml = `<span class="text-blue-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">person_add</span> Khách mới - Vui lòng tạo thông tin</span>`;
+                statusHtml = `<span class="text-blue-600 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">person_add</span> New Customer - Please enter info</span>`;
 
                 // Reset trắng để nhập mới
                 nameInput.value = '';
@@ -954,7 +954,7 @@
             // =======================================
         } catch (e) {
             console.error(e);
-            statusDiv.innerHTML = '<span class="text-red-500">Lỗi kết nối server</span>';
+            statusDiv.innerHTML = '<span class="text-red-500">Server connection error</span>';
             // Nếu lỗi thì coi như chưa xác thực
             isCustomerVerified = false;
             validateSubmitButton();
@@ -1045,12 +1045,12 @@
         if (btn.disabled) {
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             // Thêm tooltip báo lỗi thời gian
-            if (isTimeInvalid) btn.title = "Thời gian chọn không hợp lệ!";
+            if (isTimeInvalid) btn.title = "Invalid selected time!";
             else if (!isCustomerVerified) btn.title = "Vui lòng tìm kiếm khách hàng trước";
             // Cập nhật tooltip để nhắc nhở
-            if (!isCustomerVerified) btn.title = "Vui lòng tìm kiếm khách hàng trước";
-            else if (!customerOk) btn.title = "Vui lòng nhập đầy đủ Tên và Email hợp lệ";
-            else btn.title = "Vui lòng chọn KTV cho tất cả dịch vụ";
+            if (!isCustomerVerified) btn.title = "Please search for customer first";
+            else if (!customerOk) btn.title = "Please enter valid Name and Email";
+            else btn.title = "Please select Tech for all services";
         } else {
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
             btn.title = "";
@@ -1120,20 +1120,20 @@
             });
             if(res.ok) {
                 // [THAY ĐỔI] Dùng showSuccess và await để chờ người dùng đọc xong mới reload
-                await showSuccess('Đặt lịch thành công!');
+                await showSuccess('Booking Successful!');
                 window.location.reload();
             } else {
                 // [THAY ĐỔI] sweetalert
-                await showError('Lỗi: ' + await res.text());
+                await showError('Error: ' + await res.text());
             }
-        } catch(e) { alert('Lỗi kết nối'); }
+        } catch(e) { alert('Connection Error'); }
     }
 
     // --- LOGIC XEM CHI TIẾT ---
     async function openDetailModal(apptId) {
         // 1. Reset UI cũ
-        document.getElementById('detailCustomerName').innerText = 'Đang tải...';
-        document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center">Đang tải dữ liệu...</td></tr>';
+        document.getElementById('detailCustomerName').innerText = 'Loading...';
+        document.getElementById('detailItemsBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading data...</td></tr>';
         document.getElementById('detailModal').classList.remove('hidden');
 
         try {
@@ -1168,7 +1168,7 @@
                 let nameDisplay = item.serviceName;
 
                 if (item.comboId) {
-                    priceDisplay = '<span class="text-xs text-gray-500 italic">(Theo Combo)</span>';
+                    priceDisplay = '<span class="text-xs text-gray-500 italic">(Combo Item)</span>';
                     // Tùy chọn: Thụt đầu dòng hoặc đổi màu tên để dễ nhìn
                     nameDisplay = `<span class="pl-4 text-gray-600 border-l-2 border-gray-300 ml-1">${item.serviceName}</span>`;
                 } else {
@@ -1195,7 +1195,7 @@
                 let mainBtns = `
                     <button onclick="updateAppointmentStatus(${data.id}, 'InProgress')"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm animate-bounce-short">
-                        <span class="material-symbols-outlined">login</span> KHÁCH ĐẾN (CHECK-IN)
+                        <span class="material-symbols-outlined">login</span> CUSTOMER ARRIVED (CHECK-IN)
                     </button>`;
 
                 // Nhóm nút quản lý (Bên trái - Hủy/Dời)
@@ -1209,10 +1209,10 @@
                     <div class="flex gap-2 w-full justify-between">
                         <div class="flex gap-2">
                             <button onclick="checkCancelRule(${data.id}, '${data.startTime}')" class="px-3 py-2 border border-red-300 text-red-600 rounded hover:bg-red-50 font-bold text-sm flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">cancel</span> Hủy Lịch
+                                <span class="material-symbols-outlined text-sm">cancel</span> Cancel Appt
                             </button>
                             <button onclick="checkRescheduleRule(${data.id}, '${data.startTime}', ${data.duration})" class="px-3 py-2 border border-orange-300 text-orange-600 rounded hover:bg-orange-50 font-bold text-sm flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">edit_calendar</span> Dời Lịch
+                                <span class="material-symbols-outlined text-sm">edit_calendar</span> Reschedule
                             </button>
                         </div>
                         <div>${mainBtns}</div>
@@ -1223,7 +1223,7 @@
             actionDiv.innerHTML = `
                 <button onclick="openPaymentModal(${data.id})"
                         class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm">
-                    <span class="material-symbols-outlined">payments</span> THANH TOÁN & VỀ
+                    <span class="material-symbols-outlined">payments</span> PAY & CHECK-OUT
                 </button>`;
             }
             // Trường hợp ĐÃ THANH TOÁN XONG (Completed)
@@ -1235,15 +1235,15 @@
                 if (data.invoiceId) {
                     actionDiv.innerHTML = `
                         <button onclick="printInvoice(${data.invoiceId})" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded font-bold flex items-center gap-2 shadow-sm">
-                            <span class="material-symbols-outlined">print</span> IN HÓA ĐƠN
+                            <span class="material-symbols-outlined">print</span> PRINT INVOICE
                         </button>`;
                 } else {
-                    actionDiv.innerHTML = `<span class="text-green-600 font-bold">Đã hoàn thành</span>`;
+                    actionDiv.innerHTML = `<span class="text-green-600 font-bold">Completed</span>`;
                 }
             }
         // Nếu Completed hoặc Cancelled thì không hiện nút gì thêm
         } catch (e) {
-            alert('Lỗi: ' + e.message);
+            alert('Error: ' + e.message);
             closeDetailModal();
         }
     }
@@ -1251,13 +1251,13 @@
     // --- HÀM GỌI API CHUYỂN TRẠNG THÁI ---
     async function updateAppointmentStatus(apptId, newStatus) {
         // [THAY ĐỔI] Thêm await showConfirm sweetalert
-        const msg = newStatus === 'InProgress' ? 'Xác nhận khách đã đến cửa hàng?' : 'Xác nhận khách đã thanh toán và ra về?';
+        const msg = newStatus === 'InProgress' ? 'Confirm customer arrival?' : 'Confirm payment and checkout?';
         if (!await showConfirm(msg)) return;
 
         // Hiệu ứng loading
         const btn = document.querySelector('#detailActions button');
         const oldText = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Đang xử lý...';
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Processing...';
         btn.disabled = true;
 
         try {
@@ -1276,12 +1276,12 @@
                 closeDetailModal();
                 window.location.reload();
             } else {
-				await showError('Lỗi: ' + result.message); // [THAY ĐỔI] dùng sweetalert
+                await showError('Error: ' + result.message); // [THAY ĐỔI] dùng sweetalert
                 btn.innerHTML = oldText; // Khôi phục nút
                 btn.disabled = false;
             }
         } catch (e) {
-			await showError('Lỗi kết nối server!'); // [THAY ĐỔI] dùng sweetalert
+            await showError('Server connection error!'); // [THAY ĐỔI] dùng sweetalert
             btn.innerHTML = oldText;
             btn.disabled = false;
         }
@@ -1352,7 +1352,7 @@
                 </div>
 
                 <div class="flex flex-col items-end">
-                    <label class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tip cho KTV</label>
+                    <label class="text-[10px] text-gray-400 uppercase font-bold mb-1">Tip for Tech</label>
                     <input type="number"
                            value="${item.tipAmount}"
                            onchange="updateTip(${index}, this.value)"
@@ -1417,7 +1417,7 @@
 
         if (method === 'Cash') {
 			// [THAY ĐỔI] Giữ nguyên nội dung text, chỉ bọc vào showConfirm sweetalert
-            if(!await showConfirm(`XÁC NHẬN ĐÃ THU ĐỦ: ${finalAmountStr} (Tiền mặt)?\nHành động này sẽ chốt đơn ngay.`)) return;
+            if(!await showConfirm(`CONFIRM COLLECTED FULL AMOUNT: ${finalAmountStr} (Cash)?\nThis action will close the order immediately.`)) return;
 
             try{
                 const res = await fetch('/Receptionist/Calendar/CheckoutCash', {
@@ -1431,11 +1431,11 @@
                     // [THAY ĐỔI] Thay alert thành showSuccess sweetalert (nhưng ta dùng fire trực tiếp để custom nút bấm cho trường hợp in hóa đơn)
                     const askPrint = await Swal.fire({
                         icon: 'success',
-                        title: 'Thanh toán thành công!',
-                        text: 'Bạn có muốn IN HÓA ĐƠN ngay không?',
+                        title: 'Payment successful!',
+                        text: 'Do you want to PRINT INVOICE now?',
                         showCancelButton: true,
-                        confirmButtonText: '🖨️ In ngay',
-                        cancelButtonText: 'Đóng',
+                        confirmButtonText: '🖨️ Print Now',
+                        cancelButtonText: 'Close',
                         confirmButtonColor: '#2563EB'
                     });
 
@@ -1446,10 +1446,10 @@
                         window.location.reload();
                     }
                 } else {
-					await showError('Lỗi: ' + data.message); // [THAY ĐỔI] dùng sweetalert
+                    await showError('Error: ' + data.message); // [THAY ĐỔI] dùng sweetalert
                 }
             } catch(e) {
-				await showError('Lỗi kết nối khi thanh toán tiền mặt: ' + e.message); // [THAY ĐỔI] dùng sweetalert
+                await showError('Connection error during cash payment: ' + e.message); // [THAY ĐỔI] dùng sweetalert
             }
         }
         else if (method === 'Momo') {
@@ -1489,7 +1489,7 @@
             const btn = event.currentTarget; // Nút vừa bấm
             const originalText = btn.innerHTML; // Lưu lại nội dung cũ (MOMO QR)
             try{
-                btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Đang chuyển hướng Momo...';
+                btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Redirecting to Momo...';
                 btn.disabled = true;
 
                 const res = await fetch('/Receptionist/Calendar/CreateMomoPayment', {
@@ -1501,13 +1501,13 @@
                     // CHUYỂN HƯỚNG TRANG WEB SANG MOMO LUÔN
                     window.location.href = data.payUrl;
                 } else {
-					await showError('Lỗi tạo Momo: ' + data.message); // [THAY ĐỔI] dùng sweetalert
+                    await showError('Momo Creation Error: ' + data.message); // [THAY ĐỔI] dùng sweetalert
                     btn.innerHTML = 'MOMO QR';
                     btn.disabled = false;
                 }
             } catch(e) {
                 console.error(e);
-				await showError('Lỗi kết nối server!'); // [THAY ĐỔI] dùng sweetalert
+                await showError('Server connection error!'); // [THAY ĐỔI] dùng sweetalert
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
@@ -1526,7 +1526,7 @@
                 if (data.success) {
                     clearInterval(pollingInterval);
                     // [THAY ĐỔI] Dùng SweetAlert thay vì alert thường
-                    await showSuccess('Momo báo tin: Thanh toán THÀNH CÔNG!');
+                    await showSuccess('Momo notification: Payment SUCCESSFUL!');
                     window.location.reload();
                 }
             } catch (e) {
@@ -1569,11 +1569,11 @@
             // [THAY ĐỔI] Thay confirm() mặc định bằng SweetAlert2 Confirm
             const askPrint = await Swal.fire({
                 icon: 'success',
-                title: 'Thanh toán Momo thành công!',
-                text: 'Bạn có muốn IN HÓA ĐƠN ngay không?',
+                title: 'Payment successful!',
+                text: 'Do you want to PRINT INVOICE now?',
                 showCancelButton: true,
-                confirmButtonText: '🖨️ In ngay',
-                cancelButtonText: 'Đóng',
+                confirmButtonText: '🖨️ Print Now',
+                cancelButtonText: 'Close',
                 confirmButtonColor: '#2563EB',
                 cancelButtonColor: '#6B7280'
             });
@@ -1613,19 +1613,19 @@
         // Nội dung cảnh báo động
         let confirmMsg = "";
         if (isViolation) {
-            confirmMsg = "⚠️ CẢNH BÁO VI PHẠM (Dưới 24h)\n\nKhách hủy quá sát giờ. Theo quy định, tiền cọc (nếu có) sẽ KHÔNG được hoàn lại.\n\nBạn có chắc chắn muốn HỦY lịch hẹn này không?";
+            confirmMsg = "⚠️ VIOLATION WARNING (Under 24h)\n\nCustomer cancelling too late. Deposit (if any) will NOT be refunded.\n\nAre you sure you want to CANCEL this appointment?";
         } else {
-            confirmMsg = "✅ HỦY HỢP LỆ (Trên 24h)\n\nBạn có thể hoàn lại tiền cọc cho khách theo quy định.\n\nXác nhận hủy lịch hẹn?";
+            confirmMsg = "✅ VALID CANCELLATION (Over 24h)\n\nYou can refund the deposit to the customer as per policy.\n\nConfirm cancellation?";
         }
 
 		// [THAY ĐỔI] confirm -> showConfirm sweetalert
         if (!await showConfirm(confirmMsg)) return;
 
 		// [THAY ĐỔI] prompt -> showPrompt sweetalert
-        const reason = await showPrompt("Nhập lý do hủy (Bắt buộc):");
+        const reason = await showPrompt("Enter cancellation reason (Required):");
         if (reason === null) return; // Người dùng ấn Hủy
         if (!reason.trim()) {
-            await showWarning("Phải nhập lý do mới được hủy!"); // [THAY ĐỔI]
+            await showWarning("Reason is required to cancel!"); // [THAY ĐỔI]
             return;
         }
 
@@ -1634,7 +1634,7 @@
             const res = await fetch(`/Receptionist/Calendar/CancelAppointment?id=${id}&reason=${encodeURIComponent(reason)}`, { method: 'POST' });
             const data = await res.json();
             if(data.success) {
-				await showSuccess("Đã hủy lịch thành công!"); // [THAY ĐỔI] dùng sweetalert
+                await showSuccess("Appointment cancelled successfully!"); // [THAY ĐỔI] dùng sweetalert
                 window.location.reload();
             } else {
 				await showError(data.message); // [THAY ĐỔI] dùng sweetalert
@@ -1650,7 +1650,7 @@
         // Code nghiệp vụ thật đây: Chặn nếu dưới 24h
         if (hours < 24) {
 			// [THAY ĐỔI] alert -> showWarning (hoặc showError) sweetalert
-            await showError("⛔ KHÔNG THỂ DỜI LỊCH!\n\nLịch hẹn chỉ còn " + hours.toFixed(1) + " giờ nữa là bắt đầu (Dưới 24h).\n\nHệ thống không cho phép dời lịch để tránh trống lịch KTV.\nVui lòng chọn HỦY (Mất cọc) nếu khách không thể đến.");
+            await showError("⛔ CANNOT RESCHEDULE!\n\nAppointment starts in " + hours.toFixed(1) + " hours (Under 24h).\n\nSystem does not allow rescheduling to avoid empty tech slots.\nPlease choose CANCEL (Lose deposit) if customer cannot come.");
             return;
         }
 
@@ -1678,7 +1678,7 @@
         // Reset Inputs
         document.getElementById('reschDate').value = '';
         document.getElementById('reschTime').value = '';
-        document.getElementById('rescheduleTableBody').innerHTML = '<tr><td colspan="3" class="p-4 text-center">Đang tải...</td></tr>';
+        document.getElementById('rescheduleTableBody').innerHTML = '<tr><td colspan="3" class="p-4 text-center">Loading...</td></tr>';
         // === [THÊM DÒNG NÀY] CHẶN CHỌN NGÀY QUÁ KHỨ ===
         document.getElementById('reschDate').min = new Date().toISOString().split('T')[0];
 
@@ -1694,7 +1694,7 @@
             renderRescheduleRows();
 
         } catch(e) {
-            alert("Lỗi tải dữ liệu: " + e.message);
+            alert("Error loading data: " + e.message);
         }
     }
 
@@ -1713,13 +1713,13 @@
                 </td>
                 <td class="p-3">
                     <div class="text-gray-900 font-bold text-sm time-range">--:--</div>
-                    <div class="text-xs text-gray-500">${item.duration} phút</div>
+                    <div class="text-xs text-gray-500">${item.duration} minutes</div>
                 </td>
                 <td class="p-3">
                     <select class="resch-tech-select w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-orange-500"
                             data-original-tech="${item.techId}"
                             data-service-id="${item.serviceId}">
-                        <option value="">-- Chọn giờ trước --</option>
+                        <option value="">-- Select time first --</option>
                     </select>
                 </td>
             </tr>`;
@@ -1748,7 +1748,7 @@
             saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             // Xóa danh sách KTV để không cho chọn
-            document.querySelectorAll('.resch-tech-select').forEach(s => s.innerHTML = '<option>⛔ Giờ không hợp lệ</option>');
+            document.querySelectorAll('.resch-tech-select').forEach(s => s.innerHTML = '<option>⛔ Invalid Time</option>');
             return; // DỪNG LUÔN, KHÔNG CHẠY TÍNH TOÁN DƯỚI NỮA
         } else {
             // B. Nếu đúng: Ẩn lỗi & Mở nút
@@ -1819,8 +1819,8 @@
                 const startMin = myStart.getHours()*60 + myStart.getMinutes();
                 const endMin = myEnd.getHours()*60 + myEnd.getMinutes();
 
-                if (tech.ShiftStartMinutes === 0) { isDisabled = true; note = "(Nghỉ)"; }
-                else if (startMin < tech.ShiftStartMinutes || endMin > tech.ShiftEndMinutes) { isDisabled = true; note = "(Hết ca)"; }
+                if (tech.ShiftStartMinutes === 0) { isDisabled = true; note = "(Break)"; }
+                else if (startMin < tech.ShiftStartMinutes || endMin > tech.ShiftEndMinutes) { isDisabled = true; note = "(End Shift)"; }
 
                 // [THÊM MỚI] CHECK GIỜ NGHỈ (EARLY BREAK)
                 // Nếu chưa bị disable bởi Shift thì mới check tiếp Break
@@ -1850,7 +1850,7 @@
                         const evtEnd = new Date(evt.EndTime);
                         return (myStart < evtEnd && evtStart < myEnd); // Check overlap
                     });
-                    if (isBusyDB) { isDisabled = true; note = "(Bận lịch)"; }
+                    if (isBusyDB) { isDisabled = true; note = "(Busy)"; }
                 }
 
                 // LỚP 3: CHECK TRÙNG CỤC BỘ (Local Conflict)
@@ -1860,7 +1860,7 @@
                         assign.techId === tech.Id &&
                         (myStart < assign.end && assign.start < myEnd) // Có trùng giờ
                     );
-                    if (isBusyLocal) { isDisabled = true; note = "(Trùng dòng trên)"; }
+                    if (isBusyLocal) { isDisabled = true; note = "(Conflict above)"; }
                 }
 
                 // Render Option
@@ -1892,7 +1892,7 @@
                     firstAvail.selected = true;
                     autoSelectId = parseInt(firstAvail.value);
                 } else {
-                    select.insertAdjacentHTML('afterbegin', `<option value="">⚠️ Không có KTV rảnh</option>`);
+                    select.insertAdjacentHTML('afterbegin', `<option value="">⚠️ No Tech Available</option>`);
                     select.value = "";
                 }
             }
@@ -1922,8 +1922,8 @@
         const apptIdStr = document.getElementById('reschApptId').value;
         const apptId = parseInt(apptIdStr);
 
-		if(!dateVal || !timeVal) { await showWarning("Vui lòng chọn ngày giờ mới!"); return; } // [THAY ĐỔI] dùng sweetalert
-		if(!apptId || isNaN(apptId)) { await showError("Lỗi: Không tìm thấy ID lịch hẹn! Vui lòng tải lại trang."); return; } // [THAY ĐỔI] dùng sweetalert
+        if(!dateVal || !timeVal) { await showWarning("Please select new date and time!"); return; } // [THAY ĐỔI] dùng sweetalert
+        if(!apptId || isNaN(apptId)) { await showError("Error: Appointment ID not found! Please reload page."); return; } // [THAY ĐỔI] dùng sweetalert
 
         // Gom dữ liệu từ bảng
         const details = [];
@@ -1963,7 +1963,7 @@
                 );
 
                 if (isConflict) {
-                    collisionError = `KTV đang bị trùng giờ làm việc (${startStr} - ${endStr})!`;
+                    collisionError = `Tech has conflicting schedule (${startStr} - ${endStr})!`;
                 }
 
                 // Lưu lại slot này để check cho dòng sau
@@ -1984,13 +1984,13 @@
         }
 
         if (!isValid) {
-			await showWarning("Vui lòng chọn KTV cho tất cả các dịch vụ!"); // [THAY ĐỔI] dùng sweetalert
+            await showWarning("Please select Tech for all services!"); // [THAY ĐỔI] dùng sweetalert
             return;
         }
 
         // === [THÊM MỚI] CHẶN NẾU TRÙNG ===
         if (collisionError) {
-            await showError("⛔ XUNG ĐỘT LỊCH TRÌNH!\n\n" + collisionError + "\n\nMột KTV không thể làm 2 việc CÙNG LÚC.\n(Nhưng làm tuần tự việc này xong đến việc kia thì được).");
+            await showError("⛔ SCHEDULE CONFLICT!\n\n" + collisionError + "\n\nA Tech cannot do 2 jobs AT THE SAME TIME.\n(But sequential tasks are fine).");
             return;
         }
         // =================================
@@ -2016,21 +2016,21 @@
             try {
                 const data = JSON.parse(text);
                 if(data.success) {
-					await showSuccess("✅ Dời lịch và phân công lại thành công!"); // [THAY ĐỔI] dùng sweetalert
+                    await showSuccess("✅ Reschedule and reassign successful!"); // [THAY ĐỔI] dùng sweetalert
                     window.location.reload();
                 } else {
-					await showError("Lỗi server trả về: " + data.message); // [THAY ĐỔI] dùng sweetalert
+                    await showError("Server Error: " + data.message); // [THAY ĐỔI] dùng sweetalert
                 }
             } catch {
                 console.error("Server error raw:", text);
-                await showError("Lỗi hệ thống (Xem console để biết chi tiết)"); // [THAY ĐỔI] dùng sweetalert
+                await showError("System Error (Check console for details)"); // [THAY ĐỔI] dùng sweetalert
             }
-		} catch(e) { await showError("Lỗi kết nối server"); } // [THAY ĐỔI] dùng sweetalert
+        } catch(e) { await showError("Server connection error"); } // [THAY ĐỔI] dùng sweetalert
     }
 
     // Hàm mở cửa sổ in (Popup)
     function printInvoice(invoiceId) {
-        if (!invoiceId) { alert("Chưa có ID hóa đơn!"); return; }
+        if (!invoiceId) { alert("No Invoice ID!"); return; }
 
         // Mở cửa sổ popup kích thước nhỏ
         const url = `/Receptionist/Calendar/PrintInvoice?id=${invoiceId}`;
@@ -2074,7 +2074,7 @@
         if (!newDateStr) return;
 
         // Hiện loading trong bảng
-        document.getElementById('assignmentTableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500"><span class="material-symbols-outlined animate-spin align-middle">sync</span> Đang tải lịch làm việc...</td></tr>';
+        document.getElementById('assignmentTableBody').innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-500"><span class="material-symbols-outlined animate-spin align-middle">sync</span> Loading schedule...</td></tr>';
 
         try {
             // Gọi API lấy dữ liệu ngày mới
@@ -2089,11 +2089,11 @@
                 // Render lại bảng với dữ liệu mới
                 updateBookingTime();
             } else {
-                alert('Lỗi tải dữ liệu: ' + data.message);
+                alert('Error loading data: ' + data.message);
             }
         } catch (e) {
             console.error(e);
-            alert('Lỗi kết nối server khi tải lịch làm việc!');
+            alert('Server connection error loading schedule!');
         }
     }
 
@@ -2103,7 +2103,7 @@
 
         // Thông báo đang tải trong các ô Select KTV
         const selects = document.querySelectorAll('.resch-tech-select');
-        selects.forEach(s => s.innerHTML = '<option>Đang tải dữ liệu...</option>');
+        selects.forEach(s => s.innerHTML = '<option>Loading data...</option>');
 
         try {
             // Gọi lại chính API GetTechsAvailability (đã sửa PascalCase)
@@ -2118,11 +2118,11 @@
                 // Tính toán lại danh sách KTV
                 updateRescheduleAvailability();
             } else {
-                alert('Lỗi tải dữ liệu: ' + data.message);
+                alert('Error loading data: ' + data.message);
             }
         } catch (e) {
             console.error(e);
-            alert('Lỗi kết nối server khi tải lịch làm việc!');
+            alert('Server connection error loading schedule!');
         }
     }
 
@@ -2134,7 +2134,7 @@
         const [h, m] = timeStr.split(':').map(Number);
         // Nếu nhỏ hơn 8h hoặc lớn hơn 20h (hoặc đúng 20h mà có phút lẻ)
         if (h < 8 || h > 20 || (h === 20 && m > 0)) {
-            return { valid: false, msg: "⛔ Vui lòng chọn trong khung giờ 08:00 - 20:00" };
+            return { valid: false, msg: "⛔ Please select between 08:00 - 20:00" };
         }
 
         // 2. KIỂM TRA QUÁ KHỨ (Ngày đã chọn so với Hiện tại)
@@ -2158,10 +2158,10 @@
             const todayOnly = new Date(now.toDateString()); // Reset giờ về 00:00
 
             if (selectedDayOnly < todayOnly) {
-                return { valid: false, msg: "⛔ Không thể chọn ngày trong quá khứ!" };
+                return { valid: false, msg: "⛔ Cannot select past date!" };
             }
             // Nếu là hôm nay nhưng giờ cũ
-            return { valid: false, msg: "⛔ Không thể chọn giờ trong quá khứ!" };
+            return { valid: false, msg: "⛔ Cannot select past time!" };
         }
 
         return { valid: true, msg: "" };

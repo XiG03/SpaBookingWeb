@@ -70,18 +70,18 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var result = rawData.Select(a => {
                 // Logic tạo text tóm tắt dịch vụ
                 var details = a.AppointmentDetails.ToList();
-                string summary = "Chưa chọn dịch vụ";
+                string summary = "Service not selected";
                 if (details.Any())
                 {
                     string firstSvc = details.First().Service?.ServiceName ?? "Combo";
                     int remain = details.Count - 1;
-                    summary = remain > 0 ? $"{firstSvc} (+{remain} món)" : firstSvc;
+                    summary = remain > 0 ? $"{firstSvc} (+{remain} item)" : firstSvc;
                 }
 
                 return new BookingListItemVM
                 {
                     AppointmentId = a.AppointmentId,
-                    CustomerName = a.Customer?.FullName ?? "Vãng lai",
+                    CustomerName = a.Customer?.FullName ?? "Walk-in",
                     CustomerPhone = a.Customer?.PhoneNumber ?? "",
                     BookingTime = a.StartTime,
                     ServiceSummary = summary,

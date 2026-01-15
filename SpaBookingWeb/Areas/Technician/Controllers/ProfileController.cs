@@ -28,13 +28,13 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             // [THAY ĐỔI IDENTITY] Lấy EmployeeId thật
             var employeeId = await _jobService.GetCurrentEmployeeIdAsync(user.Id);
 
-            if (employeeId == null) return NotFound("Không tìm thấy liên kết nhân viên.");
+            if (employeeId == null) return NotFound("No employee link found.");
 
             var profile = await _jobService.GetTechnicianProfileAsync(employeeId.Value);
 
             if (profile == null)
             {
-                return NotFound("Không tìm thấy hồ sơ nhân viên.");
+                return NotFound("No employee records found.");
             }
 
             return View(profile);

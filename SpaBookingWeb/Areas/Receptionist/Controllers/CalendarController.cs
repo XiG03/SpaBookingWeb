@@ -44,7 +44,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
         {
             if (string.IsNullOrEmpty(phone))
             {
-                return Json(new { success = false, message = "Vui lòng nhập số điện thoại" });
+                return Json(new { success = false, message = "Please enter your phone number." });
             }
 
             var customer = await _context.Customers
@@ -61,7 +61,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                     {
                         fullName = customer.FullName,
                         email = customer.Email,
-                        membership = customer.MembershipType?.TypeName ?? "Thành viên thường",
+                        membership = customer.MembershipType?.TypeName ?? "Regular members",
                         discount = customer.MembershipType?.DiscountPercent ?? 0
                     }
                 });
@@ -89,7 +89,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 // Để an toàn, ta gán ID null hoặc ID admin mặc định nếu cần, nhưng tốt nhất là báo lỗi.
                 if (receptionistEmployee == null)
                 {
-                    return BadRequest("Không tìm thấy hồ sơ nhân viên của tài khoản đang đăng nhập.");
+                    return BadRequest("No employee profile was found for the currently logged-in account.");
                 }
                 // [LOGIC MỚI] Xác định Trạng thái
                 string initialStatus = model.IsWalkIn ? "InProgress" : "Confirmed";
@@ -125,7 +125,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 if (isCustomerBusy)
                 {
-                    return BadRequest($"Khách hàng ({model.CustomerPhone}) đã có lịch hẹn khác trùng vào khung giờ này. Vui lòng kiểm tra lại!");
+                    return BadRequest($"Customer ({model.CustomerPhone}) already has another appointment that coincides with this time slot. Please check again!");
                 }
                 // ==========================================================
 
@@ -318,7 +318,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             {
                 id = appt.AppointmentId,
                 invoiceId = paidInvoiceId, // Gán giá trị vừa tìm được (int, mặc định 0 nếu ko thấy)
-                customerName = appt.Customer?.FullName ?? "Khách vãng lai",
+                customerName = appt.Customer?.FullName ?? "Walk-in customer",
                 customerPhone = appt.Customer?.PhoneNumber ?? "",
                 createdDate = appt.CreatedDate.ToString("dd/MM/yyyy HH:mm"),
                 notes = appt.Notes, // <--- Lấy ghi chú
@@ -338,7 +338,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                     serviceName = ad.ComboId != null ? $"[Combo] {ad.Combo?.ComboName}" : ad.Service?.ServiceName,
                     price = ad.PriceAtBooking,
                     techId = ad.TechnicianId, // <--- THÊM MỚI: ID KTV hiện tại
-                    techName = ad.Technician != null ? ad.Technician.FullName : "Chưa chọn",
+                    techName = ad.Technician != null ? ad.Technician.FullName : "Not selected",
                     status = ad.Status,
                     // Lấy thời lượng để tính Availability (Mặc định 60p nếu null)
                     duration = ad.ComboId != null ? 90 : (ad.Service?.DurationMinutes ?? 60)
@@ -355,13 +355,13 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var appointment = await _context.Appointments.FindAsync(id);
             if (appointment == null)
             {
-                return Json(new { success = false, message = "Không tìm thấy lịch hẹn!" });
+                return Json(new { success = false, message = "No appointment found!" });
             }
 
             // Chỉ cho phép cập nhật các trạng thái hợp lệ
             if (status != "InProgress" && status != "Completed")
             {
-                return Json(new { success = false, message = "Trạng thái không hợp lệ!" });
+                return Json(new { success = false, message = "Invalid status!" });
             }
 
             appointment.Status = status;
@@ -380,7 +380,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "Cập nhật trạng thái thành công!" });
+            return Json(new { success = true, message = "Status update successful!" });
         }
 
         // 1. API Lấy thông tin Bill ban đầu (Load Modal)
@@ -405,8 +405,8 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var vm = new BillVM
             {
                 AppointmentId = appt.AppointmentId,
-                CustomerName = appt.Customer?.FullName ?? "Khách vãng lai",
-                MembershipLevel = appt.Customer?.MembershipType?.TypeName ?? "Thường",
+                CustomerName = appt.Customer?.FullName ?? "Walk-in customer",
+                MembershipLevel = appt.Customer?.MembershipType?.TypeName ?? "Normal",
                 MembershipDiscountPercent = appt.Customer?.MembershipType?.DiscountPercent ?? 0,
                 DepositAmount = appt.DepositAmount,
 
@@ -417,8 +417,8 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 Items = appt.AppointmentDetails.Select(ad => new BillItemVM
                 {
                     DetailId = ad.AppointmentDetailId,
-                    ServiceName = ad.Service?.ServiceName ?? "Combo/Khác",
-                    TechName = ad.Technician?.FullName ?? "Chưa chọn",
+                    ServiceName = ad.Service?.ServiceName ?? "Combo/else",
+                    TechName = ad.Technician?.FullName ?? "Not selected",
                     Price = ad.PriceAtBooking,
                     // Nếu có hóa đơn treo -> Lấy Tip đã lưu trong Detail. 
                     // Nếu không -> Mặc định 0
@@ -446,7 +446,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             {
                 request.PaymentMethod = "Cash";
                 var invoiceId = await _receptionistService.ProcessCheckoutAsync(request);
-                return Json(new { success = true, invoiceId = invoiceId, message = "Thanh toán thành công!" });
+                return Json(new { success = true, invoiceId = invoiceId, message = "Payment successful!" });
             }
             catch (Exception ex)
             {
@@ -471,7 +471,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 // b. Tạo thông tin đơn hàng
                 string orderId = $"{invoiceId}_{DateTime.Now.Ticks}"; // Unique ID
-                string orderInfo = $"Thanh toan don hang #{request.AppointmentId}";
+                string orderInfo = $"Pay for the order #{request.AppointmentId}";
 
                 // c. Cấu hình URL (Thay bằng domain thực tế của bạn hoặc ngrok nếu test local)
                 // Lưu ý: Momo không gọi được localhost. Bạn cần dùng Ngrok để test IPN.
@@ -583,7 +583,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                         // Chuyển hướng về lịch kèm thông báo thành công
                         return RedirectToAction("Index", new
                         {
-                            msg = "Thanh toán Momo thành công!",
+                            msg = "Momo payment successful!",
                             printInvoiceId = invoiceId // <--- Lưu InvoiceId để frontend mở hóa đơn
                         });
                     }
@@ -592,19 +592,19 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                         string userMsg = message;
                         if (resultCode == "1006" || (message != null && (message.Contains("Bad request") || message.Contains("denied"))))
                         {
-                            userMsg = "Giao dịch đã bị hủy!.";
+                            userMsg = "The transaction has been cancelled!.";
                         }
 
                         // Truyền thêm tham số 'reopenId' để frontend biết mà mở lại modal
                         return RedirectToAction("Index", new
                         {
-                            error = $"Thanh toán thất bại (Mã {code}): {userMsg}",
+                            error = $"Payment failed (Mã {code}): {userMsg}",
                             reopenId = appId
                         });
                     }
                 }
             }
-            return RedirectToAction("Index", new { error = "Không tìm thấy đơn hàng!" });
+            return RedirectToAction("Index", new { error = "No order found!" });
         }
 
         // [BƯỚC 1] API HỦY LỊCH HẸN (Có ghi lý do vào Notes)
@@ -615,7 +615,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var appt = await _context.Appointments
                 .Include(a => a.AppointmentDetails) // <--- QUAN TRỌNG
                 .FirstOrDefaultAsync(a => a.AppointmentId == id);
-            if (appt == null) return Json(new { success = false, message = "Không tìm thấy lịch hẹn" });
+            if (appt == null) return Json(new { success = false, message = "No appointment found." });
 
             // Logic chặn/cảnh báo được xử lý ở Frontend (Soft Block).
             // Ở Backend, ta thực hiện lệnh hủy theo yêu cầu của Lễ tân.
@@ -641,7 +641,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             // Ghi lý do vào Notes (Nối tiếp nội dung cũ nếu có)
             string timeStamp = DateTime.Now.ToString("dd/MM HH:mm");
             string oldNote = string.IsNullOrEmpty(appt.Notes) ? "" : $"{appt.Notes} | ";
-            appt.Notes = $"{oldNote}[ĐÃ HỦY lúc {timeStamp}]: {reason}";
+            appt.Notes = $"{oldNote}[CANCELLED at {timeStamp}]: {reason}";
 
             // Xử lý Invoice (Nếu có hóa đơn Unpaid thì hủy luôn)
             var unpaidInvoice = await _context.Invoices.FirstOrDefaultAsync(i => i.AppointmentId == id && i.PaymentStatus == "Unpaid");
@@ -674,13 +674,13 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 .Include(a => a.AppointmentDetails)
                 .FirstOrDefaultAsync(a => a.AppointmentId == req.AppointmentId);
 
-            if (appt == null) return Json(new { success = false, message = "Không tìm thấy lịch hẹn" });
+            if (appt == null) return Json(new { success = false, message = "No appointment found." });
 
             // 1. Check Quy tắc 24h (Backend check thêm lần nữa cho chắc)
             // Check 24h lần cuối ở Server (Bảo mật)
             if ((appt.StartTime - DateTime.Now).TotalHours < 24)
             {
-                return Json(new { success = false, message = "Lỗi: Đã quá hạn dời lịch (Dưới 24h)!" });
+                return Json(new { success = false, message = "Error: Rescheduling deadline has passed (less than 24 hours)!" });
             }
 
             DateTime oldStart = appt.StartTime;
@@ -710,7 +710,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             }
 
             // Format: Từ 10/01 10:00 sang 10/01 14:00
-            appt.Notes = (appt.Notes ?? "") + $" | [DỜI LỊCH]: Từ {oldStart:dd/MM HH:mm} sang {newStart:dd/MM HH:mm}";
+            appt.Notes = (appt.Notes ?? "") + $" | [Reschedule]: From {oldStart:dd/MM HH:mm} to {newStart:dd/MM HH:mm}";
 
             await _context.SaveChangesAsync();
             return Json(new { success = true });
@@ -739,7 +739,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 .Include(i => i.Employee) // Include thêm nhân viên thu ngân nếu cần
                 .FirstOrDefaultAsync(i => i.InvoiceId == id);
 
-            if (invoice == null) return NotFound("Không tìm thấy hóa đơn");
+            if (invoice == null) return NotFound("Invoice not found!");
 
             // --- TÍNH TOÁN TÁCH BIỆT GIẢM GIÁ ---
             // 1. Tổng tiền dịch vụ
@@ -805,7 +805,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 {
                     displayItems.Add(new
                     {
-                        Name = child.Service?.ServiceName ?? "Dịch vụ",
+                        Name = child.Service?.ServiceName ?? "Service",
                         Tech = child.Technician?.FullName ?? "N/A",
                         Price = 0m, // Giá con để 0
                         IsHeader = false,
@@ -823,7 +823,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 // SỬA LẠI CÁCH LẤY THÔNG TIN KHÁCH HÀNG:
                 // Lấy từ invoice.Appointment.Customer thay vì invoice.Customer
-                CustomerName = invoice.Appointment?.Customer?.FullName ?? "Khách vãng lai",
+                CustomerName = invoice.Appointment?.Customer?.FullName ?? "Walk-in customer",
                 CustomerPhone = invoice.Appointment?.Customer?.PhoneNumber ?? "",
 
                 PaymentMethod = invoice.PaymentMethod,
@@ -843,7 +843,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 // === [UPDATE] TRUYỀN CÁC BIẾN MỚI SANG VIEW ===
                 MemberDiscount = memberDiscount,
-                MemberLevel = invoice.Appointment?.Customer?.MembershipType?.TypeName ?? "Thường",
+                MemberLevel = invoice.Appointment?.Customer?.MembershipType?.TypeName ?? "Normal",
 
                 VoucherDiscount = voucherDiscount,
                 VoucherCode = invoice.Voucher?.Code ?? "", // Mã Voucher
@@ -861,7 +861,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
         public async Task<IActionResult> GetTechsAvailability(string date)
         {
             if (!DateTime.TryParse(date, out DateTime selectedDate))
-                return Json(new { success = false, message = "Ngày không hợp lệ" });
+                return Json(new { success = false, message = "Invalid date!" });
 
             // Tận dụng lại Service cũ để đảm bảo logic tính toán Shift/Event nhất quán
             var dashboardData = await _receptionistService.GetDashboardDataAsync(selectedDate);

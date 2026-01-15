@@ -46,12 +46,12 @@ namespace SpaBookingWeb.Services.Technictian
 
                 if (isCombo)
                 {
-                    string servicePart = ad.Service != null ? ad.Service.ServiceName : "Dịch vụ";
+                    string servicePart = ad.Service != null ? ad.Service.ServiceName : "Service";
                     displayService = $"{servicePart} (Gói: {ad.Combo.ComboName})";
                 }
                 else
                 {
-                    displayService = ad.Service?.ServiceName ?? "Dịch vụ tùy chỉnh";
+                    displayService = ad.Service?.ServiceName ?? "Customization services";
                 }
 
                 // Xử lý màu sắc
@@ -104,7 +104,7 @@ namespace SpaBookingWeb.Services.Technictian
                 StartTime = job.Appointment.StartTime,
                 EndTime = job.Appointment.EndTime,
                 Status = job.Status,
-                ServiceName = job.Service?.ServiceName ?? job.Combo?.ComboName ?? "Dịch vụ tùy chỉnh",
+                ServiceName = job.Service?.ServiceName ?? job.Combo?.ComboName ?? "Customization services",
                 DurationMinutes = job.Service?.DurationMinutes ?? 0,
                 TipAmount = job.TipAmount,
                 IsDirectTip = job.IsDirectTip,
@@ -128,7 +128,7 @@ namespace SpaBookingWeb.Services.Technictian
                 // Nếu Lịch cha chưa là 'InProgress' -> Chặn lại
                 if (job.Appointment.Status != "InProgress")
                 {
-                    throw new Exception("Lễ tân CHƯA Check-in cho khách này. Vui lòng nhắc Lễ tân Check-in trước!");
+                    throw new Exception("The receptionist has NOT checked this guest in yet. Please remind the receptionist to check in first!");
                 }
             }
 
@@ -139,7 +139,7 @@ namespace SpaBookingWeb.Services.Technictian
                 // (Nếu muốn kỹ hơn: Chỉ cho hủy khi chưa Completed)
                 if (job.Status == "Completed")
                 {
-                    throw new Exception("Dịch vụ đã hoàn thành, không thể hủy!");
+                    throw new Exception("The service is complete and cannot be canceled!");
                 }
             }
 
@@ -180,7 +180,7 @@ namespace SpaBookingWeb.Services.Technictian
                     UsageId = x.UsageId,
                     ProductId = x.ProductId,
                     ProductName = x.Product.ProductName,
-                    UnitName = x.Product.Unit?.UnitName ?? "Đơn vị",
+                    UnitName = x.Product.Unit?.UnitName ?? "Unit",
                     StandardQuantity = x.StandardQuantity,
                     ActualQuantity = x.ActualQuantity,
                     Reason = x.Reason
@@ -201,7 +201,7 @@ namespace SpaBookingWeb.Services.Technictian
                     UsageId = 0, // Đánh dấu là mới
                     ProductId = x.ProductId,
                     ProductName = x.Product.ProductName,
-                    UnitName = x.Product.Unit?.UnitName ?? "Đơn vị",
+                    UnitName = x.Product.Unit?.UnitName ?? "Unit",
                     StandardQuantity = x.Quantity,
                     ActualQuantity = x.Quantity, // Mặc định thực dùng = định mức
                     Reason = ""
@@ -275,13 +275,13 @@ namespace SpaBookingWeb.Services.Technictian
             // Nếu clientIp là localhost (::1) thì phải xử lý chút để so sánh
             if (!allowedIps.Contains(clientIp))
             {
-                return $"IP của bạn ({clientIp}) không hợp lệ. Vui lòng kết nối Wi-Fi Spa!";
+                return $"Your IP ({clientIp}) is invalid. Please connect to your Spa Wifi";
             }
 
             // B. Lấy lịch thông minh
             var schedule = await GetSmartScheduleAsync(employeeId);
 
-            if (schedule == null) return "Hôm nay bạn không có lịch làm việc, hoặc đã hết ca!";
+            if (schedule == null) return "You don't have a work schedule today, or your shift is over!";
 
             // C. Logic Check-in / Check-out
             if (schedule.CheckInTime == null)
@@ -297,7 +297,7 @@ namespace SpaBookingWeb.Services.Technictian
             }
             else
             {
-                return "Ca làm việc này đã hoàn thành (đã Check-out)!";
+                return "This shift is complete (checked out)!";
             }
 
             await _context.SaveChangesAsync();
@@ -367,9 +367,9 @@ namespace SpaBookingWeb.Services.Technictian
             {
                 EmployeeId = emp.EmployeeId,
                 FullName = emp.FullName,
-                Email = emp.ApplicationUser?.Email ?? "Chưa cập nhật",
-                PhoneNumber = emp.ApplicationUser?.PhoneNumber ?? "Chưa cập nhật",
-                Address = emp.Address ?? "Chưa cập nhật",
+                Email = emp.ApplicationUser?.Email ?? "Not yet updated",
+                PhoneNumber = emp.ApplicationUser?.PhoneNumber ?? "Not yet updated",
+                Address = emp.Address ?? "Not yet updated",
                 HireDate = emp.HireDate,
                 BaseSalary = emp.BaseSalary,
                 IsActive = emp.IsActive,

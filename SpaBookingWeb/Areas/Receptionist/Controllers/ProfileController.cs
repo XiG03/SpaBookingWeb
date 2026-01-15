@@ -34,7 +34,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
             if (model == null)
             {
-                return Content("Không tìm thấy hồ sơ nhân viên. Vui lòng liên hệ Admin.");
+                return Content("No employee records found. Please contact the Admin.");
             }
 
             // 3. Trả về View
@@ -51,7 +51,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 await _receptionistService.ConfirmSalaryReceiptAsync(id, userId);
 
-                return Json(new { success = true, message = "Đã xác nhận nhận lương thành công!" });
+                return Json(new { success = true, message = "Salary payment confirmed!" });
             }
             catch (Exception ex)
             {

@@ -41,7 +41,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
 
             if (vm == null)
             {
-                return NotFound("Không tìm thấy công việc hoặc bạn không được phân công.");
+                return NotFound("No jobs found, or you haven't been assigned any.");
             }
 
             return View(vm);
@@ -69,18 +69,18 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             {
                 case "CheckIn":
                     newStatus = "InProgress";
-                    message = "Đã bắt đầu làm dịch vụ!";
+                    message = "Started providing the service!";
                     break;
                 case "CheckOut":
                     newStatus = "Completed";
-                    message = "Đã hoàn thành dịch vụ!";
+                    message = "Service completed!";
                     break;
                 case "Cancel":
                     newStatus = "Cancelled";
-                    message = "Đã hủy công việc.";
+                    message = "Service has been cancelled.";
                     break;
                 default:
-                    return BadRequest("Hành động không hợp lệ");
+                    return BadRequest("Invalid action!");
             }
 
             // Gọi Service cập nhật DB
@@ -135,7 +135,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             try
             {
                 await _jobService.SaveConsumablesAsync(id, items);
-                return Ok(new { success = true, message = "Đã lưu thành công!" });
+                return Ok(new { success = true, message = "Saved successfully!" });
             }
             catch (Exception ex)
             {

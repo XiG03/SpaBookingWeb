@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Quản lý Đơn hàng";
+    ViewData["Title"] = "Order Management";
     Layout = "~/Areas/Receptionist/Views/Shared/_Layout.cshtml";
 }
 
@@ -7,11 +7,11 @@
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-600">toc</span> Quản lý Đơn hàng
+                <span class="material-symbols-outlined text-blue-600">toc</span> Order Management
             </h1>
 
             <div class="relative w-full md:w-96">
-                <input type="text" id="filterKeyword" placeholder="Tìm SĐT, Tên khách, Mã đơn..."
+                <input type="text" id="filterKeyword" placeholder="Search Phone, Name, Order ID..."
                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
                        onkeydown="if(event.key==='Enter') loadData()">
                 <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-400">search</span>
@@ -20,26 +20,26 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Từ ngày</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">From Date</label>
                 <input type="date" id="filterFromDate" class="w-full border-gray-300 rounded-lg text-sm font-bold">
             </div>
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Đến ngày</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">To Date</label>
                 <input type="date" id="filterToDate" class="w-full border-gray-300 rounded-lg text-sm font-bold">
             </div>
             <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Trạng thái</label>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Status</label>
                 <select id="filterStatus" class="w-full border-gray-300 rounded-lg text-sm">
-                    <option value="All">-- Tất cả --</option>
-                    <option value="Pending">Đang chờ (Pending)</option>
-                    <option value="Confirmed">Đã xác nhận</option>
-                    <option value="InProgress">Đang làm (In Progress)</option>
-                    <option value="Completed">Hoàn thành</option>
-                    <option value="Cancelled" class="text-red-600 font-bold">✖ Đã hủy (Cancelled)</option>
+                    <option value="All">-- All --</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="InProgress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled" class="text-red-600 font-bold">✖ Cancelled</option>
                 </select>
             </div>
             <button onclick="loadData()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex justify-center items-center gap-2">
-                <span class="material-symbols-outlined">filter_alt</span> Lọc dữ liệu
+                <span class="material-symbols-outlined">filter_alt</span> Filter Data
             </button>
         </div>
     </div>
@@ -48,13 +48,13 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dịch vụ</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian hẹn</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Services</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Appt Time</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                 </tr>
             </thead>
             <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
@@ -63,12 +63,12 @@
 
         <div id="loadingRow" class="hidden p-10 text-center text-gray-500">
             <span class="material-symbols-outlined animate-spin text-3xl">sync</span>
-            <p class="mt-2 text-sm">Đang tải dữ liệu...</p>
+            <p class="mt-2 text-sm">Loading data...</p>
         </div>
 
         <div id="emptyRow" class="hidden p-10 text-center text-gray-400">
             <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
-            <p>Không tìm thấy đơn hàng nào.</p>
+            <p>No orders found.</p>
         </div>
     </div>
 </div>
@@ -80,7 +80,7 @@
             <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-down">
                 <div class="bg-purple-600 px-6 py-4 flex justify-between items-center text-white">
                     <h3 class="text-lg font-bold flex items-center gap-2">
-                        <span class="material-symbols-outlined">visibility</span> Chi tiết lịch hẹn
+                        <span class="material-symbols-outlined">visibility</span> Appointment Details
                     </h3>
                     <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="hover:text-purple-200"><span class="material-symbols-outlined">close</span></button>
                 </div>
@@ -88,13 +88,13 @@
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border">
                         <div>
-                            <label class="text-xs text-gray-500 uppercase font-bold">Khách hàng</label>
+                            <label class="text-xs text-gray-500 uppercase font-bold">Customer</label>
                             <div class="font-bold text-gray-800 text-lg" id="detailCustomerName">...</div>
                             <div class="text-sm text-gray-600 mb-2" id="detailCustomerPhone">...</div>
                             <span id="detailStatus" class="px-2 py-1 rounded text-xs font-bold bg-gray-200">...</span>
                         </div>
                         <div class="text-right">
-                            <label class="text-xs text-blue-600 uppercase font-bold">Thời gian hẹn</label>
+                            <label class="text-xs text-blue-600 uppercase font-bold">Appointment Time</label>
                             <div class="text-2xl font-bold text-blue-700" id="detailTimeRange">...</div>
                             <div class="text-sm font-bold text-gray-700" id="detailBookingDate">...</div>
                             <div class="mt-3 text-xs text-gray-500">Tạo: <span id="detailCreatedDate"></span></div>
@@ -102,26 +102,26 @@
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-500 uppercase font-bold">Ghi chú / Yêu cầu</label>
+                        <label class="text-xs text-gray-500 uppercase font-bold">Notes / Requests</label>
                         <div id="detailNotes" class="p-3 bg-yellow-50 border border-yellow-100 rounded text-sm text-gray-700 italic min-h-[40px]"></div>
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-500 uppercase font-bold mb-2 block">Chi tiết dịch vụ</label>
+                        <label class="text-xs text-gray-500 uppercase font-bold mb-2 block">Service Details</label>
                         <div class="border rounded overflow-hidden">
                             <table class="w-full text-sm text-left">
                                 <thead class="bg-gray-100 text-gray-600 font-bold border-b">
                                     <tr>
-                                        <th class="p-2">Khách</th>
-                                        <th class="p-2">Dịch vụ</th>
-                                        <th class="p-2">KTV</th>
-                                        <th class="p-2 text-right">Giá</th>
+                                        <th class="p-2">Guest</th>
+                                        <th class="p-2">Service</th>
+                                        <th class="p-2">Tech</th>
+                                        <th class="p-2 text-right">Price</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailItemsBody" class="divide-y"></tbody>
                                 <tfoot class="bg-gray-50 font-bold border-t">
                                     <tr>
-                                        <td colspan="3" class="p-2 text-right">Tổng cộng:</td>
+                                        <td colspan="3" class="p-2 text-right">Total:</td>
                                         <td class="p-2 text-right text-blue-600" id="detailTotal">0 đ</td>
                                     </tr>
                                 </tfoot>
@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="bg-gray-50 px-6 py-4 flex justify-end">
-                    <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="px-4 py-2 bg-white border border-gray-300 rounded font-bold hover:bg-gray-100 text-gray-700">Đóng</button>
+                    <button onclick="document.getElementById('detailModal').classList.add('hidden')" class="px-4 py-2 bg-white border border-gray-300 rounded font-bold hover:bg-gray-100 text-gray-700">Close</button>
                 </div>
             </div>
         </div>
@@ -222,20 +222,20 @@
         } catch (e) {
             console.error(e);
             loading.classList.add('hidden');
-            alert('Lỗi tải dữ liệu');
+            alert('Error loading data');
         }
     }
 
     // --- REUSE: HÀM MỞ MODAL CHI TIẾT (LẤY TỪ CALENDAR CONTROLLER) ---
     async function openDetailModal(apptId) {
         document.getElementById('detailModal').classList.remove('hidden');
-        document.getElementById('detailCustomerName').innerText = "Đang tải...";
+        document.getElementById('detailCustomerName').innerText = "Loading...";
         document.getElementById('detailItemsBody').innerHTML = '';
 
         try {
             // LƯU Ý: Gọi sang CalendarController để lấy chi tiết
             const res = await fetch(`/Receptionist/Calendar/GetAppointmentDetails?id=${apptId}`);
-            if (!res.ok) throw new Error('Không tìm thấy');
+            if (!res.ok) throw new Error('Not found');
             const data = await res.json();
 
             // Fill Data
@@ -244,7 +244,7 @@
             document.getElementById('detailTimeRange').innerText = data.timeRange;
             document.getElementById('detailBookingDate').innerText = data.bookingDate;
             document.getElementById('detailCreatedDate').innerText = data.createdDate;
-            document.getElementById('detailNotes').innerText = data.notes || 'Không có ghi chú.';
+            document.getElementById('detailNotes').innerText = data.notes || 'No note.';
             document.getElementById('detailStatus').innerText = data.status;
 
             const fmtMoney = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'});
@@ -258,7 +258,7 @@
 
                 const row = `
                 <tr class="border-b last:border-0">
-                    <td class="p-2 font-medium">${item.guestName || 'Khách'}</td>
+                    <td class="p-2 font-medium">${item.guestName || 'Guest'}</td>
                     <td class="p-2">${name}</td>
                     <td class="p-2 text-sm text-blue-600">${item.techName}</td>
                     <td class="p-2 text-right font-bold">${item.comboId ? '--' : fmtMoney.format(item.price)}</td>

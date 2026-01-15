@@ -9,12 +9,12 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
                 <span class="material-symbols-outlined text-green-600">payments</span>
-                Sổ Quyết Toán Tip
+                Tip Payout Ledger
             </h1>
-            <p class="text-sm text-gray-500 mt-1">Danh sách các khoản Tip Lễ tân đang giữ hộ KTV (IsDirectTip = False)</p>
+            <p class="text-sm text-gray-500 mt-1">List of tips held by Reception for Technicians (IsDirectTip = False)</p>
         </div>
         <div class="bg-white px-4 py-2 rounded shadow text-sm">
-            <span class="text-gray-500">Tổng quỹ Tip đang giữ:</span>
+            <span class="text-gray-500">Total Held Tips:</span>
             <span class="font-bold text-green-600 text-lg ml-2">@Model.Sum(x => x.TotalUnpaidTip).ToString("N0") đ</span>
         </div>
     </div>
@@ -24,7 +24,7 @@
         {
             <div class="col-span-3 text-center py-10 text-gray-400">
                 <span class="material-symbols-outlined text-4xl block mb-2">check_circle</span>
-                Không có khoản Tip nào cần thanh toán lúc này.
+                No pending tip payouts at the moment.
             </div>
         }
 
@@ -39,7 +39,7 @@
                     </div>
                     <div class="text-right">
                         <div class="text-2xl font-bold text-green-600">@item.TotalUnpaidTip.ToString("N0")</div>
-                        <div class="text-xs text-gray-500 font-bold bg-gray-100 rounded px-2 py-0.5 inline-block">@item.TotalTransactionCount đơn</div>
+                        <div class="text-xs text-gray-500 font-bold bg-gray-100 rounded px-2 py-0.5 inline-block">@item.TotalTransactionCount orders</div>
                     </div>
                 </div>
 
@@ -47,7 +47,7 @@
 
                 <button onclick="openPayoutModal(@item.TechnicianId, '@item.TechnicianName', @item.TotalUnpaidTip)"
                         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">price_check</span> XEM & THANH TOÁN
+                    <span class="material-symbols-outlined text-sm">price_check</span> VIEW & PAY
                 </button>
             </div>
         }
@@ -62,7 +62,7 @@
             <div class="bg-green-600 px-6 py-4 flex justify-between items-center text-white">
                 <div>
                     <h3 class="text-lg font-bold flex items-center gap-2">
-                        <span class="material-symbols-outlined">account_balance_wallet</span> Quyết toán cho: <span id="modalTechName">...</span>
+                        <span class="material-symbols-outlined">account_balance_wallet</span> Payout for: <span id="modalTechName">...</span>
                     </h3>
                 </div>
                 <button onclick="closePayoutModal()" class="hover:text-green-200"><span class="material-symbols-outlined">close</span></button>
@@ -70,9 +70,9 @@
 
             <div class="p-6">
                 <div class="flex justify-between items-end mb-4 border-b pb-2">
-                    <span class="text-sm font-bold text-gray-500 uppercase">Chi tiết các đơn chưa trả</span>
+                    <span class="text-sm font-bold text-gray-500 uppercase">Unpaid Order Details</span>
                     <div class="text-right">
-                        <span class="text-sm text-gray-600 mr-2">Tổng cộng:</span>
+                        <span class="text-sm text-gray-600 mr-2">Total:</span>
                         <span class="text-2xl font-bold text-green-600" id="modalTotalAmount">0 đ</span>
                     </div>
                 </div>
@@ -81,10 +81,10 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-200 text-gray-700 font-bold sticky top-0">
                             <tr>
-                                <th class="p-3">Ngày giờ</th>
-                                <th class="p-3">Khách hàng</th>
-                                <th class="p-3">Dịch vụ</th>
-                                <th class="p-3 text-right">Tiền Tip</th>
+                                <th class="p-3">Date Time</th>
+                                <th class="p-3">Customer</th>
+                                <th class="p-3">Service</th>
+                                <th class="p-3 text-right">Tip Amount</th>
                             </tr>
                         </thead>
                         <tbody id="payoutTableBody" class="divide-y divide-gray-200">
@@ -95,16 +95,16 @@
                 <div class="mt-4 bg-yellow-50 p-3 rounded border border-yellow-100 text-sm text-yellow-800 flex items-start gap-2">
                     <span class="material-symbols-outlined text-sm mt-0.5">info</span>
                     <div>
-                        <strong>Lưu ý:</strong> Hành động này sẽ đánh dấu <b>TẤT CẢ</b> các khoản trên là "Đã trả" ngày hôm nay (@DateTime.Now.ToString("dd/MM/yyyy")). <br>
-                        Vui lòng giao tiền mặt hoặc chuyển khoản cho KTV trước khi bấm xác nhận.
+                        <strong>Lưu ý:</strong> This action will mark <b>ALL</b> listed items as "Paid" today (@DateTime.Now.ToString("dd/MM/yyyy")). (@DateTime.Now.ToString("dd/MM/yyyy")). <br>
+                        Please hand over cash or transfer funds to the Technician BEFORE confirming.
                     </div>
                 </div>
             </div>
 
             <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                <button onclick="closePayoutModal()" class="px-4 py-2 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-white">Để sau</button>
+                <button onclick="closePayoutModal()" class="px-4 py-2 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-white">Later</button>
                 <button onclick="submitPayout()" id="btnConfirmPayout" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-lg flex items-center gap-2">
-                    <span class="material-symbols-outlined">check</span> XÁC NHẬN ĐÃ TRẢ TIỀN
+                    <span class="material-symbols-outlined">check</span> CONFIRM PAYMENT
                 </button>
             </div>
         </div>
@@ -130,7 +130,7 @@
         document.getElementById('modalTotalAmount').innerText = new Intl.NumberFormat('vi-VN', {style:'currency', currency:'VND'}).format(totalAmount);
 
         const tbody = document.getElementById('payoutTableBody');
-        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Đang tải dữ liệu...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading data...</td></tr>';
 
         document.getElementById('payoutModal').classList.remove('hidden');
 
@@ -158,25 +158,25 @@
                     tbody.insertAdjacentHTML('beforeend', row);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Lỗi tải dữ liệu</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Error loading data</td></tr>';
             }
         } catch (e) {
             console.error(e);
-            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Lỗi kết nối</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-red-500">Connection error</td></tr>';
         }
     }
 
     async function submitPayout() {
         // [THAY ĐỔI 1] Dùng SweetAlert Confirm thay vì confirm() mặc định
         const confirmResult = await Swal.fire({
-            title: 'Xác nhận thanh toán?',
-            text: "Bạn xác nhận đã giao đủ tiền mặt cho KTV này?",
+            title: 'Confirm Payout?',
+            text: "Do you confirm you have paid the full cash amount to this Technician?",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#16a34a', // Green-600
             cancelButtonColor: '#6b7280', // Gray-500
-            confirmButtonText: '✅ Đúng, tôi đã trả',
-            cancelButtonText: 'Hủy bỏ'
+            confirmButtonText: '✅ Yes, I have paid',
+            cancelButtonText: 'Cancel'
         });
 
         // Nếu người dùng bấm "Hủy" -> Dừng lại ngay
@@ -184,7 +184,7 @@
 
         const btn = document.getElementById('btnConfirmPayout');
         const oldText = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Đang xử lý...';
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">progress_activity</span> Processing...';
         btn.disabled = true;
 
         try {
@@ -195,7 +195,7 @@
                 // [THAY ĐỔI 2] Hiện thông báo thành công đẹp
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Thành công!',
+                    title: 'Success!',
                     text: data.message,
                     confirmButtonColor: '#16a34a',
                     timer: 2000,
@@ -206,7 +206,7 @@
                 // [THAY ĐỔI 3] Hiện thông báo lỗi đẹp
                 await Swal.fire({
                     icon: 'error',
-                    title: 'Thất bại',
+                    title: 'Failed',
                     text: data.message,
                     confirmButtonColor: '#dc2626'
                 });
@@ -216,8 +216,8 @@
         } catch (e) {
             await Swal.fire({
                 icon: 'error',
-                title: 'Lỗi kết nối',
-                text: 'Không thể kết nối đến server. Vui lòng thử lại.',
+                title: 'Connection Error',
+                text: 'Cannot connect to server. Please try again.',
                 confirmButtonColor: '#dc2626'
             });
             btn.innerHTML = oldText;

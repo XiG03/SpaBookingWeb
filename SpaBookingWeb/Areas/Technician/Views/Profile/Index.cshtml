@@ -16,17 +16,17 @@
 
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">@Model.FullName</h1>
-                <p class="text-gray-500 font-medium">Mã nhân viên: <span class="text-blue-600">#@Model.EmployeeId</span></p>
+                <p class="text-gray-500 font-medium">Employee ID: <span class="text-blue-600">#@Model.EmployeeId</span></p>
                 <div class="flex gap-2 mt-2">
                     @if (Model.IsActive)
                     {
-                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-bold">Đang làm việc</span>
+                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-bold">Active</span>
                     }
                     else
                     {
-                        <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-bold">Đã nghỉ</span>
+                        <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-bold">Inactive</span>
                     }
-                    <span class="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full font-bold">Thâm niên: @((DateTime.Now - Model.HireDate).Days / 365) năm</span>
+                    <span class="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full font-bold">Seniority: @((DateTime.Now - Model.HireDate).Days / 365) years</span>
                 </div>
             </div>
         </div>
@@ -38,7 +38,7 @@
                 <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
                     <span class="material-symbols-outlined">person_check</span>
                 </div>
-                <span class="text-sm text-gray-500 font-medium">Khách tháng này</span>
+                <span class="text-sm text-gray-500 font-medium">Customers this month</span>
             </div>
             <p class="text-2xl font-bold text-gray-800 dark:text-white">@Model.ServedCustomers</p>
         </div>
@@ -48,7 +48,7 @@
                 <div class="p-2 bg-yellow-100 text-yellow-600 rounded-lg">
                     <span class="material-symbols-outlined">savings</span>
                 </div>
-                <span class="text-sm text-gray-500 font-medium">Tiền Tip</span>
+                <span class="text-sm text-gray-500 font-medium">Total Tip</span>
             </div>
             <p class="text-2xl font-bold text-yellow-600">@Model.TotalTip.ToString("N0") đ</p>
             @if (Model.TodayTip > 0)
@@ -60,7 +60,7 @@
             }
             else
             {
-                <div class="mt-2 text-xs text-gray-400">Hôm nay: 0 đ</div>
+                <div class="mt-2 text-xs text-gray-400">Today: 0 đ</div>
             }
         </div>
 
@@ -69,9 +69,9 @@
                 <div class="p-2 bg-green-100 text-green-600 rounded-lg">
                     <span class="material-symbols-outlined">calendar_month</span>
                 </div>
-                <span class="text-sm text-gray-500 font-medium">Ngày công</span>
+                <span class="text-sm text-gray-500 font-medium">Work Days</span>
             </div>
-            <p class="text-2xl font-bold text-gray-800 dark:text-white">@Model.WorkDays <span class="text-sm font-normal text-gray-400">ngày</span></p>
+            <p class="text-2xl font-bold text-gray-800 dark:text-white">@Model.WorkDays <span class="text-sm font-normal text-gray-400">days</span></p>
         </div>
 
         <div class="bg-white dark:bg-card-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
@@ -79,14 +79,14 @@
                 <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
                     <span class="material-symbols-outlined">schedule</span>
                 </div>
-                <span class="text-sm text-gray-500 font-medium">Tổng giờ làm</span>
+                <span class="text-sm text-gray-500 font-medium">Total Hours</span>
             </div>
             <p class="text-2xl font-bold text-gray-800 dark:text-white">@Model.TotalWorkHours <span class="text-sm font-normal text-gray-400">h</span></p>
         </div>
     </div>
 
     <div class="bg-white dark:bg-card-dark rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">Thông tin chi tiết</h3>
+        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 border-b pb-2 dark:border-gray-700">Details</h3>
 
         <div class="space-y-4">
             <div class="flex items-start justify-between">
@@ -95,22 +95,22 @@
             </div>
 
             <div class="flex items-start justify-between">
-                <span class="text-gray-500">Số điện thoại</span>
+                <span class="text-gray-500">Phone Number</span>
                 <span class="font-medium text-gray-900 dark:text-gray-200">@Model.PhoneNumber</span>
             </div>
 
             <div class="flex items-start justify-between">
-                <span class="text-gray-500">Địa chỉ</span>
+                <span class="text-gray-500">Address</span>
                 <span class="font-medium text-gray-900 dark:text-gray-200 text-right max-w-[60%]">@Model.Address</span>
             </div>
 
             <div class="flex items-start justify-between">
-                <span class="text-gray-500">Ngày ký HĐ</span>
+                <span class="text-gray-500">Contract Date</span>
                 <span class="font-medium text-gray-900 dark:text-gray-200">@Model.HireDate.ToString("dd/MM/yyyy")</span>
             </div>
 
             <div class="flex items-center justify-between pt-4 border-t border-dashed dark:border-gray-700">
-                <span class="text-gray-500 font-medium">Lương cơ bản</span>
+                <span class="text-gray-500 font-medium">Base Salary</span>
                 <div class="flex items-center gap-2">
                     <span id="salaryMask" class="font-bold text-lg text-gray-800 dark:text-white tracking-widest">******</span>
 

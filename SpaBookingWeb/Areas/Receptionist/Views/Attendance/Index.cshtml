@@ -1,20 +1,20 @@
 ﻿@model SpaBookingWeb.Models.WorkSchedule
 @{
-    ViewData["Title"] = "Chấm công Lễ tân";
+    ViewData["Title"] = "Receptionist Attendance";
     Layout = "~/Areas/Receptionist/Views/Shared/_Layout.cshtml";
 }
 
 <div class="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] space-y-8 p-6 bg-gray-50">
 
     <div class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-gray-800">Chấm công Lễ tân</h1>
+        <h1 class="text-3xl font-bold text-gray-800">Receptionist Attendance</h1>
         <p class="text-gray-500 font-medium">@DateTime.Now.ToString("dddd, dd/MM/yyyy")</p>
     </div>
 
     @if (TempData["WarningMessage"] != null)
     {
         <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-sm max-w-md w-full" role="alert">
-            <p class="font-bold">Lưu ý</p>
+            <p class="font-bold">Notice</p>
             <p>@Html.Raw(TempData["WarningMessage"])</p>
         </div>
     }
@@ -37,14 +37,14 @@
         @if (Model == null)
         {
             <div class="text-gray-400 py-8 flex flex-col items-center">
-                <span class="material-symbols-outlined text-6xl mb-4 text-gray-300">calendar_off</span>
-                <p class="text-lg">Hôm nay bạn không có lịch làm việc.</p>
+                @* <span class="material-symbols-outlined text-6xl mb-4 text-gray-300">calendar_off</span> *@
+                <p class="text-lg">You have no work schedule today.</p>
             </div>
         }
         else
         {
             <div class="mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <p class="text-xs text-blue-500 font-bold uppercase tracking-wider mb-1">Ca làm việc hiện tại</p>
+                <p class="text-xs text-blue-500 font-bold uppercase tracking-wider mb-1">Current Shift</p>
                 <p class="font-bold text-2xl text-blue-900">
                     @(Model.Shift?.ShiftName ?? $"Ca {Model.ShiftId}")
                 </p>
@@ -64,7 +64,7 @@
                     <button type="submit" class="mx-auto w-56 h-56 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-purple-500/30 transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3 group ring-4 ring-purple-100">
                         <span class="material-symbols-outlined text-6xl group-hover:animate-bounce">fingerprint</span>
                         <div>
-                            <span class="block text-2xl font-bold">VÀO CA</span>
+                            <span class="block text-2xl font-bold">CLOCK IN</span>
                             <span class="block text-xs opacity-80 font-normal mt-1">Check-in</span>
                         </div>
                     </button>
@@ -78,21 +78,21 @@
 
                     <button type="submit" class="w-full py-4 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-3 group">
                         <span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform">logout</span>
-                        KẾT THÚC CA (CHECK-OUT)
+                        CLOCK OUT
                     </button>
                 }
                 else
                 {
                     <div class="text-green-600 py-6 bg-green-50 rounded-2xl border border-green-100">
                         <span class="material-symbols-outlined text-7xl mb-3 drop-shadow-sm">task_alt</span>
-                        <p class="font-bold text-xl">Hoàn thành công việc</p>
+                        <p class="font-bold text-xl">Shift Completed</p>
                         <div class="text-sm text-gray-600 mt-4 space-y-2 border-t border-green-200 pt-4 w-3/4 mx-auto">
                             <div class="flex justify-between">
-                                <span>Giờ vào:</span>
+                                <span>Clock In:</span>
                                 <span class="font-bold">@Model.CheckInTime.Value.ToString("HH:mm")</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Giờ ra:</span>
+                                <span>Clock Out:</span>
                                 <span class="font-bold">@Model.CheckOutTime.Value.ToString("HH:mm")</span>
                             </div>
                         </div>

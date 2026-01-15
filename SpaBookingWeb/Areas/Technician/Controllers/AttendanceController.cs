@@ -27,7 +27,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             if (user == null) return RedirectToAction("Login", "Account", new { area = "" });
 
             var employeeId = await _jobService.GetCurrentEmployeeIdAsync(user.Id);
-            if (employeeId == null) return Content("Lỗi: Không tìm thấy hồ sơ nhân viên.");
+            if (employeeId == null) return Content("Error: Employee records not found.");
 
             var schedule = await _jobService.GetTodayScheduleAsync(employeeId.Value);
             return View(schedule);
@@ -42,7 +42,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             if (user == null) return RedirectToAction("Login", "Account", new { area = "" });
 
             var employeeId = await _jobService.GetCurrentEmployeeIdAsync(user.Id);
-            if (employeeId == null) return Content("Lỗi: Không tìm thấy hồ sơ nhân viên.");
+            if (employeeId == null) return Content("Error: Employee records not found.");
 
             // Lấy IP người dùng
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -58,7 +58,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             }
             else
             {
-                TempData["SuccessMessage"] = "Điểm danh thành công!";
+                TempData["SuccessMessage"] = "Attendance check successful!";
                 return RedirectToAction("Index", "Home");
             }
         }

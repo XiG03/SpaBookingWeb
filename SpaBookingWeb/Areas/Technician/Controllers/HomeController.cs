@@ -33,7 +33,7 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
             var employeeId = await _jobService.GetCurrentEmployeeIdAsync(user.Id);
             if (employeeId == null)
             {
-                return Content("Lỗi: Tài khoản này chưa liên kết với hồ sơ nhân viên.");
+                return Content("Error: This account is not linked to an employee profile.");
             }
 
             // 3. Lấy dữ liệu Lịch (Tháng hiện tại)

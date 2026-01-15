@@ -24,48 +24,106 @@ namespace SpaBookingWeb.Services.Receptionist
             var endOfDay = startOfDay.AddDays(1);
 
             // 1. LẤY KTV, CA LÀM VIỆC & KỸ NĂNG (Update Logic)
+            //var techniciansData = await _context.Employees
+            //    .Include(e => e.TechnicianDetail)
+            //    .Include(e => e.TechnicianServices) // <--- JOIN BẢNG KỸ NĂNG
+            //    .Where(e => e.IsActive && !e.IsDeleted && e.TechnicianDetail != null)
+            //    .Select(e => new {
+            //        Employee = e,
+            //        Schedule = _context.WorkSchedules
+            //                    .Include(ws => ws.Shift)
+            //                    .FirstOrDefault(ws => ws.EmployeeId == e.EmployeeId
+            //                                       && ws.WorkDate.Date == date.Date
+            //                                       && !ws.IsDeleted)
+            //    })
+            //    .ToListAsync();
+
             var techniciansData = await _context.Employees
-                .Include(e => e.TechnicianDetail)
-                .Include(e => e.TechnicianServices) // <--- JOIN BẢNG KỸ NĂNG
-                .Where(e => e.IsActive && !e.IsDeleted && e.TechnicianDetail != null)
-                .Select(e => new {
-                    Employee = e,
-                    Schedule = _context.WorkSchedules
-                                .Include(ws => ws.Shift)
-                                .FirstOrDefault(ws => ws.EmployeeId == e.EmployeeId
-                                                   && ws.WorkDate.Date == date.Date
-                                                   && !ws.IsDeleted)
-                })
-                .ToListAsync();
+            .Include(e => e.TechnicianDetail)
+            .Include(e => e.TechnicianServices)
+            // [SỬA 1] Load luôn danh sách WorkSchedules của nhân viên đó trong ngày
+            .Include(e => e.WorkSchedules.Where(ws => ws.WorkDate.Date == date.Date && !ws.IsDeleted))
+                .ThenInclude(ws => ws.Shift)
+            .Where(e => e.IsActive && !e.IsDeleted && e.TechnicianDetail != null)
+            .ToListAsync(); // Thực hiện query ngay tại đây để lấy dữ liệu về RAM xử lý
 
-            var techResources = techniciansData.Select(t => new TechnicianResource
-            {
-                Id = t.Employee.EmployeeId,
-                Name = t.Employee.FullName,
-                Avatar = !string.IsNullOrEmpty(t.Employee.Avatar) ? t.Employee.Avatar : "default",
-                SkillLevel = t.Employee.TechnicianDetail?.SkillLevel ?? "KTV",
+            //var techResources = techniciansData.Select(t => new TechnicianResource
+            //{
+            //    Id = t.Employee.EmployeeId,
+            //    Name = t.Employee.FullName,
+            //    Avatar = !string.IsNullOrEmpty(t.Employee.Avatar) ? t.Employee.Avatar : "default",
+            //    SkillLevel = t.Employee.TechnicianDetail?.SkillLevel ?? "KTV",
 
-                ShiftStartMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.StartTime.TotalMinutes : 0,
-                ShiftEndMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.EndTime.TotalMinutes : 0,
+            //    ShiftStartMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.StartTime.TotalMinutes : 0,
+            //    ShiftEndMinutes = t.Schedule?.Shift != null ? (int)t.Schedule.Shift.EndTime.TotalMinutes : 0,
 
-                // [THÊM MỚI] Logic lấy giờ nghỉ (Early Break)
-                // Nếu IsOnBreak = true và có giờ BreakStartTime -> Lấy tổng phút.
-                // Ngược lại để 0.
-                IsOnBreak = t.Schedule?.IsOnBreak ?? false,
-                BreakStartMinutes = (t.Schedule?.IsOnBreak == true && t.Schedule?.BreakStartTime != null)
-                                    ? (int)t.Schedule.BreakStartTime.Value.TotalMinutes
-                                    : 0,
+            //    // [THÊM MỚI] Logic lấy giờ nghỉ (Early Break)
+            //    // Nếu IsOnBreak = true và có giờ BreakStartTime -> Lấy tổng phút.
+            //    // Ngược lại để 0.
+            //    IsOnBreak = t.Schedule?.IsOnBreak ?? false,
+            //    BreakStartMinutes = (t.Schedule?.IsOnBreak == true && t.Schedule?.BreakStartTime != null)
+            //                        ? (int)t.Schedule.BreakStartTime.Value.TotalMinutes
+            //                        : 0,
 
-                // === THÊM LOGIC LẤY KỸ NĂNG ===
-                AllowedServiceIds = t.Employee.TechnicianServices
-                                    .Where(ts => !ts.IsDeleted)
-                                    .Select(ts => ts.ServiceId)
-                                    .ToList()
+            //    // === THÊM LOGIC LẤY KỸ NĂNG ===
+            //    AllowedServiceIds = t.Employee.TechnicianServices
+            //                        .Where(ts => !ts.IsDeleted)
+            //                        .Select(ts => ts.ServiceId)
+            //                        .ToList()
+            //}).ToList();
+
+            var techResources = techniciansData.Select(t => {
+                // [SỬA 2] Tính toán ca làm việc tổng hợp
+                // Lấy tất cả ca trong ngày của nhân viên này
+                var dailySchedules = t.WorkSchedules.Where(ws => ws.Shift != null).ToList();
+
+                int startMin = 0;
+                int endMin = 0;
+                bool isOnBreak = false;
+                int breakStartMin = 0;
+
+                if (dailySchedules.Any())
+                {
+                    // Giờ bắt đầu = Giờ sớm nhất của ca sớm nhất
+                    startMin = (int)dailySchedules.Min(s => s.Shift.StartTime.TotalMinutes);
+                    // Giờ kết thúc = Giờ muộn nhất của ca muộn nhất
+                    endMin = (int)dailySchedules.Max(s => s.Shift.EndTime.TotalMinutes);
+
+                    // Lấy thông tin nghỉ (Lấy từ ca đầu tiên tìm thấy có báo nghỉ, hoặc tùy logic của bạn)
+                    var breakSchedule = dailySchedules.FirstOrDefault(s => s.IsOnBreak);
+                    if (breakSchedule != null)
+                    {
+                        isOnBreak = true;
+                        breakStartMin = breakSchedule.BreakStartTime.HasValue
+                                        ? (int)breakSchedule.BreakStartTime.Value.TotalMinutes
+                                        : 0;
+                    }
+                }
+
+                return new TechnicianResource
+                {
+                    Id = t.EmployeeId, // Lưu ý: t bây giờ là Employee entity trực tiếp
+                    Name = t.FullName,
+                    Avatar = !string.IsNullOrEmpty(t.Avatar) ? t.Avatar : "default",
+                    SkillLevel = t.TechnicianDetail?.SkillLevel ?? "KTV",
+
+                    // Gán giá trị đã tính toán
+                    ShiftStartMinutes = startMin,
+                    ShiftEndMinutes = endMin,
+
+                    IsOnBreak = isOnBreak,
+                    BreakStartMinutes = breakStartMin,
+
+                    AllowedServiceIds = t.TechnicianServices
+                                        .Where(ts => !ts.IsDeleted)
+                                        .Select(ts => ts.ServiceId)
+                                        .ToList()
+                };
             }).ToList();
 
             var groups = new List<TechnicianGroup>
             {
-                new TechnicianGroup { GroupName = "Kỹ Thuật Viên", Technicians = techResources }
+                new TechnicianGroup { GroupName = "Technician", Technicians = techResources }
             };
 
             // LẤY LUẬT ĐẶT CỌC (Mới)
@@ -123,9 +181,9 @@ namespace SpaBookingWeb.Services.Receptionist
                             AppointmentId = appt.AppointmentId,
                             TechnicianId = detail.TechnicianId.Value,
 
-                            CustomerName = appt.Customer?.FullName ?? "Vãng lai",
+                            CustomerName = appt.Customer?.FullName ?? "Walk-in",
                             GuestName = detail.GuestName, // Hiển thị tên khách phụ
-                            ServiceName = detail.Service?.ServiceName ?? "Dịch vụ",
+                            ServiceName = detail.Service?.ServiceName ?? "Service",
 
                             StartTime = currentCursor,
                             EndTime = currentCursor.AddMinutes(duration),
@@ -276,7 +334,7 @@ namespace SpaBookingWeb.Services.Receptionist
 
             foreach (var sch in schedules)
             {
-                string status = "Chưa làm";
+                string status = "Not working";
                 string color = "text-gray-400 bg-gray-100";
                 if (sch.IsCheckIn && sch.CheckInTime.HasValue)
                 {
@@ -284,15 +342,15 @@ namespace SpaBookingWeb.Services.Receptionist
                     var actualIn = sch.CheckInTime.Value.TimeOfDay;
                     if (actualIn > shiftStart.Add(TimeSpan.FromMinutes(15)))
                     {
-                        status = "Đi muộn"; color = "text-red-600 bg-red-50 border-red-100";
+                        status = "Late"; color = "text-red-600 bg-red-50 border-red-100";
                         attendanceInfo.LateMinutesTotal += (int)(actualIn - shiftStart).TotalMinutes;
                     }
                     else
                     {
-                        status = "Đúng giờ"; color = "text-green-600 bg-green-50 border-green-100";
+                        status = "On time"; color = "text-green-600 bg-green-50 border-green-100";
                     }
                 }
-                else if (sch.WorkDate < DateTime.Today) { status = "Vắng"; color = "text-gray-500 bg-gray-200"; }
+                else if (sch.WorkDate < DateTime.Today) { status = "Absent"; color = "text-gray-500 bg-gray-200"; }
 
                 attendanceInfo.RecentLogs.Add(new DailyLog
                 {
@@ -314,7 +372,7 @@ namespace SpaBookingWeb.Services.Receptionist
 
                 qualityInfo.TopServices = currentMonthAppts
                     .SelectMany(a => a.AppointmentDetails).Where(d => d.Status == "Completed")
-                    .GroupBy(d => d.Service != null ? d.Service.ServiceName : (d.Combo != null ? d.Combo.ComboName : "Khác"))
+                    .GroupBy(d => d.Service != null ? d.Service.ServiceName : (d.Combo != null ? d.Combo.ComboName : "Other"))
                     .Select(g => new TopServiceItem { ServiceName = g.Key, Quantity = g.Count(), TotalRevenue = g.Sum(x => x.PriceAtBooking) })
                     .OrderByDescending(x => x.Quantity).Take(4).ToList();
 
@@ -352,8 +410,8 @@ namespace SpaBookingWeb.Services.Receptionist
                 {
                     Timestamp = item.CreatedDate,
                     ActionType = "Booking",
-                    Title = "Tạo lịch hẹn mới",
-                    Description = $"Khách hàng: {item.FullName} (#{item.AppointmentId})",
+                    Title = "Create a new appointment",
+                    Description = $"Customer: {item.FullName} (#{item.AppointmentId})",
                     Icon = "calendar_add_on",
                     ColorClass = "bg-blue-100 text-blue-600"
                 });
@@ -364,7 +422,7 @@ namespace SpaBookingWeb.Services.Receptionist
                 {
                     Timestamp = item.CreatedDate,
                     ActionType = "Payment",
-                    Title = "Thanh toán thành công",
+                    Title = "Payment successful",
                     Description = $"Thu {item.FinalAmount:N0}đ (HĐ #{item.InvoiceId})",
                     Icon = "payments",
                     ColorClass = "bg-green-100 text-green-600"
@@ -399,14 +457,14 @@ namespace SpaBookingWeb.Services.Receptionist
                 FullName = employee.FullName,
                 EmployeeCode = $"LT-{employee.EmployeeId.ToString("000")}",
                 Avatar = !string.IsNullOrEmpty(employee.Avatar) ? employee.Avatar : "https://via.placeholder.com/150",
-                JobTitle = "Lễ Tân",
+                JobTitle = "Receptionist",
                 IsActive = employee.IsActive,
                 HireDate = employee.HireDate,
                 SeniorityMonths = (today.Year - employee.HireDate.Year) * 12 + today.Month - employee.HireDate.Month,
                 BaseSalary = employee.BaseSalary,
-                PhoneNumber = employee.ApplicationUser?.PhoneNumber ?? "Chưa cập nhật",
-                Email = employee.ApplicationUser?.Email ?? "Chưa cập nhật",
-                Address = employee.Address ?? "Chưa cập nhật",
+                PhoneNumber = employee.ApplicationUser?.PhoneNumber ?? "Not update yet",
+                Email = employee.ApplicationUser?.Email ?? "Not update yet",
+                Address = employee.Address ?? "Not update yet",
 
                 // Chỉ số tháng hiện tại
                 CurrentMonthSales = sales,
@@ -505,16 +563,16 @@ namespace SpaBookingWeb.Services.Receptionist
                         if (result.VoucherDiscount > amountAfterMember)
                             result.VoucherDiscount = amountAfterMember;
 
-                        result.VoucherMessage = $"Áp dụng mã {voucher.Code}: -{result.VoucherDiscount:N0}đ";
+                        result.VoucherMessage = $"Apply code {voucher.Code}: -{result.VoucherDiscount:N0}đ";
                     }
                     else
                     {
-                        result.VoucherMessage = $"Đơn hàng chưa đạt tối thiểu {voucher.MinSpend:N0}đ";
+                        result.VoucherMessage = $"The order has not met the minimum order requirement {voucher.MinSpend:N0}đ";
                     }
                 }
                 else
                 {
-                    result.VoucherMessage = "Mã không hợp lệ hoặc đã hết hạn!";
+                    result.VoucherMessage = "The code is invalid or has expired!";
                 }
             }
 
@@ -598,7 +656,7 @@ namespace SpaBookingWeb.Services.Receptionist
                         if (shouldIncrement)
                         {
                             voucher.UsageCount += 1;
-                            if (voucher.UsageCount > voucher.UsageLimit) throw new Exception("Voucher vừa hết lượt sử dụng!");
+                            if (voucher.UsageCount > voucher.UsageLimit) throw new Exception("The voucher has just expired!");
                         }
                     }
                 }
@@ -706,14 +764,14 @@ namespace SpaBookingWeb.Services.Receptionist
 
                         _ = _emailSender.SendEmailAsync(
                             appointmentForMail.Customer.Email,
-                            $"[LushSpa] Hóa đơn điện tử #{finalInvoice.InvoiceId}",
+                            $"[SpaBookingWebsite] Digital invoices #{finalInvoice.InvoiceId}",
                             emailBody
                         );
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Lỗi gửi mail: " + ex.Message);
+                    Console.WriteLine("Email sending error: " + ex.Message);
                 }
                 // ===============================
 
@@ -743,13 +801,13 @@ namespace SpaBookingWeb.Services.Receptionist
 
             if (!allowedIps.Contains(clientIp))
             {
-                return $"IP của bạn ({clientIp}) không hợp lệ. Vui lòng kết nối Wi-Fi Spa!";
+                return $"Your IP ({clientIp}) is invalid. Please connect to your Spa Wifi!";
             }
 
             // 2. Lấy lịch làm việc phù hợp nhất với giờ hiện tại
             var schedule = await GetSmartScheduleAsync(employeeId);
 
-            if (schedule == null) return "Hôm nay bạn không có lịch làm việc!";
+            if (schedule == null) return "You don't have any work scheduled today!";
 
             // 3. Xử lý Logic Check-in / Check-out
             if (schedule.CheckInTime == null)
@@ -765,7 +823,7 @@ namespace SpaBookingWeb.Services.Receptionist
             }
             else
             {
-                return "Ca làm việc này đã hoàn thành (đã Check-out)!";
+                return "This shift is complete (checked out)!";
             }
 
             await _context.SaveChangesAsync();
@@ -778,33 +836,33 @@ namespace SpaBookingWeb.Services.Receptionist
             return $@"
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
             <div style='text-align: center; background-color: #13c8ec; padding: 20px; border-radius: 10px 10px 0 0;'>
-                <h2 style='color: white; margin: 0;'>CẢM ƠN QUÝ KHÁCH!</h2>
+                <h2 style='color: white; margin: 0;'>THANK YOU!</h2>
             </div>
             <div style='padding: 20px;'>
-                <p>Xin chào <strong>{customerName}</strong>,</p>
-                <p>Cảm ơn bạn đã sử dụng dịch vụ tại LushSpa. Dưới đây là thông tin hóa đơn thanh toán của bạn:</p>
+                <p>Hello <strong>{customerName}</strong>,</p>
+                <p>Thank you for using our services at SpaBookingWeb. Below are your payment invoice details:</p>
                 
                 <table style='width: 100%; margin-top: 20px; border-collapse: collapse;'>
                     <tr style='background-color: #f9f9f9;'>
-                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Mã hóa đơn:</td>
+                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Invoice ID:</td>
                         <td style='padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold;'>#{invoiceId}</td>
                     </tr>
                     <tr>
-                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Ngày thanh toán:</td>
+                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Payment Date:</td>
                         <td style='padding: 10px; border-bottom: 1px solid #ddd;'>{date:dd/MM/yyyy HH:mm}</td>
                     </tr>
                     <tr style='background-color: #f9f9f9;'>
-                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Tổng thanh toán:</td>
+                        <td style='padding: 10px; border-bottom: 1px solid #ddd;'>Total Amount:</td>
                         <td style='padding: 10px; border-bottom: 1px solid #ddd; color: #13c8ec; font-size: 18px; font-weight: bold;'>
                             {totalAmount:N0} đ
                         </td>
                     </tr>
                 </table>
 
-                <p style='margin-top: 30px; font-style: italic; color: #666;'>Hẹn gặp lại bạn trong lần chăm sóc tiếp theo!</p>
+                <p style='margin-top: 30px; font-style: italic; color: #666;'>We look forward to serving you again!</p>
             </div>
             <div style='text-align: center; font-size: 12px; color: #999; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>
-                LushSpa - 123 Đường ABC, Quận XYZ, TP.HCM<br>
+                SpaBookingWeb - 123 ABC Street, XYZ District, HCMC<br>
                 Hotline: 0909999888
             </div>
         </div>";
@@ -858,18 +916,18 @@ namespace SpaBookingWeb.Services.Receptionist
         {
             // 1. Tìm nhân viên từ UserId (để bảo mật, tránh xác nhận hộ người khác)
             var emp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == userId);
-            if (emp == null) throw new Exception("Không tìm thấy hồ sơ nhân viên.");
+            if (emp == null) throw new Exception("No employee records found.");
 
             // 2. Tìm phiếu lương
             var salary = await _context.Salaries.FirstOrDefaultAsync(s => s.SalaryId == salaryId);
 
-            if (salary == null) throw new Exception("Không tìm thấy bảng lương.");
+            if (salary == null) throw new Exception("Payroll records could not be found.");
 
             // 3. Kiểm tra quyền sở hữu
-            if (salary.EmployeeId != emp.EmployeeId) throw new Exception("Bạn không có quyền thao tác trên bảng lương này.");
+            if (salary.EmployeeId != emp.EmployeeId) throw new Exception("You do not have permission to manipulate this payroll sheet.");
 
             // 4. Kiểm tra trạng thái
-            if (salary.Status == "Completed") throw new Exception("Lương tháng này đã được xác nhận trước đó rồi.");
+            if (salary.Status == "Completed") throw new Exception("This month's salary was confirmed earlier.");
 
             // 5. Cập nhật
             salary.Status = "Completed";

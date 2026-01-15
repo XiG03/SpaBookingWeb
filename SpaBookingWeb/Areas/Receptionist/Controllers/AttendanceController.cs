@@ -34,7 +34,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var emp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == user.Id);
             if (emp == null)
             {
-                return Content("Lỗi: Tài khoản này chưa được liên kết với hồ sơ nhân viên.");
+                return Content("Error: This account is not linked to an employee profile.");
             }
 
             var schedule = await _receptionistService.GetTodayScheduleAsync(emp.EmployeeId);
@@ -53,7 +53,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             var emp = await _context.Employees.FirstOrDefaultAsync(e => e.IdentityUserId == user.Id);
             if (emp == null)
             {
-                return Content("Lỗi: Tài khoản chưa liên kết nhân viên.");
+                return Content("Error: The account has not been linked to an employee.");
             }
 
             // Lấy IP người dùng
@@ -68,7 +68,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
             }
             else
             {
-                TempData["SuccessMessage"] = "Điểm danh thành công!";
+                TempData["SuccessMessage"] = "Attendance check successful!";
             }
 
             return RedirectToAction("Index");

@@ -48,19 +48,19 @@
 
     <div class="text-center">
         <h2 class="uppercase" style="margin: 5px 0;">SPA BOOKING</h2>
-        <div>ĐC: 123 Đường ABC, Quận 1, TP.HCM</div>
+        <div>Add: 123 ABC Street, Dist 1, HCMC</div>
         <div>Hotline: 0909.123.456</div>
     </div>
 
     <div class="dashed-line"></div>
 
     <div>
-        <div>Hóa đơn: <strong>#@Model.InvoiceId</strong></div>
-        <div>Ngày: @Model.CreatedDate</div>
-        <div>Khách: @Model.CustomerName</div>
+        <div>Invoice: <strong>#@Model.InvoiceId</strong></div>
+        <div>Date: @Model.CreatedDate</div>
+        <div>Customer: @Model.CustomerName</div>
         @if(!string.IsNullOrEmpty(Model.CustomerPhone))
         {
-            <div>SĐT: @Model.CustomerPhone</div>
+            <div>Phone: @Model.CustomerPhone</div>
         }
     </div>
 
@@ -69,9 +69,9 @@
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="text-align:left; border-bottom: 1px dashed #000;">
-                <th style="padding: 5px 0; width:45%">Dịch vụ</th>
-                <th style="padding: 5px 0; width:30%">KTV/Tip</th>
-                <th style="padding: 5px 0; width:25%" class="text-right">Thành tiền</th>
+                <th style="padding: 5px 0; width:45%">Service</th>
+                <th style="padding: 5px 0; width:30%">Tech/Tip</th>
+                <th style="padding: 5px 0; width:25%" class="text-right">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -147,14 +147,14 @@
 
     <table style="width: 100%; margin-top: 5px;">
         <tr>
-            <td>Tổng dịch vụ:</td>
+            <td>Subtotal:</td>
             <td class="text-right">@string.Format("{0:N0}", Model.SubTotal)</td>
         </tr>
 
         @if (Model.TotalTip > 0)
         {
             <tr>
-                <td>Tổng tiền Tip:</td>
+                <td>Total Tip:</td>
                 <td class="text-right">@string.Format("{0:N0}", Model.TotalTip)</td>
             </tr>
         }
@@ -163,7 +163,7 @@
         {
             <tr>
                 <td>
-                    Giảm TV (@Model.MemberLevel):
+                    Member Desc. (@Model.MemberLevel):
                 </td>
                 <td class="text-right">
                     -@string.Format("{0:N0}", Model.MemberDiscount)
@@ -185,20 +185,20 @@
         @if (Model.Deposit > 0)
         {
             <tr>
-                <td>Trừ cọc:</td>
+                <td>Less Deposit:</td>
                 <td class="text-right">-@string.Format("{0:N0}", Model.Deposit)</td>
             </tr>
         }
 
         <tr style="font-size: 14px; border-top: 1px solid #000;">
-            <td class="font-bold" style="padding-top: 5px;">THANH TOÁN:</td>
+            <td class="font-bold" style="padding-top: 5px;">TOTAL:</td>
             <td class="text-right font-bold" style="padding-top: 5px; font-size: 16px;">
                 @string.Format("{0:N0}", Model.TotalAmount)
             </td>
         </tr>
         <tr>
             <td colspan="2" class="text-right" style="font-style:italic; font-size:10px;">
-                (PTTT: @Model.PaymentMethod)
+                (Method: @Model.PaymentMethod)
             </td>
         </tr>
     </table>
@@ -206,17 +206,17 @@
     <div class="dashed-line"></div>
 
     <div class="text-center" style="margin-top: 20px;">
-        <div class="font-bold">CẢM ƠN QUÝ KHÁCH!</div>
-        <div style="font-size: 10px; margin-top:5px">Hẹn gặp lại</div>
+        <div class="font-bold">THANK YOU!!</div>
+        <div style="font-size: 10px; margin-top:5px">See you again!</div>
         <div style="font-size: 10px;">Pass Wifi: spa123456</div>
     </div>
 
     <div class="text-center no-print" style="margin-top: 30px; padding-bottom: 30px;">
         <button onclick="window.print()" style="padding: 10px 20px; font-weight:bold; cursor:pointer; background: #000; color: #fff; border: none;">
-            🖨️ IN HÓA ĐƠN
+            🖨️ PRINT INVOICE
         </button>
         <div style="margin-top:10px; color:red; font-size:11px">
-            *Chọn "Save as PDF" trong hộp thoại in để lưu file
+            *Select "Save as PDF" in print dialog to save file
         </div>
     </div>
 

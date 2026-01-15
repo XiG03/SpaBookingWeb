@@ -47,7 +47,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                     // [SỬA LỖI TẠI ĐÂY] Chuyển đổi int? sang int
                     TechnicianId = g.Key.Value,
 
-                    TechnicianName = g.First().Technician?.FullName ?? "Không tên",
+                    TechnicianName = g.First().Technician?.FullName ?? "Anonymous",
                     Avatar = g.First().Technician?.Avatar ?? "/images/default-avatar.png",
                     TotalTransactionCount = g.Count(),
                     TotalUnpaidTip = g.Sum(x => x.TipAmount)
@@ -102,7 +102,7 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
 
                 if (!itemsToPay.Any())
                 {
-                    return Json(new { success = false, message = "Không còn khoản nào cần thanh toán cho KTV này." });
+                    return Json(new { success = false, message = "There are no more payments to be made for this tech." });
                 }
 
                 DateTime now = DateTime.Now;
@@ -121,13 +121,13 @@ namespace SpaBookingWeb.Areas.Receptionist.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = $"Đã quyết toán thành công {totalPaid:N0}đ ({itemsToPay.Count} đơn)!"
+                    message = $"The settlement has been successfully completed. {totalPaid:N0}đ ({itemsToPay.Count} order)!"
                 });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                return Json(new { success = false, message = "System error: " + ex.Message });
             }
         }
     }
