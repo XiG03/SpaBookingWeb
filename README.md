@@ -118,6 +118,9 @@ services:
       dockerfile: SpaBookingWeb/Dockerfile
     ports:
       - "8080:8080"
+    dns:
+      - 8.8.8.8
+      - 8.8.8.4
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       # Cấu hình kết nối Database
