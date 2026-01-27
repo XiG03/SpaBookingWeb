@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml; // Cần cài gói NuGet: EPPlus
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class ProductImportController : Controller
     {
         // Inject DbContext vào đây

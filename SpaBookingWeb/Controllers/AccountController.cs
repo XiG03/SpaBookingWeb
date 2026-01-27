@@ -49,7 +49,7 @@ namespace SpaBookingWeb.Controllers
         {
             try
             {
-                // IMPORTANT: Check returnUrl FIRST - If user is booking, don't interrupt them
+                //  Check returnUrl FIRST - If user is booking, don't interrupt them
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && returnUrl != "/")
                 {
                     return LocalRedirect(returnUrl);
@@ -292,8 +292,6 @@ namespace SpaBookingWeb.Controllers
                     // 3. Generate Verification Code (Token)
                     // Note: Default Identity Token is too long.
                     // To generate 6-digit code, we can use `GenerateTwoFactorTokenAsync` or generate random number.
-                    // Here I use simple method: Generate random number and save to User Token (or temporary Claim).
-                    
                     var token = new Random().Next(100000, 999999).ToString();
                     
                     // Save this token to DB to verify later (Use SetAuthenticationTokenAsync)
@@ -318,7 +316,6 @@ namespace SpaBookingWeb.Controllers
                     {
                         _logger.LogError($"Email send error: {ex.Message}");
                         
-                        // IMPORTANT: Delete user if email fails to allow re-registration
                         await _userManager.DeleteAsync(user);
                         
                         ModelState.AddModelError(string.Empty, "Cannot send verification email. Please check your email address or try again later.");
@@ -344,8 +341,6 @@ namespace SpaBookingWeb.Controllers
             
             ViewData["ReturnUrl"] = returnUrl;
             ViewData["Email"] = email;
-            
-            // Return View to enter code
             return View(); 
         }
 
@@ -355,7 +350,7 @@ namespace SpaBookingWeb.Controllers
             if (string.IsNullOrEmpty(email)) return RedirectToAction("Register");
             ViewData["Email"] = email;
             ViewData["ReturnUrl"] = returnUrl;
-            return View(); // Need to create ConfirmEmailCode.cshtml View
+            return View(); 
         }
 
         [HttpPost]
@@ -581,9 +576,6 @@ namespace SpaBookingWeb.Controllers
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    // But for this specific flow "System provided password", we kinda have to imply something worked.
-                    // Let's just say "check email".
                     return RedirectToAction("ForgotPasswordConfirmation");
                 }
 

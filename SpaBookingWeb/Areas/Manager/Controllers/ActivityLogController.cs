@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpaBookingWeb.Data;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class ActivityLogController : Controller
     {
         private readonly ApplicationDbContext _context;

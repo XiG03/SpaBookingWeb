@@ -19,7 +19,6 @@ namespace SpaBookingWeb.Models
         public virtual ICollection<Service> Services { get; set; }
         public virtual ICollection<Product> Products { get; set; }
 
-        // Cập nhật xóa mềm
         public bool IsDeleted { get; set; } = false;
     }
 
@@ -31,7 +30,6 @@ namespace SpaBookingWeb.Models
         [Required, StringLength(50)]
         public string UnitName { get; set; }
 
-        // Cập nhật xóa mềm
         public bool IsDeleted { get; set; } = false;
     }
 
@@ -95,7 +93,6 @@ namespace SpaBookingWeb.Models
         public bool IsDeleted { get; set; } = false;
     }
 
-    // Bảng trung gian: Định mức tiêu hao
     [Table("ServiceConsumables")]
     public class ServiceConsumable
     {
@@ -131,7 +128,6 @@ namespace SpaBookingWeb.Models
 
     }
 
-    // Bảng trung gian Combo
     [Table("ComboDetails")]
     public class ComboDetail
     {
@@ -145,7 +141,6 @@ namespace SpaBookingWeb.Models
     }
 
     
-    // Cấu hình KTV - Dịch vụ
     [Table("TechnicianServices")]
     public class TechnicianService
     {

@@ -7,7 +7,7 @@ using SpaBookingWeb.Services.Manager;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;

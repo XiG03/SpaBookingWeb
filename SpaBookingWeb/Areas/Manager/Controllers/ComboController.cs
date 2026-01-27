@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpaBookingWeb.Services.Manager;
 using SpaBookingWeb.ViewModels.Manager;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class ComboController : Controller
     {
         private readonly IComboService _comboService;

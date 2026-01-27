@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    [Authorize] // Anyone logged in can view their own profile
+    [Authorize(Roles = "Manager,Admin")]
     public class ProfileController : Controller
     {
         private readonly IProfileService _profileService;

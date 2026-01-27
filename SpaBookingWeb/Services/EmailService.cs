@@ -21,19 +21,19 @@ public class EmailService : IEmailService
         email.To.Add(MailboxAddress.Parse(toEmail));
         email.Subject = subject;
 
-        // Email content (HTML supported)
+        
         var builder = new BodyBuilder();
         builder.HtmlBody = message;
         email.Body = builder.ToMessageBody();
 
         using var smtp = new SmtpClient();
-        // Connect to Gmail server
+        
         await smtp.ConnectAsync(_config["EmailSettings:MailServer"], int.Parse(_config["EmailSettings:MailPort"]), MailKit.Security.SecureSocketOptions.StartTls);
         
-        // Authenticate
+        
         await smtp.AuthenticateAsync(_config["EmailSettings:SenderEmail"], _config["EmailSettings:Password"]);
         
-        // Send and disconnect
+        
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
     }

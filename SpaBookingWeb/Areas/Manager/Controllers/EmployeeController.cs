@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Authorize(Roles = "Manager,Admin")] // Ensure only managers can access
+    [Authorize(Roles = "Manager,Admin")]
     public class EmployeeController : Controller
     {
         private readonly IEmployeeService _employeeService;

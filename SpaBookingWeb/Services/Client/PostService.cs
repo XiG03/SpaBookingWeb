@@ -26,7 +26,7 @@ namespace SpaBookingWeb.Services.Client
                 CurrentPage = page
             };
 
-            // 1. Lấy danh mục
+            
             model.Categories = await _context.PostCategories
                 .Where(c => !c.IsDeleted)
                 .Select(c => new ClientPostCategoryViewModel
@@ -38,7 +38,7 @@ namespace SpaBookingWeb.Services.Client
                 })
                 .ToListAsync();
 
-            // 2. Query Posts
+            
             var query = _context.Posts
                 .Include(p => p.PostCategory)
                 .Include(p => p.Author)
@@ -54,10 +54,10 @@ namespace SpaBookingWeb.Services.Client
                 query = query.Where(p => p.PostCategoryId == categoryId);
             }
 
-            // Sắp xếp bài mới nhất lên đầu
+            
             query = query.OrderByDescending(p => p.PublishedDate ?? p.CreatedDate);
 
-            // 3. Phân trang
+            
             int totalItems = await query.CountAsync();
             model.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
@@ -93,7 +93,7 @@ namespace SpaBookingWeb.Services.Client
             {
                 Id = post.PostId,
                 Title = post.Title,
-                Content = post.Content, // Nội dung HTML
+                Content = post.Content, 
                 Thumbnail = string.IsNullOrEmpty(post.Thumbnail) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuCLHUwV-Z7x3Pyl8s-3qZ77YyV9-k5W7qX9zR1P3uL5mN7vJ9oK4wE8rT6yS2dF1gH0jA4bC3xQ5vM8nL2kP9oJ4hG7fD6sA1wE3rT5yU8iO9pL2kM4nJ6vH0gX3zF5cR8bA9dE7w" : post.Thumbnail,
                 AuthorName = post.Author != null ? post.Author.FullName : "Admin",
                 AuthorAvatar = post.Author?.Avatar ?? "https://lh3.googleusercontent.com/aida-public/AB6AXuCu-TjZAydZtuktz7Wqw25aW_vPCzYIbnylRw9JitpFPJxL_VIRZI3lwTMalaUH0rZxsncacs6lgYsGID-B0dfP9C3McdKs586DoHEljj3HsMUiBgRY3bDS_9TjgEykM_bDTbmrgMtT-Uy2HbBFjIIMS1ArZ20uTZG16glule-8Dai2IyeaeITtWhMrXHPJXuB-eQKOE0gtmTNEC4HPAxyaZYQWGYDzA5ynpmZS-6UIVh9pqg9XxPBUy3x4Tzecnl4B93xS_8jLkUU",
@@ -102,7 +102,7 @@ namespace SpaBookingWeb.Services.Client
                 CategoryId = post.PostCategoryId
             };
 
-            // Lấy bài viết liên quan (cùng danh mục, trừ bài hiện tại)
+            
             if (post.PostCategoryId.HasValue)
             {
                 model.RelatedPosts = await _context.Posts

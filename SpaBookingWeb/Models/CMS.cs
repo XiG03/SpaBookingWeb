@@ -69,7 +69,6 @@ namespace SpaBookingWeb.Models
         public int ShiftId { get; set; }
         public virtual Shift Shift { get; set; }
 
-        // Thêm trường CheckOut
         public DateTime? CheckOutTime { get; set; }
 
         public bool IsDeleted { get; set; } = false;
@@ -77,8 +76,8 @@ namespace SpaBookingWeb.Models
         public DateTime WorkDate { get; set; }
         public bool IsCheckIn { get; set; }
         public DateTime? CheckInTime { get; set; }
-        public bool IsOnBreak { get; set; } // Nghỉ giữa ca
-        public TimeSpan? BreakStartTime { get; set; } // Giờ bắt đầu nghỉ
-        public string Note { get; set; } // Lý do vắng / Ghi chú
+        public bool IsOnBreak { get; set; }
+        public TimeSpan? BreakStartTime { get; set; }
+        public string Note { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
@@ -13,7 +14,8 @@ using System.Threading.Tasks;
 
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
-    [Area("Manager")]
+   [Area("Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class ReportController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SpaBookingWeb.Models
 {
-    // Đã đổi tên thành TransactionCategory để tránh trùng với Category của Product/Service
+
     [Table("TransactionCategories")]
     public class TransactionCategory
     {
@@ -20,14 +20,12 @@ namespace SpaBookingWeb.Models
 
         public bool IsDeleted { get; set; } = false;
 
-        // Loại danh mục: true = Thu, false = Chi
         public bool IsIncomeCategory { get; set; } 
 
         public virtual ICollection<Transaction> Transactions { get; set; }
         public virtual ICollection<Budget> Budgets { get; set; }
     }
 
-    // Giao dịch Thu/Chi thực tế
     [Table("Transactions")]
     public class Transaction
     {
@@ -38,7 +36,7 @@ namespace SpaBookingWeb.Models
         public DateTime Date { get; set; } = DateTime.Now;
 
         [Required]
-        public bool IsIncome { get; set; } // true = Thu, false = Chi
+        public bool IsIncome { get; set; } 
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
@@ -49,8 +47,6 @@ namespace SpaBookingWeb.Models
 
         [StringLength(50)]
         public string ReferenceCode { get; set; }
-
-        // Cập nhật khóa ngoại trỏ đến TransactionCategory
         public int? TransactionCategoryId { get; set; }
         
         [ForeignKey("TransactionCategoryId")]
@@ -60,7 +56,6 @@ namespace SpaBookingWeb.Models
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
 
-    // Kế hoạch Ngân sách
     [Table("Budgets")]
     public class Budget
     {
@@ -75,7 +70,6 @@ namespace SpaBookingWeb.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal LimitAmount { get; set; }
 
-        // Cập nhật khóa ngoại trỏ đến TransactionCategory
         public int TransactionCategoryId { get; set; }
 
         [ForeignKey("TransactionCategoryId")]

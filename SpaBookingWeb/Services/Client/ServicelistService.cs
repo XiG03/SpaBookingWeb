@@ -32,38 +32,35 @@ namespace SpaBookingWeb.Services.Client
                 CurrentPage = page
             };
 
-            // 1. Get Categories (Only get Service type)
+            
             var categories = await _context.Categories
                 .Where(c => c.Type == "Service" && !string.IsNullOrEmpty(c.CategoryName))
                 .Select(c => new ClientCategoryViewModel
                 {
                     Id = c.CategoryId,
                     Name = c.CategoryName,
-                    // Use placeholder image or map from DB if Image column exists
+                    
                     IconUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuChowAKQh8Np34mUy3hNdqX1rQjOMLk9C5Q_vI5b62pqkcuehV6ZeCJTEazmNy7tubwWSfnZ1qKjlQxEiIiAS5v8Yr7PZwT2R0H9LZZWTxg8NG8SYPfCzwI1kK3OxX7MNgBY-WDvjdTgOR3i4FoVwCVvwQWmcFB6RmVMCgAJmnX7VRFqF6GLSGDwch3NUboe7Ytb5V9lVvdhlNsOoLMFGoTeGSs9rINvFN7U09GV4gvVHSaIRxOELgfKoexTZs5Wt6UC2YuYextLL0",
                     IsSelected = c.CategoryId == categoryId
                 })
                 .ToListAsync();
             model.Categories = categories;
 
-            // 2. Query Services
+           
             var servicesQuery = _context.Services
                 .Include(s => s.Category)
                 .Where(s => s.IsActive && !s.IsDeleted);
 
-            // Filter by keyword
             if (!string.IsNullOrEmpty(search))
             {
                 servicesQuery = servicesQuery.Where(s => s.ServiceName.Contains(search) || s.Description.Contains(search));
             }
 
-            // Filter by category
             if (categoryId.HasValue)
             {
                 servicesQuery = servicesQuery.Where(s => s.CategoryId == categoryId.Value);
             }
 
-            // Sorting
             switch (sortOrder)
             {
                 case "price_asc":
@@ -72,12 +69,11 @@ namespace SpaBookingWeb.Services.Client
                 case "price_desc":
                     servicesQuery = servicesQuery.OrderByDescending(s => s.Price);
                     break;
-                default: // popular (default to newest or other logic)
+                default: 
                     servicesQuery = servicesQuery.OrderByDescending(s => s.ServiceId);
                     break;
             }
 
-            // Pagination
             model.TotalItems = await servicesQuery.CountAsync();
             model.TotalPages = (int)Math.Ceiling(model.TotalItems / (double)pageSize);
 
@@ -93,19 +89,20 @@ namespace SpaBookingWeb.Services.Client
                     Price = s.Price,
                     DurationMinutes = s.DurationMinutes,
                     ImageUrl = string.IsNullOrEmpty(s.Image) ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBRPqf-JGVzjlnQDY50Mknpw_BGK0hLt7hkBomlBoy2VVMjekMF1MVs4olKseiEfAVCJWp7z-5t2EZbHPBCRJurE4IUgUhiSsVcKiyuQU_VUwtLORxfStzA7JQf8c0i9Xjw6mJLVGbH9dD5iD1Np_Y4_gn6lYKViFtoKkrUkVB7A6Zj4QBBBnlbmaUWKMafzBLCZu2es8JcnjYTEVt1UWZRG9K30EyxQ9cM2vA2E_SoSmpQr0kUgBwStX2iRnuIs09ujjgwNa4fvls" : s.Image,
-                    Rating = 5.0, // Hardcode temporary
-                    DiscountPercent = 0 // Can calculate if Promotion table exists
+                    Rating = 5.0, 
+                    DiscountPercent = 0 
                 })
                 .ToListAsync();
             model.Services = services;
 
-            // 3. Query Combo (Only get if no category filter or first page)
+            
             if (!categoryId.HasValue && page == 1 && string.IsNullOrEmpty(search))
             {
                 var combos = await _context.Combos
                     .Include(c => c.ComboDetails).ThenInclude(cd => cd.Service)
                     .Where(c => !c.IsDeleted)
-                    .Take(3) // Get 3 popular combos
+                    .Take(3) 
+                    
                     .Select(c => new ClientComboItemViewModel
                     {
                         Id = c.ComboId,

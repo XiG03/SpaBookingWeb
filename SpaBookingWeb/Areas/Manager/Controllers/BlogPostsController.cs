@@ -9,7 +9,7 @@ using SpaBookingWeb.ViewModels.BlogPosts;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Route("manager/[controller]/[action]")]
+    [Authorize(Roles = "Manager,Admin")]
     public class BlogPostsController : Controller
     {
         private readonly IBlogPostService _blogService;

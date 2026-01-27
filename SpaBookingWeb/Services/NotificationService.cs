@@ -14,7 +14,7 @@ namespace SpaBookingWeb.Services
     {
         private readonly IHubContext<NotificationHub> _hubContext;
 
-        // Just need HubContext, no Database needed
+        
         public NotificationService(IHubContext<NotificationHub> hubContext)
         {
             _hubContext = hubContext;
@@ -22,14 +22,14 @@ namespace SpaBookingWeb.Services
 
         public async Task NotifyAsync(string title, string content, string icon, string link = "#")
         {
-            // Send signal directly to client
+            
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", new 
             {
                 title = title,
                 content = content,
                 icon = icon,
                 link = link,
-                createdAt = DateTime.Now.ToString("HH:mm") // Only display current hour and minute
+                createdAt = DateTime.Now.ToString("HH:mm") 
             });
         }
     }

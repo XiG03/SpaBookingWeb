@@ -19,7 +19,7 @@ namespace SpaBookingWeb.Controllers
     {
         private readonly IBookingService _bookingService;
         private readonly ISystemSettingService _systemSettingService;
-        private readonly UserManager<ApplicationUser> _userManager; // [NEW] Declare UserManager
+        private readonly UserManager<ApplicationUser> _userManager; 
 
         private readonly MomoService _momoService;
 
@@ -27,7 +27,6 @@ namespace SpaBookingWeb.Controllers
 
         private readonly ApplicationDbContext _context;
 
-        // [NEW] Inject UserManager into Constructor
         public BookingController(
             IBookingService bookingService,
             ISystemSettingService systemSettingService,
@@ -52,7 +51,6 @@ namespace SpaBookingWeb.Controllers
         {
             try
             {
-                // _bookingService.ClearSession();
                 // Step 1 doesn't need complex model, pass null or empty object
                 return View("Step1_Type");
             }
@@ -90,7 +88,7 @@ namespace SpaBookingWeb.Controllers
             }
         }
 
-        // [NEW] Action to receive COMBO booking -> Get all child services -> Go straight to Step 2
+        // Action to receive COMBO booking -> Get all child services -> Go straight to Step 2
          [HttpGet]
         public async Task<IActionResult> BookCombo(int id)
         {
@@ -144,7 +142,7 @@ namespace SpaBookingWeb.Controllers
                     Members = new List<BookingMember> { new BookingMember { MemberIndex = 1, Name = "Me" } }
                 };
 
-                // [NEW] Check if any service is pre-selected from Services page
+                // Check if any service is pre-selected from Services page
                 if (TempData["PreSelectedServiceId"] is int serviceId)
                 {
                     session.Members[0].SelectedServiceIds.Add(serviceId);
@@ -280,11 +278,9 @@ namespace SpaBookingWeb.Controllers
                         var item = allServices.FirstOrDefault(s => s.Id == id);
                         if (item == null) continue;
 
-                        // Add exactly that item (Combo or Odd Service) to list for View to display
+                        
                         member.SelectedServices.Add(item);
 
-                        // IMPORTANT: Initialize key in Map for child services if Combo
-                        // This helps View to bind Technician data for each child
                         if (item.Id < 0 && item.ChildServices != null)
                         {
                             foreach (var child in item.ChildServices)
@@ -295,7 +291,7 @@ namespace SpaBookingWeb.Controllers
                                 }
                             }
                         }
-                        // If odd service
+                        
                         else if (item.Id > 0)
                         {
                             if (!member.ServiceStaffMap.ContainsKey(item.Id))
@@ -310,7 +306,7 @@ namespace SpaBookingWeb.Controllers
                 int duration = 0;
                 foreach (var m in session.Members)
                 {
-                    // Calculate total amount based on original item (Combo uses Combo price, Service uses service price)
+                    
                     foreach (var s in m.SelectedServices)
                     {
                          total += s.Price;

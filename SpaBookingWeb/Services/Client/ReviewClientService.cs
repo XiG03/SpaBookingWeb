@@ -20,7 +20,7 @@ namespace SpaBookingWeb.Services.Client
 
         public async Task<ReviewPageViewModel> GetReviewPageDataAsync(int appointmentId, string userEmail)
         {
-            // 1. Get Appointment and check permissions
+            
             var appointment = await _context.Appointments
                 .Include(a => a.Customer)
                 .Include(a => a.AppointmentDetails).ThenInclude(ad => ad.Service)
@@ -29,19 +29,18 @@ namespace SpaBookingWeb.Services.Client
 
             if (appointment == null) return null;
 
-            // Validate email (ensure correct reviewer)
+           
             if (appointment.Customer.Email != userEmail) return null;
 
-            // Validate status (only review when completed)
-            // if (appointment.Status != "Completed") return null; // Uncomment when running in production
+           
 
             var model = new ReviewPageViewModel
             {
                 AppointmentId = appointment.AppointmentId,
-                SpaName = "Lotus Spa & Salon" // Or get from SystemSettings
+                SpaName = "SpaBookingWebsite",
             };
 
-            // 2. Map list of used services
+            
             foreach (var detail in appointment.AppointmentDetails)
             {
                 if (detail.ServiceId.HasValue)

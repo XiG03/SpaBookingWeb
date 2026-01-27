@@ -82,9 +82,7 @@ namespace SpaBookingWeb.Services.Implements
                 imagePath = await SaveFileAsync(request.ImageFile);
             }
 
-            // 2. Tìm EmployeeId dựa trên UserId (Identity)
-            // Note: need to ensure Employees table has field linked to User (e.g. AppUserId or Email)
-            // Here I assume logic find Employee by UserId
+            // 2. Find Employee by userId
             var employee = await _context.Employees
                 .FirstOrDefaultAsync(e => e.IdentityUserId == userId ); // Adjust according to Employee structure
 

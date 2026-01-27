@@ -21,7 +21,7 @@ namespace SpaBookingWeb.Models
         public string Description { get; set; }
 
         [Required, StringLength(20)]
-        public string DiscountType { get; set; } // Percent
+        public string DiscountType { get; set; } 
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal DiscountValue { get; set; }
@@ -38,7 +38,6 @@ namespace SpaBookingWeb.Models
         public DateTime EndDate { get; set; }
         public bool IsActive { get; set; } = true;
         
-        // Giữ lại IsDeleted để hỗ trợ xóa mềm (không xóa mất dữ liệu lịch sử)
         public bool IsDeleted { get; set; } = false;
     }
 
@@ -52,7 +51,6 @@ namespace SpaBookingWeb.Models
         [ForeignKey("CustomerId")]
         public virtual Customer Customer { get; set; }
 
-        // Nhân viên tạo lịch hoặc nhân viên chính phụ trách
         public int? EmployeeId { get; set; }
         [ForeignKey("EmployeeId")]
         public virtual Employee Employee { get; set; }
@@ -74,7 +72,7 @@ namespace SpaBookingWeb.Models
         public bool IsDeleted { get; set; } = false;
 
         public virtual ICollection<AppointmentDetail> AppointmentDetails { get; set; }
-        public virtual Invoice Invoice { get; set; } // 1-1 Relation
+        public virtual Invoice Invoice { get; set; } 
         public virtual ICollection<Review> Reviews { get; set; }
     }
 
@@ -108,20 +106,14 @@ namespace SpaBookingWeb.Models
 
         public virtual ICollection<AppointmentConsumable> AppointmentConsumables { get; set; }
 
-        // Số tiền típ cụ thể cho dịch vụ này
         public decimal TipAmount { get; set; }
 
-        // Xác định nguồn tiền: 
-        // true = KTV tự cầm; false = Spa thu hộ
         public bool IsDirectTip { get; set; }
 
-        // Ngày giờ Spa đã trả tiền típ thu hộ cho KTV
-        // null = Chưa trả
         public DateTime? TipPayoutDate { get; set; }
 
-        // Tên khách đi cùng (trường hợp booking theo nhóm)_
-        [StringLength(100)] // Giới hạn độ dài tối đa 100 ký tự
-        public string? GuestName { get; set; } // Dấu ? cho phép Null (nếu là khách chính chủ)
+        [StringLength(100)] 
+        public string? GuestName { get; set; } 
     }
 
     [Table("Invoices")]
@@ -160,14 +152,10 @@ namespace SpaBookingWeb.Models
 
         public virtual ICollection<Payment> Payments { get; set; }
 
-        //Tip tổng khi xuất hóa đơn
         public decimal TipAmount { get; set; }
-
-        // 1. Lưu phương thức thanh toán chính (Cash/Momo) ngay trên Invoice để tiện query
         [StringLength(50)]
         public string PaymentMethod { get; set; }
 
-        // 2. Lưu nhân viên (Lễ tân) thực hiện thu tiền
         public int? EmployeeId { get; set; }
         [ForeignKey("EmployeeId")]
         public virtual Employee Employee { get; set; }
@@ -243,7 +231,6 @@ namespace SpaBookingWeb.Models
         [Key]
         public int Id { get; set; }
 
-        // Liên kết với bảng User
         public string UserId { get; set; }
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
@@ -251,7 +238,6 @@ namespace SpaBookingWeb.Models
         public DateTime CreateDate { get; set; } = DateTime.Now;
         public DateTime? BookingDate { get; set; } // Ngày khách đặt lịch đến
 
-        // Trạng thái đơn: 1 (Hoàn thành), 0 (Mới/Chờ), -1 (Hủy)
         public int Status { get; set; }
 
         public decimal TotalAmount { get; set; }

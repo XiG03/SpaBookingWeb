@@ -74,3 +74,5 @@ appsettings.Production.json
 # Prevent publish output
 /publish/
 /dist/
+
+.fake

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
     [Area("Manager")]
-    // [Authorize(Roles = "Manager,Admin")]
+    [Authorize(Roles = "Manager,Admin")]
     public class SystemSettingController : Controller
     {
         private readonly ISystemSettingService _systemSettingService;

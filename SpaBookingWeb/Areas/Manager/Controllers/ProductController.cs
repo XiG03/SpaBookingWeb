@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpaBookingWeb.Services.Manager;
 using SpaBookingWeb.ViewModels.Manager;
@@ -5,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace SpaBookingWeb.Areas.Manager.Controllers
 {
-    [Area("Manager")]
+   [Area("Manager")]
+    [Authorize(Roles = "Manager,Admin")]
     public class ProductController : Controller
     {
         private readonly IProductService _productService;

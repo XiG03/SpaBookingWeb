@@ -18,6 +18,30 @@ using SpaBookingWeb.Services.Technictian;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var env = builder.Environment;
+
+var exampleSettings = Path.Combine(env.ContentRootPath, "appsettings.Example.json");
+var realSettings = Path.Combine(env.ContentRootPath, "appsettings.json");
+
+if (!File.Exists(realSettings))
+{
+    if (File.Exists(exampleSettings))
+    {
+        File.Copy(exampleSettings, realSettings);
+        Console.WriteLine("✔ appsettings.json was created from appsettings.Example.json");
+    }
+    else
+    {
+        throw new FileNotFoundException(
+            "❌ Missing appsettings.json and appsettings.Example.json"
+        );
+    }
+}
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
