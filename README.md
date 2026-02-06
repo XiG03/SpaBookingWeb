@@ -11,49 +11,6 @@ File `docker-compose.yml` định nghĩa 2 service chính:
 2. **sqlserver**: Microsoft SQL Server 2022.
 
 ## Hướng dẫn chạy
-version: "3.9"
-
-services:
-  web:
-    image: xig03/spabookingwebmvc:v0.0.3
-    container_name: spabookingweb
-    build:
-      context: .
-      dockerfile: SpaBookingWeb/Dockerfile
-    ports:
-      - "5000:8080"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: >
-        Server=sqlserver,1433; Database=SpaBookingDb; User Id=sa; Password=Your_password123; TrustServerCertificate=True;
-      Authentication__Google__ClientId: ...
-      Authentication__Google__ClientSecret: ...  
-       
-    depends_on:
-      - sqlserver
-    networks:
-      - spabooking_network
-
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: spabookingweb_sqlserver
-    ports:
-      - "1433:1433"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "Your_password123"
-    volumes:
-      - sql_data:/var/opt/mssql
-    networks:
-      - spabooking_network
-
-volumes:
-  sql_data:
-
-
-networks:
-  spabooking_network:
-    driver: bridge
 
 
 ### 1. Build và Khởi động
