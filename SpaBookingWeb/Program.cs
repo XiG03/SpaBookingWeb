@@ -20,25 +20,35 @@ var builder = WebApplication.CreateBuilder(args);
 
 var env = builder.Environment;
 
-var exampleSettings = Path.Combine(env.ContentRootPath, "appsettings.Example.json");
-var realSettings = Path.Combine(env.ContentRootPath, "appsettings.json");
-
-if (!File.Exists(realSettings))
+// In Docker, environment variables are primary (from .env)
+// In local development, use appsettings.json files
+if (!env.IsProduction())
 {
-    if (File.Exists(exampleSettings))
+    var exampleSettings = Path.Combine(env.ContentRootPath, "appsettings.Example.json");
+    var realSettings = Path.Combine(env.ContentRootPath, "appsettings.json");
+
+    if (!File.Exists(realSettings))
     {
-        File.Copy(exampleSettings, realSettings);
-        Console.WriteLine("✔ appsettings.json was created from appsettings.Example.json");
-    }
-    else
-    {
-        throw new FileNotFoundException(
-            "❌ Missing appsettings.json and appsettings.Example.json"
-        );
+        if (File.Exists(exampleSettings))
+        {
+            File.Copy(exampleSettings, realSettings);
+            Console.WriteLine("✔ appsettings.json was created from appsettings.Example.json");
+        }
+        else
+        {
+            throw new FileNotFoundException(
+                "❌ Missing appsettings.json and appsettings.Example.json"
+            );
+        }
     }
 }
+
+// Configuration priority:
+// 1. appsettings.json (Development)
+// 2. appsettings.{Environment}.json (if exists)
+// 3. Environment Variables (Docker .env overrides everything)
 builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", optional: env.IsProduction(), reloadOnChange: true)
     .AddEnvironmentVariables();
 
 
@@ -219,6 +229,11 @@ using (var scope = app.Services.CreateScope())
             {
                 dbContext.Database.Migrate();
                 logger.LogInformation("Database migration completed.");
+
+                // Seed data automatically on startup
+                await DbSeeder.Initialize(scope.ServiceProvider);
+                logger.LogInformation("Database seeding completed.");
+
                 break;
             }
             catch (Exception ex)

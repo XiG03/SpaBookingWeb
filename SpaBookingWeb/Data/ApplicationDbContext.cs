@@ -19,19 +19,18 @@ namespace SpaBookingWeb.Data
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly INotificationService _notifService; // 1. Inject Service thông báo
+        private readonly INotificationService _notifService;
 
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options, 
             IHttpContextAccessor httpContextAccessor,
-            INotificationService notifService) // Thêm tham số này vào Constructor
+            INotificationService notifService)
             : base(options)
         {
             _httpContextAccessor = httpContextAccessor;
             _notifService = notifService;
         }
 
-        // --- CÁC DBSET (GIỮ NGUYÊN) ---
         public DbSet<Employee> Employees { get; set; }
         public DbSet<TechnicianDetail> TechnicianDetails { get; set; }
         public DbSet<Customer> Customers { get; set; }
@@ -117,23 +116,16 @@ namespace SpaBookingWeb.Data
         {
             builder.Entity<T>().HasQueryFilter(e => !EF.Property<bool>(e, "IsDeleted"));
         }
-
-        // --- LOGIC GHI LOG & XÓA MỀM & THÔNG BÁO ---
         public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
-            // Bước 1: Tính toán thay đổi (Bao gồm chuyển đổi Xóa Mềm)
             var auditEntries = OnBeforeSaveChanges();
 
             try
             {
-                // Bước 2: Lưu dữ liệu chính
                 var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-
-                // Bước 3: Lưu Log Audit
                 await OnAfterSaveChanges(auditEntries);
 
-                // Bước 4: Gửi Thông báo Real-time (MỚI)
-                // Chúng ta tận dụng luôn auditEntries vì nó đã chứa thông tin "Create/Update/Delete" và "DisplayName" chính xác
+
                 await SendNotificationsAsync(auditEntries);
 
                 return result;
@@ -151,7 +143,6 @@ namespace SpaBookingWeb.Data
 
             foreach (var entry in auditEntries)
             {
-                // Action được lấy từ AuditType: "Create", "Update", "Delete"
                 string actionVN = entry.AuditType switch 
                 {
                     "Create" => "thêm mới",
@@ -161,12 +152,10 @@ namespace SpaBookingWeb.Data
                 };
 
                 string title = $"Dữ liệu: {entry.TableName}";
-                // DisplayName đã được logic Audit tính toán (Lấy từ Name/Title/FullName/Code...)
                 string content = $"{entry.TableName} '{entry.DisplayName ?? "..."}' vừa được {actionVN}.";
                 string icon = "fe-database";
                 string link = "#";
 
-                // Lấy Entity gốc để kiểm tra kiểu cụ thể cho Icon và Link đẹp hơn
                 var entity = entry.Entry.Entity;
 
                 if (entity is Post post)
@@ -200,9 +189,6 @@ namespace SpaBookingWeb.Data
                     title = "Lịch hẹn";
                     icon = "fe-calendar";
                 }
-                // Bạn có thể thêm các `else if` khác cho Product, Service...
-
-                // Gửi tín hiệu (Fire and Forget)
                 _ = _notifService.NotifyAsync(title, content, icon, link);
             }
         }
