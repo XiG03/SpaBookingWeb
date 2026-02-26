@@ -352,17 +352,4 @@ docker compose up -d --build
 
 ---
 
-## 11) Gợi ý mở rộng
 
-- Tách rõ API layer (REST) để hỗ trợ mobile app.
-- Áp dụng CQRS cho module tài chính/báo cáo lớn.
-- Thêm test tự động cho booking flow, checkout flow, payroll flow.
-- Tăng cường observability: OpenTelemetry + structured logging.
-- Chuẩn hóa migration strategy theo môi trường staging/production.
-
----
-
-Nếu bạn muốn, mình có thể tạo thêm:
-1. **ERD dạng sơ đồ** (Mermaid) ngay trong README.
-2. **Danh sách endpoint đầy đủ** (route + method + role).
-3. **Runbook vận hành production** (backup DB, rotate secret, deploy rollback).
