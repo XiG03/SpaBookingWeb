@@ -58,6 +58,7 @@ ScaffoldingReadMe.txt
 appsettings.json
 appsettings.Development.json
 appsettings.Production.json
+.env
 
 # Built binaries where secrets might be copied
 **/bin/

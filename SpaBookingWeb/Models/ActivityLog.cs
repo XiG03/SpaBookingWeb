@@ -29,8 +29,6 @@ namespace SpaBookingWeb.Models
         public string Description { get; set; } // Mô tả ngắn gọn (Human-readable)
 
         public DateTime Timestamp { get; set; } = DateTime.Now;
-
-        // --- CÁC TRƯỜNG MỚI ĐỂ LƯU CHI TIẾT ---
         
         // Lưu JSON giá trị cũ (Trước khi sửa/xóa)
         public string OldValues { get; set; } 

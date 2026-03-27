@@ -136,7 +136,6 @@ namespace SpaBookingWeb.Data
             }
         }
 
-        // Hàm mới: Gửi thông báo dựa trên danh sách Audit
         private async Task SendNotificationsAsync(List<AuditEntry> auditEntries)
         {
             if (auditEntries == null || !auditEntries.Any()) return;

@@ -14,7 +14,7 @@ namespace SpaBookingWeb.Models
         public string CategoryName { get; set; }
 
         [Required, StringLength(20)]
-        public string Type { get; set; } // Service, Product
+        public string Type { get; set; }
 
         public virtual ICollection<Service> Services { get; set; }
         public virtual ICollection<Product> Products { get; set; }

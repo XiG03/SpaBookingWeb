@@ -22,7 +22,6 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // [THAY ĐỔI IDENTITY] Lấy ID thật
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account", new { area = "" });
 
@@ -37,7 +36,6 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleAttendance()
         {
-            // [THAY ĐỔI IDENTITY] Lấy ID thật
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account", new { area = "" });
 
@@ -46,7 +44,6 @@ namespace SpaBookingWeb.Areas.Technician.Controllers
 
             // Lấy IP người dùng
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-            // Nếu chạy localhost nó ra ::1, ta map về 127.0.0.1 cho dễ nhìn (nếu muốn)
             if (ipAddress == "::1") ipAddress = "127.0.0.1";
 
             var error = await _jobService.PerformAttendanceAsync(employeeId.Value, ipAddress);

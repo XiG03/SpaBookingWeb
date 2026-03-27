@@ -5,17 +5,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SpaBookingWeb.Models
 {
-    // Mở rộng IdentityUser (Map với bảng AspNetUsers)
     public class ApplicationUser : IdentityUser
-    {
-        // Các trường custom nếu cần
+    {        [PersonalData]
+        public string UserName { get; set; }
         [PersonalData]
         public string FullName { get; set; }
 
         [PersonalData]
         public string? Address { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now; // Mặc định lấy ngày tạo là hiện tại
+        public DateTime CreatedDate { get; set; } = DateTime.Now; 
     }
 
     [Table("Employees")]
@@ -52,12 +51,11 @@ namespace SpaBookingWeb.Models
 
         public bool IsDeleted { get; set; } = false;
 
-        // Navigation Properties
         public virtual TechnicianDetail TechnicianDetail { get; set; }
         public virtual ICollection<WorkSchedule> WorkSchedules { get; set; }
         public virtual ICollection<TechnicianService> TechnicianServices { get; set; }
-        public virtual ICollection<Appointment> Appointments { get; set; } // Nhân viên book/tạo
-        public virtual ICollection<AppointmentDetail> ServiceAppointments { get; set; } // KTV làm dịch vụ
+        public virtual ICollection<Appointment> Appointments { get; set; } 
+        public virtual ICollection<AppointmentDetail> ServiceAppointments { get; set; } 
         public virtual ICollection<Salary> Salaries { get; set; }
     }
 
@@ -102,11 +100,10 @@ namespace SpaBookingWeb.Models
         [StringLength(20)]
         public string Status { get; set; }
 
-        // Tổng hợp tiền típ nhân viên kiếm được trong kỳ lương (để báo cáo)
         public decimal TotalTips { get; set; }
 
-        public DateTime FromDate { get; set; } // Ngày bắt đầu chu kỳ lương
-        public DateTime ToDate { get; set; }   // Ngày kết thúc chu kỳ lương
+        public DateTime FromDate { get; set; } 
+        public DateTime ToDate { get; set; }   
 
         public bool IsDeleted { get; set; } = false;
     }
